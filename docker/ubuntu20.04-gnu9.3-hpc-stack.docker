@@ -1,0 +1,15 @@
+FROM noaaepic/ubuntu20.04-gnu9.3
+LABEL AUTHOR EPIC
+RUN mkdir -p /opt
+WORKDIR /opt
+ENV DEBIAN_FRONTEND=noninteractive   
+RUN git clone -b feature/ubuntu20.04 https://github.com/jkbk2004/hpc-stack.git
+WORKDIR hpc-stack
+RUN yes | ./setup_modules.sh -p /opt/hpc-modules -c config/config_custom.sh  
+RUN sed -i "10 a source /usr/share/lmod/6.6/init/bash" ./build_stack.sh
+RUN sed -i "10 a export PATH=/usr/local/sbin:/usr/local/bin:$PATH" ./build_stack.sh
+RUN sed -i "10 a export LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:$LD_LIBRARY_PATH" ./build_stack.sh
+RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack_custom.yaml -m 
+RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack_mapl.yaml -m 
+#RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack_fms.yaml -m 
+RUN rm -rf pkg/*

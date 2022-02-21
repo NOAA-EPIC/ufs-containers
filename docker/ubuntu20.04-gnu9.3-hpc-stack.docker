@@ -13,3 +13,4 @@ RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/sta
 RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack_mapl.yaml -m 
 #RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack_fms.yaml -m 
 RUN rm -rf pkg/*
+#

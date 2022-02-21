@@ -39,4 +39,4 @@ RUN sed -i '3 a - conda-forge' regional_workflow.yml
 RUN sed -i 's/^-/  -/g' regional_workflow.yml 
 RUN sed -i 's/^  - https/#  - https/g' regional_workflow.yml 
 WORKDIR /opt/ufs
-RUN conda env create -f /opt/ufs/miniconda3/environments/regional_workflow.yml 
+RUN conda env create -f /opt/ufs/miniconda3/environments/regional_workflow.yml

@@ -33,7 +33,7 @@ jobs:
           for file in ${{ steps.abc.outputs.all }}; do
             if [[ $file == *"ubuntu20.04-gnu9.3-hpc-stack.docker"* ]]; then
                 echo "docker build tag noaaepic/ubuntu20.04-hpc-stack"
-                docker build -t noaaepic/ubuntu20.04-hpc-stack:0.1 -f ./dockers/ubuntu20.04-gnu9.3-hpc-stack.docker .
+                docker build -t noaaepic/ubuntu20.04-hpc-stack:0.1 -f ./docker/ubuntu20.04-gnu9.3-hpc-stack.docker .
             fi           
           done
       - name: docker push tag noaaepic/ubuntu20.04-hpc-stack
@@ -51,7 +51,7 @@ jobs:
           for file in ${{ steps.abc.outputs.all }}; do
             if [[ $file == *"ubuntu20.04-ufs-srwapp.docker"* ]]; then
                 echo "docker build tag noaaepic/ubuntu20.04-epic-srwapp"
-                docker build -t noaaepic/ubuntu20.04-epic-srwapp:1.0 -f ./dockers/ubuntu20.04-ufs-srwapp.docker .
+                docker build -t noaaepic/ubuntu20.04-epic-srwapp:1.0 -f ./docker/ubuntu20.04-ufs-srwapp.docker .
             fi            
           done
       - name: docker push tag noaaepic/ubuntu20.04-epic-srwapp

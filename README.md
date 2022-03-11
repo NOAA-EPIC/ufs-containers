@@ -10,7 +10,7 @@ This repository provides the collections of Docker and Singularity build recipes
 
 * docker://noaaepic/ubuntu20.04-gnu9.3-ufs-mrwapp
 
-Dockerfile tree:
+Dockee directory tree:
 
 ```
 Docker/

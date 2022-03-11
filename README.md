@@ -14,10 +14,7 @@ Docker directory tree:
 
 ```
 Docker/
-└── gnu9.3
-    ├── Dockerfile
-    ├── hpc-stack
-    │   └── Dockerfile
-    └── ufs-srwapp
-        └── Dockefile
+├── Dockerfile.ubuntu20.04-gnu9.3
+├── Dockerfile.ubuntu20.04-gnu9.3-hpc-stack
+└── Dockerfile.ubuntu20.04-gnu9.3-ufs-srwapp
 ```

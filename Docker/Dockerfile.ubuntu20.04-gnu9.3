@@ -19,6 +19,9 @@ RUN pip install --upgrade cmake
 RUN apt install wget
 RUN apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install -yq m4
+RUN echo "dash dash/sh boolean false" | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+RUN apt install gdb
 
 
 

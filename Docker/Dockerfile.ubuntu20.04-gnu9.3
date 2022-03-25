@@ -9,7 +9,7 @@ RUN apt install -y lmod
 RUN apt install -y tzdata
 RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime   
 RUN dpkg-reconfigure --frontend noninteractive tzdata 
-RUN apt -y install build-essential gfortran git openmpi-bin vim cmake python3 wget libexpat1-dev lmod
+RUN apt -y install build-essential gfortran git openmpi-bin vim cmake python3 wget libexpat1-dev lmod gdb
 RUN apt -y install bc && apt -y install time
 RUN apt-get install -yq libtiff-dev
 RUN apt-get install -yq git-lfs
@@ -19,6 +19,9 @@ RUN pip install --upgrade cmake
 RUN apt install wget
 RUN apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install -yq m4
+RUN apt-get install -y libopenblas-dev
+RUN echo "dash dash/sh boolean false" | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 
 
 

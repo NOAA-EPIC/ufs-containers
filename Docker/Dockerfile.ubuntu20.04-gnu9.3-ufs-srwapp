@@ -1,9 +1,23 @@
 FROM noaaepic/ubuntu20.04-gnu9.3-hpc-stack
 LABEL AUTHOR EPIC-AUS
 RUN rm -rf /opt/hpc-stack/pkg/*
+
+#add new stuff to hpc-stack here
+WORKDIR /opt/hpc-stack
+ENV DEBIAN_FRONTEND=noninteractive   
+RUN git remote add epic https://github.com/NOAA-EPIC/hpc-stack.git
+RUN git remote update
+RUN git checkout epic/feature/ubuntu20.04 
+RUN sed -i "10 a source /usr/share/lmod/6.6/init/bash" ./build_stack.sh
+RUN sed -i "10 a export PATH=/usr/local/sbin:/usr/local/bin:$PATH" ./build_stack.sh
+RUN sed -i "10 a export LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:$LD_LIBRARY_PATH" ./build_stack.sh
+RUN git pull epic feature/ubuntu20.04
+RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack-esmf.yaml -m 
+
+# Now install srw
 WORKDIR /opt
 RUN ln -s /usr/bin/python3 /usr/bin/python
-RUN git clone https://github.com/ufs-community/ufs-srweather-app.git
+RUN git clone -b release/public-v2 https://github.com/ufs-community/ufs-srweather-app.git
 WORKDIR /opt/ufs-srweather-app
 RUN ./manage_externals/checkout_externals
 RUN mkdir /opt/ufs-srweather-app/build
@@ -16,7 +30,7 @@ RUN echo "#!/bin/bash" >> /opt/ufs-srweather-app/build/build-srw.sh \
     && echo "source /usr/share/lmod/6.6/init/bash" >> /opt/ufs-srweather-app/build/build-srw.sh \
     && echo "module use /opt/hpc-modules/modulefiles/stack" >> /opt/ufs-srweather-app/build/build-srw.sh \
     && echo "module load hpc hpc-gnu hpc-openmpi" >> /opt/ufs-srweather-app/build/build-srw.sh \
-    && echo "module load netcdf hdf5 bacio sfcio sigio nemsio w3emc esmf fms crtm g2 png zlib g2tmpl ip sp w3nco gfsio wgrib2 upp cmake" >> /opt/ufs-srweather-app/build/build-srw.sh \
+    && echo "module load netcdf hdf5 bacio sfcio sigio nemsio w3emc esmf/v8.3.0b09 fms crtm g2 png zlib g2tmpl ip sp w3nco gfsio wgrib2 upp cmake" >> /opt/ufs-srweather-app/build/build-srw.sh \
     && echo "cmake -DCMAKE_INSTALL_PREFIX=/opt/ufs-srweather-app .." >> /opt/ufs-srweather-app/build/build-srw.sh \
     && echo "make -j 2" >> /opt/ufs-srweather-app/build/build-srw.sh 
 RUN /bin/bash -l /opt/ufs-srweather-app/build/build-srw.sh

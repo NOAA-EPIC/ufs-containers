@@ -2,3 +2,7 @@
 	path = Stacks/hpc-stack
 	url = https://github.com/NOAA-EMC/hpc-stack
 	branch = develop
+[submodule "Stacks/spack-stack"]
+	path = Stacks/spack-stack
+	url = https://github.com/NOAA-EMC/spack-stack
+	branch = develop

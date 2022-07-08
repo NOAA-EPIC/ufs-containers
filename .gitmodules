@@ -6,3 +6,11 @@
 	path = Stacks/spack-stack
 	url = https://github.com/NOAA-EMC/spack-stack
 	branch = develop
+[submodule "stacks/hpc-stack"]
+	path = stacks/hpc-stack
+	url = https://github.com/NOAA-EMC/hpc-stack
+	branch = develop
+[submodule "stacks/spack-stack"]
+	path = stacks/spack-stack
+	url = https://github.com/NOAA-EMC/spack-stack
+	branch = develop

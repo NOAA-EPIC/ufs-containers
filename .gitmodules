@@ -1,0 +1,4 @@
+[submodule "Stacks/hpc-stack"]
+	path = Stacks/hpc-stack
+	url = https://github.com/NOAA-EMC/hpc-stack
+	branch = develop

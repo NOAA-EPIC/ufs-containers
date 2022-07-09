@@ -6,6 +6,8 @@ docker build -f Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack.v1.2 -t  ubuntu20
 
 docker login --username noaaepic
 
+docker images
+
 docker tag ubuntu20.04-gnu9.3-hpc-stack noaaemc/ubuntu20.04-gnu9.3-hpc-stack:v1.2
 
 docker push noaaepic/ubuntu20.04-gnu9.3-hpc-stack:v1.2

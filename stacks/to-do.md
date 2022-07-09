@@ -2,13 +2,13 @@ git clone --recursive -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers
 
 cd ufs-containers
 
-docker build -f Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack.v1.2 -t my_image .
+docker build -f Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack.v1.2 -t  ubuntu20.04-gnu9.3-hpc-stack .
 
-docker login --username noaaemc
+docker login --username noaaepic
 
-docker tag my_image noaaemc/ubuntu-hpc:v###
+docker tag ubuntu20.04-gnu9.3-hpc-stack.v1.2 noaaemc/ubuntu20.04-gnu9.3-hpc-stack:v1.2
 
-docker push noaaemc/ubuntu-hpc:v###
+docker push noaaepic/ubuntu20.04-gnu9.3-hpc-stack:v1.2
 
 docker run --rm -it noaaemc/input-data:20220414 sh
 

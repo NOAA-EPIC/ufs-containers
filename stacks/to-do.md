@@ -1,8 +1,8 @@
-git clone --recursive -b mji_uwm-ci https://github.com/MinsukJi-NOAA/emc-containers
+git clone --recursive -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers
 
-cd emc-containers
+cd ufs-containers
 
-docker build -f app/Dockerfile.hpc.ubuntu_20.04.gnu -t my_image .
+docker build -f Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack.v1.2 -t my_image .
 
 docker login --username noaaemc
 

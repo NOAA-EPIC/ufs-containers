@@ -24,8 +24,8 @@ cd fv3-input-data
 
 docker build -t my_image .
 
-docker tag my_image noaaemc/input-data:20220414
+docker tag my_image noaaepic/input-data:20220414
 
 docker login --username noaaepic
 
-docker push noaaemc/input-data:20220414
+docker push noaaepic/input-data:20220414

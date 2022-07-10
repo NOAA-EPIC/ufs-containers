@@ -16,16 +16,16 @@ docker run --rm -it noaaemc/input-data:20220414 sh
 
 cd /tmp/input-data-20220414
 
-git clone https://github.com/MinsukJi-NOAA/fv3-input-data 
+git clone https://github.com/jkbk2004/fv3-input-data 
 
-cp -r input-data-yyyymmdd fv3-input-data
+cp -r input-data-20220414 fv3-input-data
 
 cd fv3-input-data
 
 docker build -t my_image .
 
-docker tag my_image noaaemc/input-data:yyyymmdd
+docker tag my_image noaaemc/input-data:20220414
 
-docker login --username noaaemc
+docker login --username noaaepic
 
-docker push noaaemc/input-data:yyyymmdd
+docker push noaaemc/input-data:20220414

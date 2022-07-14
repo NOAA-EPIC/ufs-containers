@@ -9,7 +9,7 @@ mpi:
 
 cmake:
   build: NO
-  bootstrap: YES
+  bootstrap: NO
   version: 3.20.1
 
 jpeg:
@@ -20,12 +20,12 @@ zlib:
   build: YES
   version: 1.2.11
 
-png:
+libpng:
   build: YES
-  version: 1.6.35
+  version: 1.6.37
 
 szip:
-  build: YES
+  build: NO
   version: 2.1.1
 
 jasper:
@@ -33,7 +33,7 @@ jasper:
   version: 2.0.25
 
 udunits:
-  build: YES
+  build: NO
   version: 2.2.28
 
 hdf5:
@@ -55,10 +55,9 @@ netcdf:
   version_c: 4.7.4
   version_f: 4.5.3
   version_cxx: 4.3.1
-  disable_cxx: YES
 
 nccmp:
-  build: YES
+  build: NO
   version: 1.8.9.0
 
 nco:
@@ -66,7 +65,7 @@ nco:
   version: 4.9.3
 
 cdo:
-  build: YES
+  build: NO
   version: 1.9.8
 
 pio:
@@ -77,14 +76,15 @@ pio:
 
 esmf:
   build: YES
-  version: 8_2_0
+  version: v8.3.0b09
+  install_as: 8.3.0b09
   shared: YES
   enable_pnetcdf: NO
   debug: NO
 
 fms:
   build: YES
-  version: 2021.03
+  version: 2022.01
   repo: noaa-gfdl
   cmake_opts: "-DGFS_PHYS=ON -D64BIT=ON -DOPENMP=ON"
 
@@ -147,8 +147,8 @@ landsfcutil:
 
 nemsio:
   build: YES
-  version: v2.5.4
-  install_as: 2.5.4
+  version: v2.5.2
+  install_as: 2.5.2
   is_nceplib: YES
 
 nemsiogfs:
@@ -171,8 +171,8 @@ g2:
 
 g2c:
   build: YES
-  version: v1.6.4
-  install_as: 1.6.4
+  version: v1.6.2
+  install_as: 1.6.2
   is_nceplib: YES
 
 g2tmpl:
@@ -193,7 +193,6 @@ upp:
   version: upp_v10.0.9
   install_as: 10.0.9
   openmp: ON
-  is_nceplib: YES
 
 wrf_io:
   build: YES
@@ -206,15 +205,15 @@ bufr:
   build: YES
   version: bufr_v11.5.0
   install_as: 11.5.0
-  python: YES
   is_nceplib: YES
 
 wgrib2:
   build: YES
-  version: 2.0.8
+  version: v2.0.8-cmake-v6
   install_as: 2.0.8
-  lib: YES
-  ipolates: 3
+  openmp: ON
+  cmake_opts: "-DUSE_SPECTRAL=ON -DUSE_IPOLATES=3 -DUSE_NETCDF4=ON"
+  is_nceplib: YES
 
 prod_util:
   build: YES
@@ -224,8 +223,8 @@ prod_util:
 
 grib_util:
   build: YES
-  version: v1.2.3
-  install_as: 1.2.3
+  version: v1.2.2
+  install_as: 1.2.2
   openmp: ON
   is_nceplib: YES
 
@@ -235,70 +234,10 @@ ncio:
   install_as: 1.0.0
   is_nceplib: YES
 
-boost:
-  build: YES
-  version: 1.68.0
-  level: headers-only
-
-eigen:
-  build: YES
-  version: 3.3.7
-
-gsl_lite:
-  build: YES
-  version: 0.37.0
-
-gptl:
-  build: NO
-  version: 8.0.2
-
-fftw:
-  build: NO
-  version: 3.3.8
-
-tau2:
-  build: NO
-  version: 3.25.1
-
-cgal:
-  build: NO
-  version: 5.0.2
-
-json:
-  build: YES
-  version: 3.9.1
-
-json_schema_validator:
-  build: YES
-  version: 2.1.0
-
-pybind11:
-  build: YES
-  version: 2.5.0
-
 ecbuild:
   build: YES
   version: 3.6.1
   repo: ecmwf
-
-eckit:
-  build: YES
-  version: 1.16.0
-  repo: ecmwf
-
-fckit:
-  build: YES
-  version: 0.9.2
-  repo: ecmwf
-
-atlas:
-  build: YES
-  version: 0.24.1
-  repo: ecmwf
-
-madis:
-  build: YES
-  version: 4.3
 
 esma_cmake:
   build: YES
@@ -313,7 +252,7 @@ cmakemodules:
 gftl_shared:
   build: YES
   repo: Goddard-Fortran-Ecosystem
-  version: v1.3.0
+  version: v1.5.0
 
 yafyaml:
   build: YES
@@ -321,34 +260,7 @@ yafyaml:
   version: v0.5.1
 
 mapl:
-  build: NO
+  build: YES
   repo: GEOS-ESM
-  version: v2.7.3
-
-geos:
-  build: YES
-  version: 3.8.1
-
-sqlite:
-  build: YES
-  version: 3.32.3
-
-proj:
-  build: YES
-  version: 7.1.0
-  cmake_opts: "-DENABLE_CURL=OFF -DBUILD_PROJSYNC=OFF"
-
-miniconda3:
-  build: NO
-  version: 4.6.14
-
-r2d2:
-  build: NO
-  version: 1.0.0
-  is_pyvenv: YES
-
-ufswm:
-  build: NO
-  version: 1.0.0
-  is_pyvenv: YES
-  
+  esmf_version: 8.3.0b09
+  version: v2.22.0

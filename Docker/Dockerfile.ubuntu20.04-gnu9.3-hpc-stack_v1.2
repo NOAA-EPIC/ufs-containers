@@ -1,0 +1,20 @@
+FROM noaaepic/ubuntu20.04-gnu9.3:v1.2
+LABEL AUTHOR EPIC-AUS
+RUN mkdir -p /opt
+COPY --chown=builder:builder hpc-stack /home/builder/hpc-stack
+ENV DEBIAN_FRONTEND=noninteractive   
+WORKDIR /home/builder/hpc-stack
+RUN mkdir -p /home/builder/opt
+RUN yes | ./setup_modules.sh -p /home/builder/opt/hpc-modules -c config/config_custom.sh  
+
+RUN sed -i "10 a source /usr/share/lmod/6.6/init/bash" ./build_stack-part1.sh
+RUN sed -i "10 a export PATH=/usr/local/sbin:/usr/local/bin:$PATH" ./build_stack-part1.sh
+RUN sed -i "10 a export LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:$LD_LIBRARY_PATH" ./build_stack-part1.sh
+
+RUN sed -i "10 a source /usr/share/lmod/6.6/init/bash" ./build_stack-part2.sh
+RUN sed -i "10 a export PATH=/usr/local/sbin:/usr/local/bin:$PATH" ./build_stack-part2.sh
+RUN sed -i "10 a export LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:$LD_LIBRARY_PATH" ./build_stack-part2.sh
+
+RUN ./build_stack-part1.sh -p /home/builder/opt/hpc-modules -c config/config_custom.sh -y stack/stack-jenkins-ci.yaml -m 
+RUN ./build_stack-part2.sh -p /home/builder/opt/hpc-modules -c config/config_custom.sh -y stack/stack-jenkins-ci.yaml -m 
+RUN rm -rf pkg/*

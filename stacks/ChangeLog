@@ -37,3 +37,7 @@ git clone -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers
 git clone -b feature/ubuntu20.04 https://github.com/jkbk2004/hpc-stack.git
 
 docker build -f ufs-containers/Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack_v1.2 -t  ubuntu20.04-gnu9.3-hpc-stack .
+
+****************************************
+
+docker build -f ./ufs-weather-model/tests/ci/Dockerfile -t my_ort .

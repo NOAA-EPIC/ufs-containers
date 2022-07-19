@@ -16,6 +16,8 @@ docker run --rm -it noaaemc/input-data:20220414 sh
 
 cd /tmp/input-data-20220414
 
+***steps to create input-data container***
+
 git clone https://github.com/jkbk2004/fv3-input-data 
 
 cp -r input-data-20220414 fv3-input-data

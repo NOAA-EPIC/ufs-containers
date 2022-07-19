@@ -48,15 +48,21 @@ docker build -f ./ufs-weather-model/tests/ci/Dockerfile -t my_ort .
 ----------------------------------------
 ## create ufs-wm and regional workflow conda envs ##
 ----------------------------------------
+module use /work/noaa/epic-ps/tools/modulefiles
+module load miniconda/3.9.7
 
 # UFS-WM
 
 conda env create --file=ufswm.yml
 source activate ufswm
 conda list
+# to deactivate: conda deactivate
 
 # Regional Workflow
 
 conda env create --file=regional_workflow.yml
 source activate regional_workflow
 conda list
+# to deactivate: conda deactivate
+
+# view installed environments: conda info --envs

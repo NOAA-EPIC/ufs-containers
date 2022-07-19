@@ -43,3 +43,20 @@ docker build -f ufs-containers/Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack_v1
 ****************************************
 
 docker build -f ./ufs-weather-model/tests/ci/Dockerfile -t my_ort .
+
+
+----------------------------------------
+## create ufs-wm and regional workflow conda envs ##
+----------------------------------------
+
+# UFS-WM
+
+conda env create --file=ufswm.yml
+source activate ufswm
+conda list
+
+# Regional Workflow
+
+conda env create --file=regional_workflow.yml
+source activate regional_workflow
+conda list

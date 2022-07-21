@@ -28,12 +28,12 @@ WORKDIR /home/builder
 USER builder
 CMD ["/bin/bash"]
 WORKDIR /opt/tools
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+RUN sudo wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda-4.12.0
 WORKDIR /home/builder
 RUN git git clone -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers
 RUN mv ./ufs-containers/stacks/config-stack config-conda && rm -rf ufs-containers
-ENV PATH=$PATH:/opt/miniconda-3.9.7/bin
+ENV PATH=$PATH:/opt/miniconda-4.12.0/bin
 RUN conda env create --file=./config-conda/ufswm.yml
 RUN conda env create --file=./config-conda/regional_workflow.yml
 RUN conda env create --file=./config-conda/spack.yml

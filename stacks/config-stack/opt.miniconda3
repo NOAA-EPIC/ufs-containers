@@ -3,4 +3,4 @@
 ##      Python prerequisites
 ##
 module use -a /home/builder/modulefiles
-module load --ignore-cache anaconda/1.7.2.1
+module load --ignore-cache miniconda/epic-3.9.7

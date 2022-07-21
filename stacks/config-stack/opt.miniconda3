@@ -3,4 +3,4 @@
 ##      Python prerequisites
 ##
 module use -a /home/builder/modulefiles
-module load --ignore-cache miniconda/epic-3.9.7
+module load --ignore-cache miniconda/epic-4.12.0

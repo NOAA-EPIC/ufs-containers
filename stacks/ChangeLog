@@ -65,7 +65,7 @@ source activate regional_workflow
 
 # spack-stack
 
-conda enva create --file=spack.yml
+conda env create --file=spack.yml
 source activate spack
 # to deactivate: conda deactivat
 

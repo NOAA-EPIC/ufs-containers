@@ -55,14 +55,18 @@ module load miniconda/3.9.7
 
 conda env create --file=ufswm.yml
 source activate ufswm
-conda list
 # to deactivate: conda deactivate
 
 # Regional Workflow
 
 conda env create --file=regional_workflow.yml
 source activate regional_workflow
-conda list
 # to deactivate: conda deactivate
+
+# spack-stack
+
+conda enva create --file=spack.yml
+source activate spack
+# to deactivate: conda deactivat
 
 # view installed environments: conda info --envs

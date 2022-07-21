@@ -1,0 +1,7 @@
+name: spack
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - libpython-static
+  - poetry

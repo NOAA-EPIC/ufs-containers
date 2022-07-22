@@ -97,7 +97,9 @@ cd spack-stack
 the miniconda you have loaded previously
 
 ## example packages.yml here:
-/work/noaa/epic-ps/cbook/spack_stack_work/gnu_builds/srw-dev_gnu/configs/sites/orion
+/work/noaa/epic-ps/cbook/spack_stack_work/gnu_builds/srw-dev_gnu/configs/sites/orion/packages.yaml
+and
+/work/noaa/epic-ps/cbook/ufs_containers_work/ufs_wm_ci/stacks/config-stack/ufs-srw-dev.orion.gnu_packages.yaml
 
 
 source ./setup.sh

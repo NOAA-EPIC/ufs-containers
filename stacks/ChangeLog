@@ -70,3 +70,54 @@ source activate spack
 # to deactivate: conda deactivat
 
 # view installed environments: conda info --envs
+
+
+_________________________________________________
+## GNU install of spack-stack
+_________________________________________________
+
+gnu install
+
+module load git
+module use /work/noaa/epic-ps/tools/modulefiles
+module load miniconda/3.9.7
+
+git clone --recursive https://github.com/NOAA-EMC/spack-stack.git
+cd spack-stack
+
+
+## comment out intel compiler lines in configs/sites/orion/packages.yaml
+
+# comment out: line 3, line 6, lines 10-33
+
+## point to miniconda installation in configs/sites/orion/packages.yaml
+
+# replace ‘prefix’ path in line 45 (e.g.: “prefix:
+/work/noaa/epic-ps/tools/conda_installations/miniconda-3.9.7”); should match
+the miniconda you have loaded previously
+
+## example packages.yml here:
+/work/noaa/epic-ps/cbook/spack_stack_work/gnu_builds/srw-dev_gnu/configs/sites/orion
+
+
+source ./setup.sh
+
+# define vars: $SITE, $TEMPLATE, and $NAME=$TEMPLATE.$SITE
+# e.g.” $SITE = orion, $TEMPLATE = ufs-srw-dev, $NAME = ufs-srw-dev.orion
+
+echo "Creating spack-stack ${TEMPLATE} environment."
+spack stack create env --site ${SITE} --template ${TEMPLATE} --name ${NAME}
+
+echo "Activating spack-stack ${NAME} environment."
+spack env activate ./envs/${NAME}
+
+echo "Concretizing ${NAME} spack-stack environment."
+spack concretize 2>&1 | tee concretize.log
+
+echo "Installing ${NAME} spack-stack environment."
+spack install 2>&1 | tee install.log
+
+yes "y" 2>/dev/null | spack module lmod refresh
+
+spack stack setup-meta-modules
+

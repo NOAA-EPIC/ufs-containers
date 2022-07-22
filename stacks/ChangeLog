@@ -76,8 +76,6 @@ _________________________________________________
 ## GNU install of spack-stack
 _________________________________________________
 
-gnu install
-
 module load git
 module use /work/noaa/epic-ps/tools/modulefiles
 module load miniconda/3.9.7

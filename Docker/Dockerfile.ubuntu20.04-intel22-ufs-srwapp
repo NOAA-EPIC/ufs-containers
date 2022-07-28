@@ -12,34 +12,35 @@ WORKDIR /opt/ufs-srweather-app/build
 COPY build-srw.sh /opt/ufs-srweather-app/build
 RUN /bin/bash -l /opt/ufs-srweather-app/build/build-srw.sh
 RUN mkdir /opt/ufs
-#WORKDIR /opt/ufs
-#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-#RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
-#ENV PATH=$PATH:/opt/miniconda/bin
-#RUN git clone --recursive https://github.com/NOAA-GSD/contrib_miniconda3.git miniconda3
-#WORKDIR /opt/ufs/miniconda3/environments
-#RUN sed -i '3 a - conda-forge' regional_workflow.yml 
-#RUN sed -i 's/^-/  -/g' regional_workflow.yml 
-#RUN sed -i 's/^  - https/#  - https/g' regional_workflow.yml 
-#WORKDIR /opt/ufs
-#RUN conda env create -f /opt/ufs/miniconda3/environments/regional_workflow.yml 
-#RUN mkdir -p /work
-#RUN mkdir -p /contrib
-#RUN mkdir -p /lustre 
-#RUN mkdir -p /scratch1
-#RUN mkdir -p /scratch2
-#RUN mkdir -p /glade
-#RUN mkdir -p /data
-#RUN mkdir -p /scratch
-#RUN mkdir -p /lfs
-#RUN mkdir -p /u
-#RUN mkdir -p /discover
-#RUN mkdir -p /mnt
-#RUN mkdir -p /lfs1
-#RUN mkdir -p /lfs2
-#RUN mkdir -p /lfs3
-#RUN mkdir -p /lfs4
-#RUN mkdir /opt/ufs-srweather-app/container-bin
-#RUN mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin
-#COPY srw.sh-template /opt/ufs-srweather-app
-#COPY stage-srw.sh /opt/ufs-srweather-app
+WORKDIR /opt/ufs
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
+ENV PATH=$PATH:/opt/miniconda/bin
+RUN git clone --recursive https://github.com/NOAA-GSD/contrib_miniconda3.git miniconda3
+WORKDIR /opt/ufs/miniconda3/environments
+RUN sed -i '3 a - conda-forge' regional_workflow.yml 
+RUN sed -i 's/^-/  -/g' regional_workflow.yml 
+RUN sed -i 's/^  - https/#  - https/g' regional_workflow.yml 
+WORKDIR /opt/ufs
+RUN conda env create -f /opt/ufs/miniconda3/environments/regional_workflow.yml 
+RUN mkdir -p /work
+RUN mkdir -p /contrib
+RUN mkdir -p /lustre 
+RUN mkdir -p /scratch1
+RUN mkdir -p /scratch2
+RUN mkdir -p /glade
+RUN mkdir -p /data
+RUN mkdir -p /scratch
+RUN mkdir -p /lfs
+RUN mkdir -p /u
+RUN mkdir -p /discover
+RUN mkdir -p /mnt
+RUN mkdir -p /lfs1
+RUN mkdir -p /lfs2
+RUN mkdir -p /lfs3
+RUN mkdir -p /lfs4
+RUN mkdir /opt/ufs-srweather-app/container-bin
+RUN mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin
+RUN mkdir -p /opt/ufs-srweather-app/container-scripts
+COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
+COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts

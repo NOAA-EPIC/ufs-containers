@@ -1,0 +1,46 @@
+FROM noaaepic/ubuntu20.04-base:latest
+
+RUN mkdir -p /opt
+WORKDIR /opt
+RUN git clone -b feature/oneapi --recursive https://github.com/NOAA-EPIC/spack-stack.git
+WORKDIR spack-stack
+
+RUN pwd && ls -l && sed -i 's/source/./g' ./setup.sh && . ./setup.sh && spack install intel-oneapi-compilers
+RUN . ./setup.sh && spack install intel-oneapi-mpi && spack compiler list && spack find
+RUN . ./setup.sh && spack compiler add `spack location -i intel-oneapi-compilers`/compiler/latest/linux/bin/intel64 && spack compiler list
+ENV PATH="${PATH}:/opt/dist/usr/local" 
+RUN git remote update 
+RUN git pull origin feature/oneapi && cat configs/templates/ufs-srw-public-v2/spack.yaml
+RUN . ./setup.sh && \
+    spack external find cmake && \ 
+    spack external find wget && \ 
+    spack external find m4 && \
+    spack external find git && \ 
+    spack external find git-lfs && \ 
+    spack external find openssl && \ 
+    spack external find perl && \
+    spack stack create env --site ubuntu-intel --template ufs-srw-public-v2 --name ufs-srw.intel && \
+    spack env activate envs/ufs-srw.intel && \ 
+    spack concretize && \ 
+    spack install
+RUN . ./setup.sh && \
+    spack env activate envs/ufs-srw.intel && \ 
+    spack add mapl@2.22.0 && spack install
+RUN . ./setup.sh && \
+    spack env activate envs/ufs-srw.intel && \ 
+    spack add sp@2.3.3 && spack install
+RUN echo "dash dash/sh boolean false" | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+ENV SHELL=/bin/bash
+RUN ls -l /bin/sh
+COPY modules.yaml spack/etc/spack/defaults/modules.yaml 
+RUN . ./setup.sh && \
+    sed -i 's/3.9.12/3.8.10/g' envs/ufs-srw.intel/common/packages.yaml && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    . /usr/share/lmod/lmod/init/bash && \
+    spack module tcl refresh -y --delete-tree && \
+    spack env activate envs/ufs-srw.intel && \  
+    spack external find python && \
+    spack stack setup-meta-modules && \
+    sed -i 's/impi/intel-oneapi-mpi/g' /opt/spack-stack/envs/ufs-srw.intel/install/modulefiles/intel/2021.6.0/stack-intel-oneapi-mpi/2021.6.0.lua && \
+    sed -i '/prerequisite modules/a load("intel-oneapi-compilers/2022.1.0")\nprereq("intel-oneapi-compilers/2022.1.0")' envs/ufs-srw.intel/install/modulefiles/Core/stack-intel/2021.6.0.lua 

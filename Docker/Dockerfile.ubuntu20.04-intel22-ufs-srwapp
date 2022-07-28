@@ -1,54 +1,45 @@
-FROM noaaepic/ubuntu20.04-oneapi-hpc:latest
+FROM noaaepic/ubuntu20.04-intel22-ss:latest 
 LABEL AUTHOR EPIC-AUS
-RUN rm -rf /opt/hpc-stack/pkg/*
 
-#add new stuff to hpc-stack here
-WORKDIR /opt/hpc-stack
-ENV DEBIAN_FRONTEND=noninteractive   
-RUN git remote add epic https://github.com/NOAA-EPIC/hpc-stack.git
-RUN git remote update
-RUN git stash
-RUN git checkout epic/feature/ubuntu20.04 
-RUN sed -i "10 a source /usr/share/lmod/6.6/init/bash" ./build_stack.sh
-RUN sed -i "10 a export PATH=/usr/local/sbin:/usr/local/bin:$PATH" ./build_stack.sh
-RUN sed -i "10 a export LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:$LD_LIBRARY_PATH" ./build_stack.sh
-RUN git pull epic feature/ubuntu20.04
-RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_intel.sh -y stack/stack-esmf.yaml -m 
-RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_intel.sh -y stack/stack_fms.yaml -m 
-
-# Now install srw
+# install srw
 WORKDIR /opt
-RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN git clone -b release/public-v2 https://github.com/ufs-community/ufs-srweather-app.git
 WORKDIR /opt/ufs-srweather-app
 RUN ./manage_externals/checkout_externals
 RUN mkdir /opt/ufs-srweather-app/build
+RUN find /opt/spack-stack/envs/ufs-srw.intel/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g'
 WORKDIR /opt/ufs-srweather-app/build
-RUN echo "#!/bin/bash " >> /root/.bashenv \
-    && echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile \
-    && echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc 
-ENV BASH_ENV=/root/.bashenv
-RUN echo "#!/bin/bash" >> /opt/ufs-srweather-app/build/build-srw.sh \
-    && echo "source /usr/share/lmod/6.6/init/bash" >> /opt/ufs-srweather-app/build/build-srw.sh \
-    && echo "module use /opt/hpc-modules/modulefiles/stack" >> /opt/ufs-srweather-app/build/build-srw.sh \
-    && echo "module load hpc hpc-intel hpc-impi" >> /opt/ufs-srweather-app/build/build-srw.sh \
-    && echo "module load netcdf hdf5 bacio sfcio sigio nemsio w3emc esmf/v8.3.0b09 fms crtm g2 png zlib g2tmpl ip sp w3nco gfsio wgrib2 upp" >> /opt/ufs-srweather-app/build/build-srw.sh \
-    && echo "cmake -DCMAKE_INSTALL_PREFIX=/opt/ufs-srweather-app .." >> /opt/ufs-srweather-app/build/build-srw.sh \
-    && echo "make -j 8" >> /opt/ufs-srweather-app/build/build-srw.sh 
+COPY build-srw.sh /opt/ufs-srweather-app/build
 RUN /bin/bash -l /opt/ufs-srweather-app/build/build-srw.sh
 RUN mkdir /opt/ufs
-WORKDIR /opt/ufs
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
-ENV PATH=$PATH:/opt/miniconda/bin
-RUN git clone --recursive https://github.com/NOAA-GSD/contrib_miniconda3.git miniconda3
-WORKDIR /opt/ufs/miniconda3/environments
-RUN sed -i '3 a - conda-forge' regional_workflow.yml 
-RUN sed -i 's/^-/  -/g' regional_workflow.yml 
-RUN sed -i 's/^  - https/#  - https/g' regional_workflow.yml 
-WORKDIR /opt/ufs
-RUN conda env create -f /opt/ufs/miniconda3/environments/regional_workflow.yml 
-RUN mkdir -p /work
-RUN mkdir -p /contrib
-RUN mkdir -p /scratch1
-RUN mkdir -p /scratch2
+#WORKDIR /opt/ufs
+#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+#RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
+#ENV PATH=$PATH:/opt/miniconda/bin
+#RUN git clone --recursive https://github.com/NOAA-GSD/contrib_miniconda3.git miniconda3
+#WORKDIR /opt/ufs/miniconda3/environments
+#RUN sed -i '3 a - conda-forge' regional_workflow.yml 
+#RUN sed -i 's/^-/  -/g' regional_workflow.yml 
+#RUN sed -i 's/^  - https/#  - https/g' regional_workflow.yml 
+#WORKDIR /opt/ufs
+#RUN conda env create -f /opt/ufs/miniconda3/environments/regional_workflow.yml 
+#RUN mkdir -p /work
+#RUN mkdir -p /contrib
+#RUN mkdir -p /lustre 
+#RUN mkdir -p /scratch1
+#RUN mkdir -p /scratch2
+#RUN mkdir -p /glade
+#RUN mkdir -p /data
+#RUN mkdir -p /scratch
+#RUN mkdir -p /lfs
+#RUN mkdir -p /u
+#RUN mkdir -p /discover
+#RUN mkdir -p /mnt
+#RUN mkdir -p /lfs1
+#RUN mkdir -p /lfs2
+#RUN mkdir -p /lfs3
+#RUN mkdir -p /lfs4
+#RUN mkdir /opt/ufs-srweather-app/container-bin
+#RUN mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin
+#COPY srw.sh-template /opt/ufs-srweather-app
+#COPY stage-srw.sh /opt/ufs-srweather-app

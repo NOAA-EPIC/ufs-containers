@@ -11,7 +11,7 @@ puts stderr "Provides a basic python-3.9.7 installation based on miniconda for u
 }
 
 # Set this value
-set MINICONDA_PATH "/opt/miniconda-4.12.0"
+set MINICONDA_PATH "/home/builder/miniconda-4.12.0"
 
 prepend-path PATH "${MINICONDA_PATH}/bin"
 prepend-path MANPATH "${MINICONDA_PATH}/share/man"

@@ -24,7 +24,7 @@ case $i in
     ;;
 esac
 done
-#singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
+singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
 
 #get the name of the root directory where data is staged
 BINDDIR=`grep -Ri staged_data_dir= ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh | awk -F '"' '{print $2}' | awk -F '/' '{print $2}'`
@@ -33,6 +33,12 @@ BINDDIR=`grep -Ri staged_data_dir= ufs-srweather-app/regional_workflow/ush/machi
 sed -i "/RUN_CMD_UTILS/c\RUN_CMD_UTILS=\'mpirun -n \$nprocs\'" ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh 
 sed -i "/RUN_CMD_FCST/c\RUN_CMD_FCST=\'mpirun -n \$\{PE_MEMBER01\}\'" ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh 
 sed -i "/RUN_CMD_POST/c\RUN_CMD_POST=\'mpirun -n \$nprocs\'" ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh 
+
+cp ufs-srweather-app/container-scripts/srw.sh-template srw.sh
+echo $IMAGE
+echo $BINDDIR
+sed -i "s|IMAGE|$IMAGE|g" srw.sh
+sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
 
 #create links to the srw.sh script in ufs-srweather-app/bin dir
 cd ufs-srweather-app/bin
@@ -61,13 +67,9 @@ ln -s ../../srw.sh upp.x
 ln -s ../../srw.sh vcoord_gen
 
 cd ../../
-echo $IMAGE
-echo $BINDDIR
-sed -i "s|IMAGE|$IMAGE|g" srw.sh
-sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
 
 cp ufs-srweather-app/modulefiles/wflow_${MACHINE} ufs-srweather-app/modulefiles/build_${MACHINE}_intel
 sed -i "/rocoto/a module load ${COMPILER}\nmodule load ${MPI}" ufs-srweather-app/modulefiles/build_${MACHINE}_intel
 rm ufs-srweather-app/regional_workflow/modulefiles/tasks/${MACHINE}/* 
-echo "export PATH=/${BINDDIR}/ufs-srweather-app/bin:\$PATH" >> ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh
+echo "export PATH=/${PWD}/ufs-srweather-app/bin:\$PATH" >> ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh
 

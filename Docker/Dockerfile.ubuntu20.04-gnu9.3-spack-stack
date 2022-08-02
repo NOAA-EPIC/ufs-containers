@@ -1,0 +1,17 @@
+FROM noaaepic/ubuntu20.04-gnu9.3:m1.2
+LABEL AUTHOR EPIC-AUS
+
+RUN git clone -b feature/docker --recursive https://github.com/ulmononian/spack-stack.git
+WORKDIR spack-stack
+RUN source ./setup.sh && \
+    spack stack create env --site docker_gnu --template ufs-srw-dev --name ufs-srw-dev.docker_gnu && \
+    spack env activate ./envs/ufs-srw-dev.docker_gnu && \
+    spack concretize 2>&1 | tee concretize.log && \
+    spack install 2>&1 | tee install.log && \
+RUN source ./setup.sh && \
+    spack env activate envs/ufs-srw-dev.docker_gnu && \
+    spack add mapl@2.22.0 && \
+    spack install 2>&1 | tee maple_install.log && \
+    yes "y" 2>/dev/null | spack module lmod refresh && \
+    spack stack setup-meta-modules
+

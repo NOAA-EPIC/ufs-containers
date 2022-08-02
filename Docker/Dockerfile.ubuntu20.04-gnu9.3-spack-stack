@@ -7,7 +7,7 @@ RUN source ./setup.sh && \
     spack stack create env --site docker_gnu --template ufs-srw-dev --name ufs-srw-dev.docker_gnu && \
     spack env activate ./envs/ufs-srw-dev.docker_gnu && \
     spack concretize 2>&1 | tee concretize.log && \
-    spack install 2>&1 | tee install.log && \
+    spack install 2>&1 | tee install.log
 RUN source ./setup.sh && \
     spack env activate envs/ufs-srw-dev.docker_gnu && \
     spack add mapl@2.22.0 && \

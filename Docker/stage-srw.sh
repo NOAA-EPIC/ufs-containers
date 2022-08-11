@@ -29,17 +29,19 @@ singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
 #get the name of the root directory where data is staged
 BINDDIR=`grep -Ri staged_data_dir= ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh | awk -F '"' '{print $2}' | awk -F '/' '{print $2}'`
 PYTHONPATH=`which python | head -n 1 | xargs dirname`
+SINGULARITY=`which singularity`
 
 #change the RUN cmds to mpirun
 sed -i "/RUN_CMD_UTILS/c\RUN_CMD_UTILS=\'mpirun -n \$nprocs\'" ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh 
 sed -i "/RUN_CMD_FCST/c\RUN_CMD_FCST=\'mpirun -n \$\{PE_MEMBER01\}\'" ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh 
 sed -i "/RUN_CMD_POST/c\RUN_CMD_POST=\'mpirun -n \$nprocs\'" ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh 
-
+sed -i 's/rgn_/rgnl_/g' ufs-srweather-app/regional_workflow/scripts/exregional_make_grid.sh 
 cp ufs-srweather-app/container-scripts/srw.sh-template srw.sh
 echo $IMAGE
 echo $BINDDIR
 sed -i "s|IMAGE|$IMAGE|g" srw.sh
 sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
+sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
 sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/regional_workflow/scripts/exregional_make* 
 sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/regional_workflow/scripts/exregional_run* 
 

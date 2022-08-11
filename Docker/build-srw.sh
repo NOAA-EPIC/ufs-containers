@@ -8,6 +8,8 @@ module load stack-intel
 module load stack-intel-oneapi-mpi/2021.6.0
 module load netcdf-c netcdf-fortran libpng jasper
 module load sp zlib hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio crtm g2 g2tmpl ip w3nco upp gftl-shared yafyaml mapl gfsio landsfcutil nemsio nemsiogfs sfcio sigio w3emc wgrib2
+mkdir -p build
+cd build
 cmake -DCMAKE_INSTALL_PREFIX=/opt/ufs-srweather-app ..
 make -j 8
 

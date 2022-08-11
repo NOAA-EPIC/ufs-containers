@@ -12,7 +12,7 @@ docker tag ubuntu20.04-gnu9.3-hpc-stack noaaepic/ubuntu20.04-gnu9.3-hpc-stack:v1
 
 docker push noaaepic/ubuntu20.04-gnu9.3-hpc-stack:v1.2
 
-docker run --rm -it noaaemc/input-data:20220414 sh
+docker run --rm -it noaaepic/input-data:20220414 sh
 
 cd /tmp/input-data-20220414
 

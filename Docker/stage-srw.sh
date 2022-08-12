@@ -42,8 +42,7 @@ echo $BINDDIR
 sed -i "s|IMAGE|$IMAGE|g" srw.sh
 sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
-sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/regional_workflow/scripts/exregional_make* 
-sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/regional_workflow/scripts/exregional_run* 
+sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/regional_workflow/scripts/exregional_* 
 
 #create links to the srw.sh script in ufs-srweather-app/bin dir
 cd ufs-srweather-app/bin

@@ -147,8 +147,8 @@ landsfcutil:
 
 nemsio:
   build: YES
-  version: v2.5.2
-  install_as: 2.5.2
+  version: v2.5.4
+  install_as: 2.5.4
   is_nceplib: YES
 
 nemsiogfs:
@@ -230,8 +230,8 @@ grib_util:
 
 ncio:
   build: YES
-  version: v1.0.0
-  install_as: 1.0.0
+  version: v1.1.2
+  install_as: 1.1.2
   is_nceplib: YES
 
 ecbuild:

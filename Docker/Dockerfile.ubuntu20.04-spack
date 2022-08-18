@@ -13,7 +13,7 @@ RUN pwd && ls -l /bin/sh && sed -i 's/source/./g' ./setup.sh && . ./setup.sh && 
     spack compiler rm gcc@9.4.0
 ENV PATH="${PATH}:/usr/local" 
 ADD ubuntu-intel.tar.gz /opt/spack-stack/configs/sites
-RUN cp /root/.spack/linux/compilers.yaml /opt/spack-stack/configs/sites && ls -l /opt/spack-stack/configs/sites && ls -l /bin/sh
+RUN cp /root/.spack/linux/compilers.yaml /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /bin/sh
 RUN cat configs/templates/ufs-srw-public-v2/spack.yaml && \
     . ./setup.sh && \
     spack external find cmake && \ 

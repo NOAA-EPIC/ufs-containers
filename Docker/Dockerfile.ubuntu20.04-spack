@@ -12,10 +12,28 @@ RUN pwd && ls -l /bin/sh && sed -i 's/source/./g' ./setup.sh && . ./setup.sh && 
     spack compiler add `spack location -i intel-oneapi-compilers`/compiler/latest/linux/bin/intel64 && spack compiler list && \
     spack compiler rm gcc@9.4.0
 ENV PATH="${PATH}:/usr/local" 
-ADD ubuntu-intel.tar.gz /opt/spack-stack/configs/sites
-RUN cp /root/.spack/linux/compilers.yaml /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /bin/sh
+RUN cp /root/.spack/linux/compilers.yaml /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /opt/spack-stack/configs/sites/ubuntu-intel && \
+    echo "config:" > /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
+    echo "  build_jobs: 8" >> /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
+    echo "modules:" > /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "  default:" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "    enable::" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "    - lmod" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "packages:" > /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  all:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    compiler:: [intel@2021.6.0]" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    providers:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      mpi:: [intel-oneapi-mpi@2021.6.0]" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  mpi:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    buildable: False" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  intel-oneapi-mpi:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    externals:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    - spec: intel-oneapi-mpi@2021.6.0" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      modules:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      - impi/2021.6.0" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml
 RUN cat configs/templates/ufs-srw-public-v2/spack.yaml && \
     . ./setup.sh && \
+    spack compiler add && \ 
     spack external find cmake && \ 
     spack external find wget && \ 
     spack external find m4 && \
@@ -35,7 +53,7 @@ RUN . ./setup.sh && \
     spack env activate envs/ufs-srw.intel && \ 
     spack add sp@2.3.3 && spack install
 ENV SHELL=/bin/bash
-COPY modules.yaml spack/etc/spack/defaults/modules.yaml 
+#COPY modules.yaml spack/etc/spack/defaults/modules.yaml 
 RUN . ./setup.sh && \
     /bin/bash && \
     sed -i 's/3.9.12/3.8.10/g' envs/ufs-srw.intel/common/packages.yaml && \

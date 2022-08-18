@@ -13,7 +13,7 @@ RUN pwd && ls -l /bin/sh && sed -i 's/source/./g' ./setup.sh && . ./setup.sh && 
     spack compiler rm gcc@9.4.0
 ENV PATH="${PATH}:/usr/local" 
 RUN cp /root/.spack/linux/compilers.yaml /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /opt/spack-stack/configs/sites/ubuntu-intel && \
-    loc=`find /opt/spack-stack/spack/opt/spack/ -iname intel-oneapi-mpi* | head -n 1`
+    loc=`find /opt/spack-stack/spack/opt/spack/ -iname intel-oneapi-mpi* | head -n 1` && \
     echo "config:" > /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
     echo "  build_jobs: 8" >> /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
     echo "modules:" > /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \

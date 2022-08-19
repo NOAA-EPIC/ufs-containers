@@ -203,8 +203,8 @@ wrf_io:
 
 bufr:
   build: YES
-  version: bufr_v11.5.0
-  install_as: 11.5.0
+  version: bufr_v11.7.0
+  install_as: 11.7.0
   is_nceplib: YES
 
 wgrib2:

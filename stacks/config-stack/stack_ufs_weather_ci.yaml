@@ -152,7 +152,7 @@ nemsio:
   is_nceplib: YES
 
 nemsiogfs:
-  build: YES
+  build: NO
   version: v2.5.3
   install_as: 2.5.3
   is_nceplib: YES

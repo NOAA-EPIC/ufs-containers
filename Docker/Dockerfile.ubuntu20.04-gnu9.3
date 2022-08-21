@@ -11,10 +11,10 @@ RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
 RUN dpkg-reconfigure --frontend noninteractive tzdata 
 RUN apt -y install build-essential gfortran git openmpi-bin vim cmake python3 wget libexpat1-dev lmod gdb
 RUN apt -y install bc && apt -y install time
-RUN apt-get install -yq libtiff-dev
+RUN apt-get install -yq libtiff-dev 
 RUN apt-get install -yq git-lfs
 RUN apt install -y python3-distutils
-RUN apt install -y python3-pip
+RUN apt install -y python3-pip libnetcdff-dev
 RUN pip install --upgrade cmake
 RUN apt install wget
 RUN apt-get install -y --no-install-recommends apt-utils

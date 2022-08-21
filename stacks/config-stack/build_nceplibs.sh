@@ -26,7 +26,7 @@ python=$(echo $HPC_PYTHON | sed 's/\//-/g')
 # ---------- to install thru docker ---------------------
 # ---------- generally netcdf loading issue -------------
 # ---------- external netcdf recommended ----------------
-export HPCMOD_PRE=/home/jong/CI/cameron/temp1/hpc-modules
+export HPCMOD_PRE=/opt/hpc-modules
 # -------------------------------------------------------
       
 if $MODULES; then

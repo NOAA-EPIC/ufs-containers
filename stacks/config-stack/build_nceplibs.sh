@@ -101,7 +101,7 @@ if $MODULES; then
         module load hpc-$HPC_MPI
         using_mpi=YES
       fi
-      module load netcdf
+      #module load netcdf
       ;;
   esac
 
@@ -117,7 +117,7 @@ if $MODULES; then
       module load hpc
       module load hpc-gnu
       #-------------for docker--------------------------------
-      module load netcdf
+      #module load netcdf
       ;;
     wgrib2)
       #-------------for docker--------------------------------

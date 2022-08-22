@@ -1,5 +1,5 @@
 #FROM noaaepic/ubuntu20.04-spack:release-public-v2
-FROM noaaepic/ubuntu20.04-spack:devlop
+FROM noaaepic/ubuntu20.04-spack:latest
 LABEL AUTHOR EPIC-AUS
 
 # install srw

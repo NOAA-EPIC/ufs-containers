@@ -77,7 +77,7 @@ RUN . ./setup.sh && spack module tcl refresh -y --delete-tree && \
     module use /opt/spack-stack/envs/ufs-srw.intel/install/modulefiles/Core &&  module avail && \
     module load stack-intel stack-intel-oneapi-mpi && \
     module avail && module load bacio crtm g2 g2tmpl gfsio gftl-shared ip jasper landsfcutil libpng sfcio sigio sp stack-python w3nco wgrib2 yafyaml zlib esmf fms/2022.01 hdf5 mapl nemsio nemsiogfs netcdf-c netcdf-fortran parallelio upp w3emc && \
-     module list && echo "export PATH=$PATH" > locenvs && echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> locenvs && \
-     echo "export MODULEPATH=$MODULEPATH" >> locenvs && echo "export MODULEPATH_ROOT=$MODULEPATH_ROOT" >> locenvs && \
-     echo "export MODULESHOME=$MODULESHOME" >> locenvs
+     module list && echo "env PATH=/opt/ufs-srweather-app/container-bin:$PATH" > locenvs && echo "ENV LD_LIBRARY_PATH=/opt/ufs-srweather-app/lib:$LD_LIBRARY_PATH" >> locenvs && \
+     echo "ENV MODULEPATH=$MODULEPATH" >> locenvs && \
+     echo "ENV MODULESHOME=$MODULESHOME" >> locenvs
 #    echo "DONE"

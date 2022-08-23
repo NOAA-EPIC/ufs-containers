@@ -3,11 +3,12 @@ LABEL AUTHOR EPIC-AUS
 RUN mkdir -p /opt
 WORKDIR /opt
 ENV DEBIAN_FRONTEND=noninteractive   
-RUN git clone --recursive -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers.git
-WORKDIR ufs-containers/stacks/hpc-stack
-RUN yes | ./setup_modules.sh -p /opt/hpc-modules -c ../config-stack/config_custom.sh
+RUN git clone -b feature/ubuntu20.04 https://github.com/jkbk2004/hpc-stack.git
+WORKDIR hpc-stack
+RUN yes | ./setup_modules.sh -p /opt/hpc-modules -c config/config_custom.sh  
 RUN sed -i "10 a source /usr/share/lmod/6.6/init/bash" ./build_stack.sh
 RUN sed -i "10 a export PATH=/usr/local/sbin:/usr/local/bin:$PATH" ./build_stack.sh
 RUN sed -i "10 a export LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:$LD_LIBRARY_PATH" ./build_stack.sh
-RUN cp ../config-stack/build_nceplibs.sh ./libs; ./build_stack.sh -p /opt/hpc-modules -c ../config-stack/config_custom.sh -y ../config-stack/stack_ufs_weather_ci.yaml -m 
+RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack-esmf.yaml -m 
+RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack_mapl.yaml -m 
 RUN rm -rf pkg/*

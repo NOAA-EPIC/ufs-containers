@@ -44,5 +44,4 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     mkdir -p /opt/ufs-srweather-app/container-scripts     
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
 COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts
-ENV FI_PROVIDER_PATH=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.6.0-oeymd7y2mkbdxex2tzf7354yhwpnvhoq/mpi/2021.6.0/libfabric/lib/prov:/usr/lib64/libfabric
 

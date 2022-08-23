@@ -4,8 +4,8 @@ LABEL AUTHOR EPIC-AUS
 
 # install srw
 WORKDIR /opt
-#RUN git clone -b release/public-v2 https://github.com/ufs-community/ufs-srweather-app.git
-RUN git clone -b develop https://github.com/ufs-community/ufs-srweather-app.git
+RUN git clone -b release/public-v2 https://github.com/ufs-community/ufs-srweather-app.git
+#RUN git clone -b develop https://github.com/ufs-community/ufs-srweather-app.git
 WORKDIR /opt/ufs-srweather-app
 COPY build-srw.sh /opt/ufs-srweather-app
 RUN ./manage_externals/checkout_externals && \

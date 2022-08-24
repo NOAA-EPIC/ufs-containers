@@ -39,8 +39,10 @@ sed -i 's/rgn_/rgnl_/g' ufs-srweather-app/regional_workflow/scripts/exregional_m
 cp ufs-srweather-app/container-scripts/srw.sh-template srw.sh
 echo $IMAGE
 echo $BINDDIR
+LOCDIR=`echo $PWD | awk -F "/" '{print $2}'`
 sed -i "s|IMAGE|$IMAGE|g" srw.sh
 sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
+sed -i "s|LOCDIR|$LOCDIR|g" srw.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
 sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/regional_workflow/scripts/exregional_* 
 
@@ -74,6 +76,7 @@ cd ../../
 
 cp ufs-srweather-app/modulefiles/wflow_${MACHINE} ufs-srweather-app/modulefiles/build_${MACHINE}_intel
 sed -i "/rocoto/a module load ${COMPILER}\nmodule load ${MPI}" ufs-srweather-app/modulefiles/build_${MACHINE}_intel
+sed -i "/rocoto/a module load ${COMPILER}\nmodule load ${MPI}" ufs-srweather-app/modulefiles/wflow_${MACHINE}
 rm ufs-srweather-app/regional_workflow/modulefiles/tasks/${MACHINE}/* 
 echo "export PATH=/${PWD}/ufs-srweather-app/bin:\$PATH" >> ufs-srweather-app/regional_workflow/ush/machine/${MACHINE}.sh
 

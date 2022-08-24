@@ -13,7 +13,7 @@ cd spack-stack
 
 if [[ ${SITE} == orion ]] ; then
     module purge
-    module use /work/noaa/epic-ps/tools/modulefiles
+    module use /work/noaa/da/role-da/spack-stack/modulefiles
     module load miniconda/3.9.7
     module load git
 elif [[ ${SITE} == cheyenne ]] ; then
@@ -25,17 +25,14 @@ elif [[ ${SITE} == cheyenne ]] ; then
 elif [[ ${SITE} =~ noaa- ]] ; then
     # NOAA Parallel Works
     module unuse /opt/cray/craype/default/modulefiles
-    module unuse /opt/cray/modulefiles
+    module unuse opt/cray/modulefiles
     export PATH="${PATH}:/contrib/spack-stack/apps/utils/bin"
     module use /contrib/spack-stack/modulefiles/core
-    #module load miniconda/3.9.7
-    module load miniconda/py39_4.11.0
-    module load git
-    module --ignore_cache load module-git
+    module load miniconda/3.9.7
 elif [[ ${SITE} == hera ]] ; then
     module purge
-    module use /scratch1/BMC/gsd-hpcs/Dom.Heinzeller/spack-stack/modulefiles
-    module load miniconda/3.9.7
+    module use /scratch1/NCEPDEV/jcsda/jedipara/spack-stack/modulefiles
+    module load miniconda/3.9.12
 else
     # Jet, ...
     echo "SITE=${SITE} not yet supported. Please visit https://spack-stack.readthedocs.io/en/latest/Platforms.html#pre-configured-sites."

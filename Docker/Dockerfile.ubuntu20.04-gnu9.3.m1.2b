@@ -1,0 +1,39 @@
+FROM ubuntu:20.04
+LABEL AUTHOR EPIC-AUS
+RUN mkdir -p /opt
+WORKDIR /opt
+ENV DEBIAN_FRONTEND=noninteractive   
+RUN apt update -y --allow-unauthenticated
+RUN apt-get update -yq --allow-unauthenticated
+RUN apt install -y lmod
+RUN apt install -y tzdata
+RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime   
+RUN dpkg-reconfigure --frontend noninteractive tzdata 
+RUN apt -y install build-essential gfortran git openmpi-bin vim cmake python3 wget libexpat1-dev lmod gdb
+RUN apt -y install bc && apt -y install time
+RUN apt-get install -yq libtiff-dev
+RUN apt-get install -yq git-lfs
+RUN apt install -y python3-distutils
+RUN apt install -y python3-pip
+RUN pip install --upgrade cmake
+RUN apt install wget
+RUN apt-get install -y --no-install-recommends apt-utils
+RUN apt-get install -yq m4
+RUN apt-get install -y libopenblas-dev
+RUN apt-get install -y zip unzip
+RUN apt-get update &&   apt-get install -y openssl libssl-dev libcurl4-openssl-dev
+RUN echo "dash dash/sh boolean false" | debconf-set-selections
+RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
+RUN ln -s /usr/bin/python3 /usr/bin/python
+#RUN groupadd -g 1002 builder && useradd -u 1008 -g 1002 -ms /bin/bash builder
+WORKDIR /home/builder
+#USER builder
+CMD ["/bin/bash"]
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /home/builder/miniconda-4.12.0
+RUN git clone -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers
+RUN mv ./ufs-containers/stacks/config-stack config-conda && rm -rf ufs-containers
+ENV PATH=$PATH:/home/builder/miniconda-4.12.0/bin
+RUN conda env create --file=./config-conda/ufswm.yml
+RUN conda env create --file=./config-conda/regional_workflow.yml
+RUN conda env create --file=./config-conda/spack.yml

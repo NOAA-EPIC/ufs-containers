@@ -1,0 +1,46 @@
+# ufs-tools: semi-auto rt test run scripts
+Example rt runs (note to make sh script executable first):
+* ./rt-cheyenne_gnu.sh -f feature/stoch_spp -u https://github.com/JeffBeck-NOAA/ufs-weather-model -e rt-982
+* ./rt-orion_intel.sh -f feature/stoch_spp -u https://github.com/JeffBeck-NOAA/ufs-weather-model -e rt-982
+
+# install spack-stack miniconda
+
+cd /work/noaa/epic-ps/tools/conda_installations
+mkdir -p miniconda-3.9.7/src
+cd miniconda-3.9.7/src
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+sh Miniconda3-latest-Linux-x86_64.sh -u
+
+# install in /work/noaa/epic-ps/tools/conda_installations/miniconda-3.9.7
+# do not have the installer initialize Miniconda3 by running conda init
+
+# create miniconda/3.9.7 module file in modulefiles directory (e.g,
+/work/noaa/epic-ps/tools/modulefiles) using template
+# https://github.com/NOAA-EMC/spack-stack/blob/develop/doc/modulefile_templates/miniconda
+# modify line 14 'set MINICONDA_PATH' to point to your miniconda install 
+# (e.g.: set MINICONDA_PATH
+"/work/noaa/epic-ps/tools/conda_installations/miniconda-3.9.7")
+
+module use /work/noaa/epic-ps/tools/modulefiles
+module load miniconda/3.9.7
+
+# ensure loaded miniconda points to your new miniconda install
+
+which python3
+
+# install two packages required for building Python modules with spack using
+conda
+
+eval "$(/work/noaa/epic-ps/tools/conda_installations/miniconda-3.9.7/bin/conda shell.bash hook)"
+conda install -c conda-forge libpython-static
+conda install poetry
+
+# test package installation; successful if silent
+python3 -c "import poetry"
+
+#log out to forget about the conda environment
+
+# to use
+
+module use /work/noaa/epic-ps/tools/modulefiles
+module load miniconda/3.9.7 

@@ -1,0 +1,123 @@
+git clone --recursive -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers
+
+cd ufs-containers
+
+docker build -f Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack.v1.2 -t  ubuntu20.04-gnu9.3-hpc-stack .
+
+docker login --username noaaepic
+
+docker images
+
+docker tag ubuntu20.04-gnu9.3-hpc-stack noaaepic/ubuntu20.04-gnu9.3-hpc-stack:v1.2
+
+docker push noaaepic/ubuntu20.04-gnu9.3-hpc-stack:v1.2
+
+docker run --rm -it noaaepic/input-data:20220414 sh
+
+cd /tmp/input-data-20220414
+
+***steps to create input-data container***
+
+git clone https://github.com/jkbk2004/fv3-input-data 
+
+cp -r input-data-20220414 fv3-input-data
+
+cd fv3-input-data
+
+docker build -t my_image .
+
+docker tag my_image noaaepic/input-data:20220414
+
+docker login --username noaaepic
+
+docker push noaaepic/input-data:20220414
+
+****************************************
+
+git clone -b ufs-wm-ci https://github.com/NOAA-EPIC/ufs-containers
+
+git clone -b feature/ubuntu20.04 https://github.com/jkbk2004/hpc-stack.git
+
+docker build -f ufs-containers/Docker/Dockerfile.ubuntu20.04-gnu9.3-hpc-stack_v1.2 -t  ubuntu20.04-gnu9.3-hpc-stack .
+
+****************************************
+
+docker build -f ./ufs-weather-model/tests/ci/Dockerfile -t my_ort .
+
+
+----------------------------------------
+## create ufs-wm and regional workflow conda envs ##
+----------------------------------------
+module use /work/noaa/epic-ps/tools/modulefiles
+module load miniconda/3.9.7
+
+# UFS-WM
+
+conda env create --file=ufswm.yml
+source activate ufswm
+# to deactivate: conda deactivate
+
+# Regional Workflow
+
+conda env create --file=regional_workflow.yml
+source activate regional_workflow
+# to deactivate: conda deactivate
+
+# spack-stack
+
+conda env create --file=spack.yml
+source activate spack
+# to deactivate: conda deactivat
+
+# view installed environments: conda info --envs
+
+
+_________________________________________________
+## GNU install of spack-stack
+_________________________________________________
+
+module load git
+module use /work/noaa/epic-ps/tools/modulefiles
+module load miniconda/3.9.7
+
+git clone --recursive https://github.com/NOAA-EMC/spack-stack.git
+cd spack-stack
+
+
+## comment out intel compiler lines in configs/sites/orion/packages.yaml
+
+# comment out: line 3, line 6, lines 10-33
+
+## point to miniconda installation in configs/sites/orion/packages.yaml
+
+# replace ‘prefix’ path in line 45 (e.g.: “prefix:
+/work/noaa/epic-ps/tools/conda_installations/miniconda-3.9.7”); should match
+the miniconda you have loaded previously
+
+## example packages.yml here:
+/work/noaa/epic-ps/cbook/spack_stack_work/gnu_builds/srw-dev_gnu/configs/sites/orion/packages.yaml
+and
+/work/noaa/epic-ps/cbook/ufs_containers_work/ufs_wm_ci/stacks/config-stack/ufs-srw-dev.orion.gnu_packages.yaml
+
+
+source ./setup.sh
+
+# define vars: $SITE, $TEMPLATE, and $NAME=$TEMPLATE.$SITE
+# e.g.” $SITE = orion, $TEMPLATE = ufs-srw-dev, $NAME = ufs-srw-dev.orion
+
+echo "Creating spack-stack ${TEMPLATE} environment."
+spack stack create env --site ${SITE} --template ${TEMPLATE} --name ${NAME}
+
+echo "Activating spack-stack ${NAME} environment."
+spack env activate ./envs/${NAME}
+
+echo "Concretizing ${NAME} spack-stack environment."
+spack concretize 2>&1 | tee concretize.log
+
+echo "Installing ${NAME} spack-stack environment."
+spack install 2>&1 | tee install.log
+
+yes "y" 2>/dev/null | spack module lmod refresh
+
+spack stack setup-meta-modules
+

@@ -1,17 +1,14 @@
-#FROM noaaepic/ubuntu20.04-spack:release-public-v2
-FROM noaaepic/ubuntu20.04-spack:latest
+FROM noaaepic/ubuntu20.04-spack-stack:ufs-srw-release-v2
 LABEL AUTHOR EPIC-AUS
 
 # install srw
 WORKDIR /opt
-RUN git clone -b release/public-v2 https://github.com/ufs-community/ufs-srweather-app.git
-#RUN git clone -b develop https://github.com/ufs-community/ufs-srweather-app.git
+RUN mv /opt/spack-stack/ufs-srweather-app . && mkdir /opt/ufs-srweather-app/build
 WORKDIR /opt/ufs-srweather-app
-COPY build-srw.sh /opt/ufs-srweather-app
-RUN ./manage_externals/checkout_externals && \
-    mkdir /opt/ufs-srweather-app/build && \
-    /bin/bash -l /opt/ufs-srweather-app/build-srw.sh && \
-    mkdir /opt/ufs
+RUN ./manage_externals/checkout_externals
+WORKDIR /opt/ufs-srweather-app/build
+
+RUN source /root/.bashenv && cmake -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
 WORKDIR /opt/ufs
 ENV PATH=$PATH:/opt/miniconda/bin
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
@@ -44,4 +41,6 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     mkdir -p /opt/ufs-srweather-app/container-scripts     
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
 COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts
+RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
+RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
 

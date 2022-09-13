@@ -1,4 +1,5 @@
-FROM noaaepic/ubuntu20.04-spack-stack:ufs-srw-release-v2
+ARG srw_branch=develop
+FROM noaaepic/ubuntu20.04-spack-stack:$srw_branch
 LABEL AUTHOR EPIC-AUS
 
 # install srw

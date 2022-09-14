@@ -1,0 +1,18 @@
+ARG srw_branch=develop
+FROM noaaepic/ubuntu20.04-intel-spack-ufswm:develop
+LABEL AUTHOR EPIC-AUS
+
+# install srw
+WORKDIR /opt
+RUN git clone --recursive https://github.com/ufs-community/ufs-weather-model && mkdir -p /opt/ufs-weather-model/build
+WORKDIR /opt/ufs-weather-model/build
+
+#The whole spack stack is loaded into the environment via /root/.bashenv 
+#The cmake command is set for running the p8 benchmark, but could be configured for others
+RUN source /root/.bashenv && \
+    cmake -DAPP=S2SWA -DCCPP_SUITES=FV3_GFS_v17_coupled_p8,FV3_GFS_cpld_rasmgshocnsstnoahmp_ugwp .. &&\
+#This is hacky, but for some reason cmake is not getting the esmf library named right and not adding
+#the libpnetcdf library to the link. I am directly making those changes in the link.txt file before building
+    sed -i 's/lESMF/lesmf/g' CMakeFiles/ufs_model.dir/link.txt && \
+    sed -i "s|$|$parallel_netcdf_ROOT/lib/libpnetcdf.a|g" CMakeFiles/ufs_model.dir/link.txt && \
+    make -j 12

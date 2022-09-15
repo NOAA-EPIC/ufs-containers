@@ -1,8 +1,9 @@
-ARG srw_branch=develop
-FROM noaaepic/ubuntu20.04-intel-spack-ufswm:develop
+ARG env_name=develop
+
+FROM noaaepic/ubuntu20.04-intel-spack-ufswm:$env_name
 LABEL AUTHOR EPIC-AUS
 
-# install srw
+# install ufswm 
 WORKDIR /opt
 RUN git clone --recursive https://github.com/ufs-community/ufs-weather-model && mkdir -p /opt/ufs-weather-model/build
 WORKDIR /opt/ufs-weather-model/build

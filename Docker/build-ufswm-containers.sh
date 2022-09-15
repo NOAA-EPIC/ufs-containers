@@ -3,7 +3,7 @@ set +x
 
 env_name=$1
 
-docker build -f Dockerfile.ubuntu20.04-base-intel -t noaaepic/ubuntu20.04-base-intel:latest .
+docker build -f Dockerfile.ubuntu20.04-base-intel -t noaaepic/ubuntu20.04-base-intel:$env_name .
 docker build -f Dockerfile.ubuntu20.04-intel-spack-ufswm -t noaaepic/ubuntu20.04-intel-spack-ufswm:$env_name --build-arg env_name=$env_name .
 #the last step of the build for ubuntu20.04-spack is to get the paths and LD_LIBRARY stuff written to a file
 #copy out that file so that we can set those paths for anyone executing the container later

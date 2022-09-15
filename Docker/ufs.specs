@@ -4,7 +4,7 @@
   - hdf5@1.10.6
   - netcdf-c@4.7.4
   - netcdf-fortran@4.5.4
-  - parallelio@2.5.3
+  - parallelio@2.5.3~shared
   - esmf@8.3.0b09
   - fms@2022.01
   - bacio@2.4.1

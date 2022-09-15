@@ -1,4 +1,4 @@
-FROM noaaepic/ubuntu20.04-base-intel22:latest
+FROM noaaepic/ubuntu20.04-base-intel:latest
 WORKDIR /opt/spack-stack
 
 ARG env_name=develop

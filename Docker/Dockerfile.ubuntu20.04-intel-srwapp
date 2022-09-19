@@ -41,7 +41,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
     mkdir -p /opt/ufs-srweather-app/container-scripts     
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
-COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts
+COPY stage-srw-develop.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
 RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
 RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
 

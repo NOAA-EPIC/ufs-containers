@@ -39,6 +39,11 @@ RUN . ./setup.sh && spack stack create env --site ubuntu-intel --template empty 
     spack concretize && \ 
     spack install
 ENV SHELL=/bin/bash
+RUN . ./setup.sh && spack env activate envs/$env_name && \ 
+    spack add ecmwf-atlas@0.27.0~trans gsl-lite boost@1.72.0 eckit fckit udunits intel-mkl parallelio~shared && \
+    spack install
+RUN . ./setup.sh && spack env activate envs/$env_name && \ 
+    spack add ecbuild intel-mkl && spack install
 RUN . ./setup.sh && source /usr/share/lmod/lmod/init/bash && \
     spack env activate envs/$env_name && \ 
     ln -s /usr/bin/python3 /usr/bin/python && \
@@ -66,4 +71,8 @@ RUN source /root/.bashenv && module list && echo "env PATH=/opt/ufs-srweather-ap
     echo "ENV LMOD_DIR=$LMOD_DIR" >> locenvs && \
     echo "ENV MODULESHOME=$MODULESHOME" >> locenvs && \
     cp ~/.bashenv /opt/spack-stack
-
+WORKDIR /opt
+RUN git clone -b feature/soca https://github.com/jcsda/ufs-bundle.git
+WORKDIR /opt/ufs-bundle
+#RUN mkdir build && cd build && export PIO_ROOT=$parallelio_ROOT && . ~/.bashenv &&\
+#    ecbuild -DBUILD_TESTING=TRUE -DCMAKE_C_COMPILER=mpiicc -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_Fortran_COMPILER=mpiifort -DMPI_CXX_LINK_FLAGS:STRING="-Wl,--copy-dt-needed-entries" -DCMAKE_BUILD_TYPE=DEBUG -DUFS_APP=NG-GODAS .. && make -j 8

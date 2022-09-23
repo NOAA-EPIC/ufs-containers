@@ -65,5 +65,10 @@ RUN source /root/.bashenv && module list && echo "env PATH=/opt/ufs-srweather-ap
     echo "ENV LMOD_CMD=$LMOD_CMD" >> locenvs && \
     echo "ENV LMOD_DIR=$LMOD_DIR" >> locenvs && \
     echo "ENV MODULESHOME=$MODULESHOME" >> locenvs && \
+    echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> locenvs && \
+    echo "ENV ESMFMKFILE=$ESMFMKFILE" >> locenvs && \
+    echo "ENV CC=$CC" >> locenvs && \
+    echo "ENV CXX=$CXX" >> locenvs && \
+    echo "ENV FC=$FC" >> locenvs && \
     cp ~/.bashenv /opt/spack-stack
 

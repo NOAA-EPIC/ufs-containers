@@ -2,10 +2,10 @@
 set +x
 
 #
-env_name=$1
+branch_name=$1
 
 #
-git clone -b $1 https://github.com/clouden90/ufs-htf.git
+git clone -b ${branch_name} https://github.com/clouden90/ufs-htf.git
 
 #
 cd ufs-htf

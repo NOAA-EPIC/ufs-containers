@@ -20,7 +20,7 @@ cat locenvs
 #remove the temporary docker container so it can be re-created next time this script is run
 docker rm  -f spack-stack
 #Build the final container with the WM and environment variables (path, LD_LIBRARY_PATH, etc.) set for use with singularity
-docker build -f Dockerfile.tmp -t noaaepic/ubuntu20.04-intel-srwapp:$env_name --build-arg env_name=$env_name .
+docker build --no-cache -f Dockerfile.tmp -t noaaepic/ubuntu20.04-intel-srwapp:$env_name --build-arg env_name=$env_name .
 rm Dockerfile.tmp
 #Convert the finished docker container into a singularity container for use on HPC systems. 
 

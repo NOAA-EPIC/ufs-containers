@@ -27,14 +27,14 @@ done
 singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
 
 #get the name of the root directory where data is staged
-BINDDIR=`grep -Ri staged_data_dir= ufs-srweather-app/ush/machine/${MACHINE}.sh | awk -F '"' '{print $2}' | awk -F '/' '{print $2}'`
+BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${MACHINE}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
 PYTHONPATH=`which python | head -n 1 | xargs dirname`
 SINGULARITY=`which singularity`
 
 #change the RUN cmds to mpirun
-sed -i "/RUN_CMD_UTILS/c\RUN_CMD_UTILS=\'mpirun -n \$nprocs\'" ufs-srweather-app/ush/machine/${MACHINE}.sh 
-sed -i "/RUN_CMD_FCST/c\RUN_CMD_FCST=\'mpirun -n \$\{PE_MEMBER01\}\'" ufs-srweather-app/ush/machine/${MACHINE}.sh 
-sed -i "/RUN_CMD_POST/c\RUN_CMD_POST=\'mpirun -n \$nprocs\'" ufs-srweather-app/ush/machine/${MACHINE}.sh 
+sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpirun -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
 sed -i 's/rgn_/rgnl_/g' ufs-srweather-app/scripts/exregional_make_grid.sh 
 cp ufs-srweather-app/container-scripts/srw.sh-template srw.sh
 echo $IMAGE
@@ -72,11 +72,13 @@ ln -s ../../srw.sh ufs_model
 ln -s ../../srw.sh upp.x
 ln -s ../../srw.sh vcoord_gen
 
-cd ../../
+cd ..
+cp -r bin exec
+cd ..
 
 cp ufs-srweather-app/modulefiles/wflow_${MACHINE} ufs-srweather-app/modulefiles/build_${MACHINE}_intel
 sed -i "/rocoto/a module load ${COMPILER}\nmodule load ${MPI}" ufs-srweather-app/modulefiles/build_${MACHINE}_intel
 sed -i "/rocoto/a module load ${COMPILER}\nmodule load ${MPI}" ufs-srweather-app/modulefiles/wflow_${MACHINE}
 rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
-echo "export PATH=/${PWD}/ufs-srweather-app/bin:\$PATH" >> ufs-srweather-app/ush/machine/${MACHINE}.sh
+sed -i "2 i export PATH=/${PWD}/ufs-srweather-app/bin:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
 

@@ -1,5 +1,5 @@
 ARG srw_branch=develop
-FROM noaaepic/ubuntu20.04-spack-stack:$srw_branch
+FROM noaaepic/ubuntu20.04-intel-spack:$srw_branch
 LABEL AUTHOR EPIC-AUS
 
 # install srw

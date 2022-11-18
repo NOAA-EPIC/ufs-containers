@@ -77,8 +77,9 @@ cp -r bin exec
 cd ..
 
 cp ufs-srweather-app/modulefiles/wflow_${MACHINE} ufs-srweather-app/modulefiles/build_${MACHINE}_intel
-sed -i "/rocoto/a module load ${COMPILER}\nmodule load ${MPI}" ufs-srweather-app/modulefiles/build_${MACHINE}_intel
-sed -i "/rocoto/a module load ${COMPILER}\nmodule load ${MPI}" ufs-srweather-app/modulefiles/wflow_${MACHINE}
+sed -i "/rocoto/a load(\"${COMPILER}\")\nload(\"${MPI}\")" ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
+sed -i "/rocoto/a load(\"${COMPILER}\")\nload(\"${MPI}\")" ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
+
 rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
 sed -i "2 i export PATH=/${PWD}/ufs-srweather-app/bin:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
 

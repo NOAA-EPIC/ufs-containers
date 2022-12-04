@@ -44,6 +44,7 @@ ENV SHELL=/bin/bash
 #Set up the meta-modules
 RUN . ./setup.sh && source /usr/share/lmod/lmod/init/bash && \
     spack env activate envs/$local_env_name && \ 
+    spack add parallel-netcdf && spack install && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     spack stack setup-meta-modules && \
 #The initial version of parallelio builds with shared libs, but the WM needs static. For now, I am replacing the package
@@ -74,4 +75,5 @@ RUN source /root/.bashenv && module list && echo "env PATH=/opt/ufs-weather-mode
     echo "ENV LMOD_CMD=$LMOD_CMD" >> locenvs && \
     echo "ENV LMOD_DIR=$LMOD_DIR" >> locenvs && \
     echo "ENV MODULESHOME=$MODULESHOME" >> locenvs
-
+RUN cp /root/.bashenv /opt/spack-stack && esmf=`find /opt/spack-stack/envs/develop/install/ -name libesmf.a` && ESMF=`dirname $esmf`/libESMF.a && \
+    ln -s $esmf $ESMF 

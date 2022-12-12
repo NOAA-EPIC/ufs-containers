@@ -5,9 +5,9 @@ LABEL AUTHOR EPIC-AUS
 WORKDIR /opt
 RUN mv /opt/spack-stack/ufs-srweather-app . && mkdir /opt/ufs-srweather-app/build
 WORKDIR /opt/ufs-srweather-app
-RUN ./manage_externals/checkout_externals
+RUN git remote add epic https://github.com/NOAA-EPIC/ufs-srweather-app.git && git remote update && git checkout epic/feature/AGU-v2.1.0 && ./manage_externals/checkout_externals
 WORKDIR /opt/ufs-srweather-app/build
-RUN git remote update && git pull 
+RUN git remote update && git checkout -b feature/AGU-v2.1.0 
 RUN source /root/.bashenv && cmake -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
 WORKDIR /opt/ufs
 ENV PATH=$PATH:/opt/miniconda/bin
@@ -48,7 +48,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
     mkdir -p /opt/ufs-srweather-app/container-scripts     
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
-COPY stage-srw-develop.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
+COPY stage-srw-develop.sh  /opt/ufs-srweather-app/container-scripts/stage-srw.sh 
 RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
 RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
 

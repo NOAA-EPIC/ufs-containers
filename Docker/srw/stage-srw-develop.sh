@@ -76,7 +76,7 @@ cd ..
 cp -r bin exec
 cd ..
 
-cp ufs-srweather-app/modulefiles/wflow_${MACHINE} ufs-srweather-app/modulefiles/build_${MACHINE}_intel
+cp ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
 sed -i "/rocoto/a load(\"${COMPILER}\")\nload(\"${MPI}\")" ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
 sed -i "/rocoto/a load(\"${COMPILER}\")\nload(\"${MPI}\")" ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
 

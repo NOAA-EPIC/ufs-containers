@@ -2,10 +2,9 @@
 set -x
 export SINGULARITYENV_FI_PROVIDER=tcp
 export SINGULARITY_SHELL=/bin/bash
-dir="$(dirname $(readlink -f ${BASH_SOURCE[0]}))"
 img="IMAGE"
 cmd=$(basename "$0")
 arg="$@"
-echo running: singularity exec "${dir}/${img}" $cmd $arg
-PATH_TO_SINGULARITY exec -B /BINDDIR:/BINDDIR -B /LOCDIR:/LOCDIR "${dir}/${img}" $cmd $arg
+echo running: singularity exec "${img}" $cmd $arg
+PATH_TO_SINGULARITY exec -B /BINDDIR:/BINDDIR -B /LOCDIR:/LOCDIR "${img}" $cmd $arg
 

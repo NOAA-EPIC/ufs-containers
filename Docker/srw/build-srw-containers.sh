@@ -30,9 +30,9 @@ sed -i "s/TAGNAME/$tag_name/g" Dockerfile.ubuntu20.04-intel-stage3
 docker rm  -f spack-stack
 #Build the final container with the WM and environment variables (path, LD_LIBRARY_PATH, etc.) set for use with singularity
 echo tagname is $tag_name
-docker build --no-cache -f Dockerfile.ubuntu20.04-intel-stage3 -t noaaepic/ubuntu20.04-intel-srwapp:$tag_name .
+docker build -f Dockerfile.ubuntu20.04-intel-stage3 -t noaaepic/ubuntu20.04-intel-srwapp:AMS-v2.1.0 .
 #rm Dockerfile.
-docker push noaaepic/ubuntu20.04-intel-srwapp:$tag_name 
+docker push noaaepic/ubuntu20.04-intel-srwapp:AMS-v2.1.0
 rm Dockerfile*stage*
 #Convert the finished docker container into a singularity container for use on HPC systems. 
 

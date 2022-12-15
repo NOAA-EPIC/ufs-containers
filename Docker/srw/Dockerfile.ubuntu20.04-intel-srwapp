@@ -51,4 +51,5 @@ COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
 COPY stage-srw-develop.sh  /opt/ufs-srweather-app/container-scripts/stage-srw.sh 
 RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
 RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
-
+WORKDIR /opt/ufs-srweather-app
+RUN git remote rm origin && git remote rename epic origin && git remote update && git checkout feature/AMS-v2.1.0

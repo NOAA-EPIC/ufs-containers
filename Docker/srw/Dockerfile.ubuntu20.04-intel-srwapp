@@ -7,27 +7,17 @@ RUN mv /opt/spack-stack/ufs-srweather-app . && mkdir /opt/ufs-srweather-app/buil
 WORKDIR /opt/ufs-srweather-app
 RUN ./manage_externals/checkout_externals
 WORKDIR /opt/ufs-srweather-app/build
-RUN git remote update && git pull 
+RUN git remote add epic https://github.com/NOAA-EPIC/ufs-srweather-app.git && git remote update && git checkout feature/AMS-v2.1.0 
 RUN source /root/.bashenv && cmake -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
 WORKDIR /opt/ufs
-ENV PATH=$PATH:/opt/miniconda/bin
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda && \
-    git clone --recursive https://github.com/NOAA-GSD/contrib_miniconda3.git miniconda3 && \
-    cd /opt/ufs/miniconda3/environments && \
-    sed -i '3 a - conda-forge' regional_workflow.yml  && \
-    sed -i 's/^-/  -/g' regional_workflow.yml  && \
-    sed -i 's/^  - https/#  - https/g' regional_workflow.yml  && \
-    cd /opt/ufs && \
-    conda env create -f /opt/ufs/miniconda3/environments/regional_workflow.yml  && \
-    conda install -c conda-forge f90nml && \
-    conda install jinja2 && \
-    conda install pyyaml && \
-    conda install scipy && \
-    conda install matplotlib && \
-    conda install -c conda-forge pygrib && \
-    conda install cartopy && \
-    conda install pillow && \
+RUN git clone https://github.com/NOAA-EPIC/EPIC-Documentation.git && \
+    cd EPIC-Documentation/miniconda3 && \
+    sed -i 's/home\/ubuntu/opt/g' *.sh && \
+    bash && \
+    ./miniconda3_install.sh && \
+    sed -i 's/home\/ubuntu/opt/g' /opt/miniconda3/modulefiles/miniconda3/4.12.0.lua && \
+    sed -i 's/myShellType()/"sh"/g' /opt/miniconda3/modulefiles/miniconda3/4.12.0.lua && \
+    ./miniconda3_regional_workflow_new.sh && \
     mkdir -p /work && \
     mkdir -p /contrib && \
     mkdir -p /lustre  && \
@@ -48,7 +38,13 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
     mkdir -p /opt/ufs-srweather-app/container-scripts     
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
+RUN echo "test"
 COPY stage-srw-develop.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
+#COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
+#COPY wflow_singularity.lua /opt/ufs-srweather-app/modulefiles/wflow_singularity.lua
+WORKDIR /opt/ufs-srweather-app
+RUN git remote update && git pull epic feature/AMS-v2.1.0
+RUN rm -rf /opt/ufs /opt/build /opt/dist /opt/intel
 RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
 RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
 

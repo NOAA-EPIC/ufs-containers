@@ -1,0 +1,25 @@
+  - jasper@2.0.25
+  - curl@7.49.1
+  - zlib@1.2.12
+  - libpng@1.6.37
+  - netcdf-c@4.7.4
+  - netcdf-fortran@4.5.4
+  - git-lfs@2.11.0        
+  - udunits@2.2.28    
+  - ecbuild@3.6.1  
+  - nlohmann-json-schema-validator@2.1.0
+  - gsl-lite@0.37.0   
+  - eckit@1.16.0   
+  - eigen@3.3.7           
+  - fckit@0.9.2    
+  - cmake@3.20.1
+  - bufr@11.5.0  
+  - ecmwf-atlas@0.24.1   
+  - nco@4.9.1
+  - szip@2.1.1            
+  - hdf5@1.12.0       
+  - nccmp@1.8.7.0         
+  - parallel-netcdf@1.12.2    
+  - parallelio@2.5.1
+  - nlohmann-json@3.9.1
+

@@ -1,0 +1,96 @@
+FROM noaaepic/ubuntu20.04-base-intel:develop
+ARG branch_name
+WORKDIR /opt/spack-stack
+
+
+RUN mkdir -p /opt/spack-stack/configs/sites/ubuntu-intel && \
+    cp /root/.spack/linux/compilers.yaml /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /opt/spack-stack/configs/sites/ubuntu-intel && \
+    find /opt/spack-stack/spack/opt/spack/ -iname intel-oneapi-mpi* && \
+    loc=`find /opt/spack-stack/spack/opt/spack/ -iname intel-oneapi-mpi* | head -n 1` && \
+    echo $loc && \
+    echo "config:" > /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
+    echo "  build_jobs: 8" >> /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
+    echo "modules:" > /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "  default:" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "    enable::" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "    - lmod" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "packages:" > /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  all:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    compiler:: [intel@2021.6.0]" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    providers:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      mpi:: [intel-oneapi-mpi@2021.6.0]" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  mpi:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    buildable: False" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  intel-oneapi-mpi:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    externals:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    - spec: intel-oneapi-mpi@2021.6.0" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      modules:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      - impi/2021.6.0" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      prefix: $loc" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml
+ENV branch=$branch_name
+RUN echo "branch is " $branch 
+RUN apt install -y libboost1.71-dev &&\
+    apt install -y libboost-chrono1.71-dev &&\
+    apt install -y libboost-date-time1.71-dev &&\
+    apt install -y libboost-exception1.71-dev &&\
+    apt install -y libboost-filesystem1.71-dev &&\
+    apt install -y libboost-program-options1.71-dev &&\
+    apt install -y libboost-python1.71-dev &&\
+    apt install -y libboost-regex1.71-dev &&\
+    apt install -y libboost-serialization1.71-dev &&\
+    apt install -y libboost-system1.71-dev &&\
+    apt install -y libboost-test1.71-dev &&\
+    apt install -y libboost-thread1.71-dev &&\
+    apt install -y libboost-timer1.71-dev
+COPY landda.specs /opt/spack-stack
+RUN . ./setup.sh && spack external find boost && spack stack create env --site ubuntu-intel --template empty --name landda && \
+    sed -i 's/\[\]//g' envs/landda/spack.yaml && \
+    cat landda.specs >> envs/landda/spack.yaml && \
+    spack env activate envs/landda && \ 
+    spack concretize && \ 
+    spack install
+ENV SHELL=/bin/bash
+RUN . ./setup.sh && source /usr/share/lmod/lmod/init/bash && \
+    spack env activate envs/landda && \ 
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    spack stack setup-meta-modules && \
+    spack module lmod refresh -y && \
+    module use /opt/spack-stack/envs/landda/install/modulefiles/Core && \
+    module avail && \
+    ls -l /opt/spack-stack/envs/landda/install/modulefiles/Core && \
+    sed -i 's/impi/intel-oneapi-mpi/g' /opt/spack-stack/envs/landda/install/modulefiles/intel/2021.6.0/stack-intel-oneapi-mpi/2021.6.0.lua && \
+    find /opt/spack-stack/envs/landda/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g' && \
+    echo "module use /opt/spack-stack/envs/landda/install/modulefiles/Core" >> /root/.bashenv && \
+    echo "module load stack-intel stack-intel-oneapi-mpi" >> /root/.bashenv && \
+    source /root/.bashenv && \
+    module spider >& mods && grep ": " mods | awk -F ":" '{print "module load " $2}' | grep -v intel >> /root/.bashenv && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
+    echo "DONE"
+RUN source /root/.bashenv && module list && \
+    echo "ENV MODULEPATH=$MODULEPATH" >> locenvs && \
+    echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> locenvs && \
+    echo "ENV LMOD_DEFAULT_MODULEPATH=$LMOD_DEFAULT_MODULEPATH" >> locenvs && \
+    echo "ENV LMOD_PKG=$LMOD_PKG" >> locenvs && \
+    echo "ENV LMOD_CMD=$LMOD_CMD" >> locenvs && \
+    echo "ENV LMOD_DIR=$LMOD_DIR" >> locenvs && \
+    echo "ENV MODULESHOME=$MODULESHOME" >> locenvs && \
+    echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> locenvs && \
+    echo "ENV ESMFMKFILE=$ESMFMKFILE" >> locenvs && \
+    echo "ENV CC=$CC" >> locenvs && \
+    echo "ENV CXX=$CXX" >> locenvs && \
+    echo "ENV FC=$FC" >> locenvs && \
+    cp ~/.bashenv /opt/spack-stack
+
+ENV MODULEPATH=/opt/spack-stack/envs/landda/install/modulefiles/intel-oneapi-mpi/2021.6.0/intel/2021.6.0:/opt/spack-stack/envs/landda/install/modulefiles/intel/2021.6.0:/opt/spack-stack/envs/landda/install/modulefiles/Core:/opt/spack-stack/spack/share/spack/modules/linux-ubuntu20.04-skylake
+ENV FI_PROVIDER_PATH=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.6.0-ydgse3v7wvjom74awklk5bzhgonjuyj6/mpi/2021.6.0/libfabric/lib/prov:/usr/lib64/libfabric
+ENV LMOD_DEFAULT_MODULEPATH=/opt/spack-stack/envs/landda/install/modulefiles/Core:/opt/spack-stack/spack/share/spack/modules/linux-ubuntu20.04-skylake
+ENV LMOD_PKG=/usr/share/lmod/lmod
+ENV LMOD_CMD=/usr/share/lmod/lmod/libexec/lmod
+ENV LMOD_DIR=/usr/share/lmod/lmod/libexec
+ENV MODULESHOME=/usr/share/lmod/lmod
+ENV CMAKE_PREFIX_PATH=/opt/spack-stack/envs/landda/install/intel/2021.6.0/zlib-1.2.12-t3egkom:/opt/spack-stack/envs/landda/install/intel/2021.6.0/pkg-config-0.29.2-2pghrtw:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/patchelf-0.15.0-rrvpxtplycme6rdf7xj6njp6il74iyqi:/opt/spack-stack/envs/landda/install/intel/2021.6.0/parallel-netcdf-1.12.2-4agnjh3:/opt/spack-stack/envs/landda/install/intel/2021.6.0/netcdf-fortran-4.5.4-scfbqrm:/opt/spack-stack/envs/landda/install/intel/2021.6.0/netcdf-c-4.7.4-nkuczkj:/opt/spack-stack/envs/landda/install/intel/2021.6.0/libpng-1.6.37-azn33la:/opt/spack-stack/envs/landda/install/intel/2021.6.0/libjpeg-turbo-2.1.0-7hp3wfr:/opt/spack-stack/envs/landda/install/intel/2021.6.0/jasper-2.0.25-w4l5uqb:/opt/spack-stack/envs/landda/install/intel/2021.6.0/hdf5-1.12.1-fbcj7nw:/opt/spack-stack/envs/landda/install/intel/2021.6.0/ecbuild-3.6.5-k7u2cyg:/opt/spack-stack/envs/landda/install/intel/2021.6.0/curl-7.49.1-gt5ruit:/opt/spack-stack/envs/landda/install/intel/2021.6.0/cmake-3.22.1-eba52x3:/opt/spack-stack/envs/landda/install/intel/2021.6.0/ca-certificates-mozilla-2022-07-19-75fuunj:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.6.0-ydgse3v7wvjom74awklk5bzhgonjuyj6:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2022.1.0-5wqfzkuxyqekqtkb4zb7qx5t3supmec3/compiler/2022.1.0/linux/IntelDPCPP:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2022.1.0-5wqfzkuxyqekqtkb4zb7qx5t3supmec3
+ENV ESMFMKFILE=
+ENV CC=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2022.1.0-5wqfzkuxyqekqtkb4zb7qx5t3supmec3/compiler/latest/linux/bin/intel64/icc
+ENV CXX=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2022.1.0-5wqfzkuxyqekqtkb4zb7qx5t3supmec3/compiler/latest/linux/bin/intel64/icpc
+ENV FC=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2022.1.0-5wqfzkuxyqekqtkb4zb7qx5t3supmec3/compiler/latest/linux/bin/intel64/ifort

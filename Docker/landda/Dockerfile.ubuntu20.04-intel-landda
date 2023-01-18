@@ -90,3 +90,6 @@ RUN source /root/.bashenv && module list && \
 WORKDIR /opt
 ADD fv3-bundle.tar.gz /opt
 ADD build.tar.gz /opt
+RUN source /opt/spack-stack/.bashenv && \
+    sed -i "$ d" /opt/spack-stack/envs/landda/install/intel/2021.6.0/ecmwf-atlas-0.31.1-yysadm4/lib/cmake/atlas_io/atlas_io-config.cmake && \
+    echo "set(atlas_FOUND TRUE)" >> /opt/spack-stack/envs/landda/install/intel/2021.6.0/ecmwf-atlas-0.31.1-yysadm4/lib/cmake/atlas_io/atlas_io-config.cmake

@@ -1,0 +1,381 @@
+#!/bin/bash
+#
+# * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * #
+# *  UNIX Script Documentation Block                                            #
+#                                                                               #
+# Script name        : run_case                                                 #
+# Script description : Run test case from ufs-case-study                        #
+#                                                                               #
+# Script how to use  : run_case -p [TEST_DIR] -n [TEST_NAME] \                  #
+#                               -y [SYEAR] -m [SMONTH] -d [SDAY] \              #
+#                               -r [SHOUR] -l [FHMAX]                           #
+#                                                                               #
+# Details            :  [TEST_DIR] Path of your ufs-weather-model/tests         #
+#                       e.g. /home/builder/ufs-weather-model/tests              #
+#                                                                               #
+#                       [TEST_NAME] TEST_NAME in rt.conf, currenly only support:#
+#                                            control                            # 
+#                                            control_p8                         #
+#                                                                               #
+#                                                                               #
+#                       [SYEAR] [SMONTH] [SDAY] [SHOUR]                         #
+#                       e.g. 2019 07 12 00                                      #
+#                                                                               #
+# Author:      Yi-Cheng Teng          Date: 2022-10-25                          #
+#                                                                               #
+# Script history log:                                                           #
+# 2022-10-25  Yi-Cheng Teng   - v.1.0 Original                                  #
+#                                                                               #
+# * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * | * #
+#
+
+#
+set -eu
+
+error() {
+  echo
+  echo "$@" 1>&2
+  exit 1
+}
+
+usage() {
+  #set +x
+  echo
+  echo "Usage: $program -p <TEST_DIR> -n <TEST_NAME> [-y <SYEAR> -m <SMONTH> -d <SDAY> -r <SHOUR> -l <FHMAX>]"
+  echo
+  echo "Details            :   [TEST_DIR] Path of your ufs-weather-model/tests         "         
+  echo                                                                               
+  echo "                       [TEST_NAME] TEST_NAME in rt.conf, currenly only support:"
+  echo "                                            control                         "
+  echo "                                            control_p8                         "
+  echo
+  echo
+  echo "                       [SYEAR] [SMONTH] [SDAY] [SHOUR] [FHMAX]                 "
+  echo "                       e.g. 2019 07 12 00 24                                   "
+  #set -x
+}
+
+usage_and_exit() {
+  usage
+  exit $1
+}
+
+########################################################################
+####                       PROGRAM STARTS                           ####
+########################################################################
+#
+readonly program=$(basename $0)
+[[ $# -eq 0 ]] && usage_and_exit 1
+
+# parse command line arguments to fill-in/modify the above default variables
+while getopts ":p:n:a:c:y:m:d:r:l:h" opt; do
+  case $opt in
+    p)
+     readonly TEST_DIR=$OPTARG
+     echo "test dir: ${TEST_DIR}"
+     ;;
+    n)
+      TEST_NAME=$OPTARG
+      echo "test name: ${TEST_NAME}"
+      ;;
+    y)
+      CYEAR=$OPTARG
+      echo "year: ${CYEAR}"      
+      ;;
+    m)
+      CMONTH=$OPTARG
+      echo "month: ${CMONTH}"
+      ;;
+    d)
+      CDAY=$OPTARG
+      echo "day: ${CDAY}"
+      ;;
+    r)
+      CHOUR=$OPTARG
+      echo "hour: ${CHOUR}"
+      ;; 
+    l) 
+      _FHMAX=$OPTARG
+      echo "fhmax: ${_FHMAX}" 
+      ;;      
+    h)
+      usage_and_exit 0
+      ;;
+    '?')
+      error "$program: invalid option -$OPTARG"
+      ;;
+  esac
+done
+
+# set path env
+readonly export RUN_DIR=$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )" )" && pwd -P)
+readonly UFS_MODEL_DIR="$(dirname "$TEST_DIR")"
+
+# set TEST_NAME and var related to ufs build process
+if [[ ${TEST_NAME} = "control" ]] || [[ ${TEST_NAME} = "control_p8" ]]; then
+  APP_NAME="ATM"
+elif [[ ${TEST_NAME} = "cpld_control_nowave_noaero_p8" ]]; then
+  APP_NAME="S2S"
+elif [[ ${TEST_NAME} = "cpld_control_noaero_p8" ]]; then 
+  APP_NAME="S2SW"
+else
+  error "invalid ${TEST_NAME}, try 'run_case -h' for usage"       	
+fi
+#export APP_NAME=${APP_NAME:-S2SWA}
+#export CCPP_SUITE=${CCPP_SUITE:-FV3_GFS_v17_coupled_p8}
+
+
+#
+export MACHINE_ID="linux.gnu"
+export RT_COMPILER="gnu"
+
+# set default envs
+source ${RUN_DIR}/template/atparse.bash
+source ${TEST_DIR}/default_vars.sh
+source ${TEST_DIR}/tests/${TEST_NAME}
+
+### user defined vars 
+export DOMAINS_STACK_SIZE=8000000
+export INPES=2
+export JNPES=2
+export OCN_tasks=10
+export ICE_tasks=6
+export WAV_tasks=2
+
+# date
+export SYEAR=${CYEAR:-2019}
+export SMONTH=${CMONTH:-07}
+export SDAY=${CDAY:-12}
+export SHOUR=${CHOUR:-00}
+export SECS=`expr $SHOUR \* 3600`
+
+export MOM6_RESTART_SETTING=r
+export FHMAX=${_FHMAX:-6}
+export OUTPUT_FH='6 -1'
+export RESTART_N=6
+export RESTART_INTERVAL='6 -1'
+
+### end of user define part
+
+# check some input vars
+echo "test dir:  ${TEST_DIR}"
+echo "test name: ${TEST_NAME}"
+echo "app name:  ${APP_NAME}"
+echo "ccpp suite: ${CCPP_SUITE}"
+echo "SYEAR: ${SYEAR}"
+echo "SMONTH: ${SMONTH}"
+echo "SDAY: ${SDAY}"
+echo "SHOUR: ${SHOUR}"
+echo "SECS: ${SECS}"
+echo "INPES: ${INPES}"
+echo "JNPES: ${JNPES}"
+echo "OCN_tasks: ${OCN_tasks}"
+echo "ICE_tasks: ${ICE_tasks}"
+echo "WAV_tasks: ${WAV_tasks}"
+echo "FHMAX: ${FHMAX}"
+
+# some safety guards for input arguments
+if [[ -z $TEST_DIR ]]; then
+  error "$program: test dir is required. try 'run_case -h' for usage"
+fi
+if [[ -z $TEST_NAME ]]; then
+  error "$program: test name is required. try 'run_case -h' for usage"
+fi
+
+# set tasks & configure files
+export NPROC_ICE=$ICE_tasks
+#export TASKS=$((INPES*JNPES*NTILES + WRITE_GROUP*WRTTASK_PER_GROUP + OCN_tasks + ICE_tasks))
+if [[ ${APP_NAME} == "ATM" ]]; then
+  export TASKS=$((INPES*JNPES*NTILES + WRITE_GROUP*WRTTASK_PER_GROUP))
+elif [[ ${APP_NAME} == "S2SW" ]]; then
+  export TASKS=$((INPES*JNPES*NTILES + WRITE_GROUP*WRTTASK_PER_GROUP + OCN_tasks + ICE_tasks + WAV_tasks))
+else
+  export TASKS=$((INPES*JNPES*NTILES + WRITE_GROUP*WRTTASK_PER_GROUP + OCN_tasks + ICE_tasks))    	
+fi
+echo "TASKS: ${TASKS}"
+
+#[[ ${APP_NAME} == "ATM" ]] && TASKS=$((INPES*JNPES*NTILES + WRITE_GROUP*WRTTASK_PER_GROUP))
+#[[ ${APP_NAME} == "S2SW" ]] && TASKS=$((INPES*JNPES*NTILES + WRITE_GROUP*WRTTASK_PER_GROUP + OCN_tasks + ICE_tasks + WAV_tasks))
+
+if [[ $DATM_CDEPS = 'false' ]]; then
+  if [[ ${ATM_compute_tasks:-0} -eq 0 ]]; then
+    ATM_compute_tasks=$((INPES * JNPES * NTILES))
+  fi
+  if [[ $QUILTING = '.true.' ]]; then
+    ATM_io_tasks=$((WRITE_GROUP * WRTTASK_PER_GROUP))
+  fi
+fi
+
+compute_petbounds
+
+# FV3_RUN could have multiple entry seperated by space
+python -m pip install awscli
+export PATH=/home/builder/.local/bin:$PATH
+export INPUTDATA_ROOT='s3://noaa-ufs-regtests-pds/input-data-20221101'
+export INPUTDATA_ROOT_WW3='${INPUTDATA_ROOT}/WW3_input_data_20220624'
+export INPUTDATA_ROOT_BMIC=${INPUTDATA_ROOT_BMIC:-'s3://noaa-ufs-regtests-pds/BM_IC-20220207'}
+export RT_SUFFIX=''
+export BL_SUFFIX=''
+[[ -d ${RUN_DIR}/INPUT ]] && rm -rf ${RUN_DIR}/INPUT
+[[ -d ${RUN_DIR}/RESTART ]] && rm -rf ${RUN_DIR}/RESTART
+[[ -d ${RUN_DIR}/history ]] && rm -rf ${RUN_DIR}/history
+[[ -d ${RUN_DIR}/MOM6_OUTPUT ]] && rm -rf ${RUN_DIR}/MOM6_OUTPUT
+[[ -f ${RUN_DIR}/fv3_run ]] && rm ${RUN_DIR}/fv3_run
+for i in ${FV3_RUN:-fv3_run.IN}
+do
+  atparse < ${RUN_DIR}/fv3_conf/${i} >> ${RUN_DIR}/fv3_run
+done
+cd ${RUN_DIR}
+source ${RUN_DIR}/fv3_run
+# fix files
+if [[ $FV3 == true ]]; then
+  aws s3 cp --no-sign-request ${INPUTDATA_ROOT}/FV3_fix/ . --recursive --exclude '*' --include '*.txt'
+  aws s3 cp --no-sign-request ${INPUTDATA_ROOT}/FV3_fix/ . --recursive --exclude '*' --include '*.f77'
+  aws s3 cp --no-sign-request ${INPUTDATA_ROOT}/FV3_fix/ . --recursive --exclude '*' --include '*.dat'
+  aws s3 cp --no-sign-request ${INPUTDATA_ROOT}/FV3_fix/fix_co2_proj/ . --recursive --include '*'
+  if [[ $TILEDFIX != .true. ]]; then
+    aws s3 cp --no-sign-request ${INPUTDATA_ROOT}/FV3_fix/ . --recursive --exclude '*' --include '*.grb'
+  fi
+fi
+#
+cd ${TEST_DIR}
+
+#
+[[ -f ${RUN_DIR}/input.nml ]] && rm ${RUN_DIR}/input.nml
+cp -f ${TEST_DIR}/parm/fd_nems.yaml ${RUN_DIR}/fd_nems.yaml
+cp -f ${TEST_DIR}/parm/field_table/${FIELD_TABLE} ${RUN_DIR}/field_table
+if [[ ${TEST_NAME} == "control" ]]; then
+  atparse < ${TEST_DIR}/parm/control.nml.IN >> ${RUN_DIR}/input.nml
+else  
+  atparse < ${TEST_DIR}/parm/cpld_control.nml.IN >> ${RUN_DIR}/input.nml
+fi  
+[[ -f ${RUN_DIR}/model_configure ]] && rm ${RUN_DIR}/model_configure
+atparse < ${TEST_DIR}/parm/${MODEL_CONFIGURE:-model_configure.IN} > ${RUN_DIR}/model_configure
+[[ -f ${RUN_DIR}/nems.configure ]] && rm ${RUN_DIR}/nems.configure
+atparse < ${TEST_DIR}/parm/${NEMS_CONFIGURE:-nems.configure} > ${RUN_DIR}/nems.configure
+
+#
+if [[ $CPLWAV == .true. ]]; then
+  if [[ $MULTIGRID = 'true' ]]; then
+    [[ -f ${RUN_DIR}/ww3_multi.inp ]] && rm ${RUN_DIR}/ww3_multi.inp
+    atparse < ${TEST_DIR}/parm/ww3_multi.inp.IN > ${RUN_DIR}/ww3_multi.inp
+  else
+    [[ -f ${RUN_DIR}/ww3_shel.inp ]] && rm ${RUN_DIR}/ww3_shel.inp
+    atparse < ${TEST_DIR}/parm/ww3_shel.inp.IN > ${RUN_DIR}/ww3_shel.inp
+  fi
+fi
+
+#
+export DIAG_TABLE=${DIAG_TABLE:-diag_table_template} 
+[[ -f ${RUN_DIR}/diag_table ]] && rm ${RUN_DIR}/diag_table
+atparse < ${TEST_DIR}/parm/diag_table/${DIAG_TABLE} > ${RUN_DIR}/diag_table
+#
+if [[ $DATM_CDEPS = 'true' ]] || [[ $S2S = 'true' ]]; then
+  if [[ $HAFS = 'false' ]]; then
+    [[ -f ${RUN_DIR}/ice_in ]] && rm ${RUN_DIR}/ice_in
+    atparse < ${TEST_DIR}/parm/ice_in_template > ${RUN_DIR}/ice_in
+    [[ -f ${RUN_DIR}/INPUT/MOM_input ]] && rm ${RUN_DIR}/INPUT/MOM_input
+    atparse < ${TEST_DIR}/parm/${MOM_INPUT:-MOM_input_template_$OCNRES} > ${RUN_DIR}/INPUT/MOM_input
+    [[ -f ${RUN_DIR}/diag_table ]] && rm ${RUN_DIR}/diag_table
+    atparse < ${TEST_DIR}/parm/diag_table/${DIAG_TABLE:-diag_table_template} > ${RUN_DIR}/diag_table
+    [[ -f ${RUN_DIR}/data_table ]] && rm ${RUN_DIR}/data_table
+    atparse < ${TEST_DIR}/parm/data_table_template > ${RUN_DIR}/data_table
+  fi
+fi
+echo "grid res: C$((NPX-1))"
+ln -fs ${RUN_DIR}/IC/atmos/C$((NPX-1))/INPUT/*.nc ${RUN_DIR}/INPUT/
+ln -fs ${RUN_DIR}/IC/ocn/MOM* ${RUN_DIR}/INPUT/
+ln -fs ${RUN_DIR}/IC/ice/cice_model_*.nc ${RUN_DIR}/cice_model.res.nc
+cp ${RUN_DIR}/template/MOM_override ${RUN_DIR}/INPUT/
+
+#inline post
+if [ $WRITE_DOPOST = .true. ]; then
+  cp    ${TEST_DIR}/parm/post_itag ${RUN_DIR}/itag
+  cp    ${TEST_DIR}/parm/postxconfig-NT.txt ${RUN_DIR}/postxconfig-NT.txt
+  cp    ${TEST_DIR}/parm/postxconfig-NT_FH00.txt ${RUN_DIR}/postxconfig-NT_FH00.txt
+  cp    ${TEST_DIR}/parm/params_grib2_tbl_new ${RUN_DIR}/params_grib2_tbl_new
+fi
+
+# read modules
+if [[ $MACHINE_ID == macosx.* ]] || [[ $MACHINE_ID == linux.* ]]; then
+  source ${UFS_MODEL_DIR}/modulefiles/ufs_${MACHINE_ID}
+else
+  # Activate lua environment for gaea
+  if [[ $MACHINE_ID == gaea ]] ; then
+    source /lustre/f2/pdata/esrl/gsd/contrib/lua-5.1.4.9/init/init_lmod.sh
+  fi
+  # Load fv3 module
+  module use ${UFS_MODEL_DIR}/modulefiles
+  modulefile="ufs_${MACHINE_ID}"
+  module load $modulefile
+  module list
+fi
+
+# build
+[[ -f ${UFS_MODEL_DIR}/build/ufs_model ]] && rm ${UFS_MODEL_DIR}/build/ufs_model
+if [ ! -f ${UFS_MODEL_DIR}/build/ufs_model  ] ; then
+  echo "build ufs weather model !!!"
+
+  #
+  [ -d ${UFS_MODEL_DIR}/build ] && rm -rf ${UFS_MODEL_DIR}/build
+  mkdir -p ${UFS_MODEL_DIR}/build && cd ${UFS_MODEL_DIR}/build
+  
+  #
+  cmake -DAPP=${APP_NAME} -DCCPP_SUITES=${CCPP_SUITE} ..
+  OMP_NUM_THREADS=1 make -j ${BUILD_JOBS:-4} VERBOSE=${BUILD_VERBOSE:-} 
+fi
+
+# cp ufs_model
+cp ${UFS_MODEL_DIR}/build/ufs_model ${RUN_DIR}
+rm -rf ${UFS_MODEL_DIR}/build
+
+# clean old results if need
+if [[ -f ${RUN_DIR}/PET* ]]; then
+  rm -rf ${RUN_DIR}/PET* || true
+  rm -rf ${RUN_DIR}/log* || true
+  rm -rf ${RUN_DIR}/*.log || true
+  rm -rf ${RUN_DIR}/RESTART/* || true
+  rm -rf ${RUN_DIR}/history/* || true
+  rm -rf ${RUN_DIR}/MOM6_OUTPUT/* || true
+  rm -rf ${RUN_DIR}/fix_co2_proj |true|
+  rm -rf ${RUN_DIR}/SST*.nc || true
+  rm -rf ${RUN_DIR}/ocn*.nc || true
+  rm -rf ${RUN_DIR}/atmf*.nc || true
+  rm -rf ${RUN_DIR}/sfcf*.nc || true
+  rm -rf ${RUN_DIR}/out || true
+  rm -rf ${RUN_DIR}/err || true
+  rm -rf ${RUN_DIR}/mediator.log || true
+  rm -rf ${RUN_DIR}/ice.restart_file || true
+  rm -rf ${RUN_DIR}/ice_diag.d || true
+  rm -rf ${RUN_DIR}/rpointer.cpl || true
+  rm -rf ${RUN_DIR}/GFS*.Grb* || true
+  rm -rf ${RUN_DIR}/*.ww3 || true
+fi
+
+# run test
+set +x
+OMP_ENV=""
+MPI_PROC_BIND="-bind-to user:"
+for i in $(seq 0 $((TASKS-1))); do
+  MPI_PROC_BIND="$MPI_PROC_BIND$i,"
+done
+MPI_PROC_BIND=$(echo -n $MPI_PROC_BIND | sed -e "s/,$//")
+set -x
+
+#
+ulimit -s unlimited
+cd ${RUN_DIR}
+set +e
+eval ${OMP_ENV} mpiexec -n ${TASKS} ${MPI_PROC_BIND} ./ufs_model
+
+# check log
+#baseline="*****************END OF RESOURCE STATISTICS*************************"
+#test_string=$(tail -n 2 ${RUN_DIR}/out | head -1)
+#if [[ "${test_string}" == "${baseline}" ]]; then
+#  echo "test case done successfully!"
+#  exit 0
+#else
+#  echo "test failed."
+#  cat /home/builder/ufs-weather-model/tests/Testing/Temporary/LastTest.log
+#  exit 1
+#fi

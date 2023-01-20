@@ -1,0 +1,6 @@
+! Blank file in which we can put "overrides" for parameters
+!VERBOSITY = 2 
+!----------------------------------
+! === module MOM_restart ===
+RESTART_CHECKSUMS_REQUIRED = False
+

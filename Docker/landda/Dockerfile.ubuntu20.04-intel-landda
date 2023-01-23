@@ -90,6 +90,15 @@ RUN source /root/.bashenv && module list && \
 WORKDIR /opt
 ADD fv3-bundle.tar.gz /opt
 ADD build.tar.gz /opt
+ADD ioda-bundle.tar.gz /opt
+RUN echo "new"
+ADD land-offline.tar.gz /opt
 RUN source /opt/spack-stack/.bashenv && \
     sed -i "$ d" /opt/spack-stack/envs/landda/install/intel/2021.6.0/ecmwf-atlas-0.31.1-yysadm4/lib/cmake/atlas_io/atlas_io-config.cmake && \
     echo "set(atlas_FOUND TRUE)" >> /opt/spack-stack/envs/landda/install/intel/2021.6.0/ecmwf-atlas-0.31.1-yysadm4/lib/cmake/atlas_io/atlas_io-config.cmake
+RUN mkdir /data && mkdir /scratch1 && mkdir /scratch2 && mkdir /lustre && mkdir /lfs1 && mkdir /lfs3 && mkdir /lfs4 && \
+    mkdir /glade && mkdir /contrib && mkdir /work && mkdir /work2
+RUN echo "export PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda" >> /opt/spack-stack/.bashenv && \
+    source /opt/spack-stack/.bashenv && pip install netCDF4
+RUN echo 'export LD_LIBRARY_PATH=/opt/spack-stack/envs/landda/install/intel/2021.6.0/openssl-1.1.1s-oi7o6se/lib:$LD_LIBRARY_PATH' >> /opt/spack-stack/.bashenv
+

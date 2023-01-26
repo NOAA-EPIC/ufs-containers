@@ -1,0 +1,97 @@
+FROM noaaepic/ubuntu20.04-base-intel:develop
+WORKDIR /opt/spack-stack
+
+
+RUN source ./setup.sh && git remote update && git checkout origin/release/1.2.0 && \
+    cd spack && git stash && cd .. && git submodule init &&  git submodule sync &&  git submodule update && git submodule foreach git submodule init && \
+    git submodule foreach git submodule sync &&  git submodule foreach git submodule update && cd spack && git stash pop && cd .. && \
+    mkdir -p /opt/spack-stack/configs/sites/ubuntu-intel && \
+    cp /root/.spack/linux/compilers.yaml /opt/spack-stack/configs/sites/ubuntu-intel && ls -l /opt/spack-stack/configs/sites/ubuntu-intel && \
+    find /opt/spack-stack/spack/opt/spack/ -iname intel-oneapi-mpi* && \
+    loc=`find /opt/spack-stack/spack/opt/spack/ -iname intel-oneapi-mpi* | head -n 1` && \
+    mpiver=`spack find intel-oneapi-mpi | grep intel-oneapi-mpi | awk -F "@" '{print $2}'` && \
+    compver=`spack find intel-oneapi-compilers | grep intel-oneapi-compilers | awk -F "@" '{print $2}'` && \
+    echo "config:" > /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
+    echo "  build_jobs: 8" >> /opt/spack-stack/configs/sites/ubuntu-intel/config.yaml && \
+    echo "modules:" > /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "  default:" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "    enable::" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "    - lmod" >> /opt/spack-stack/configs/sites/ubuntu-intel/modules.yaml && \
+    echo "packages:" > /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  all:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    compiler:: [intel@$compver]" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    providers:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      mpi:: [intel-oneapi-mpi@$mpiver]" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  mpi:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    buildable: False" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "  intel-oneapi-mpi:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    externals:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    - spec: intel-oneapi-mpi@$mpiver" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      modules:" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      - impi/$mpiver" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "      prefix: $loc" >> /opt/spack-stack/configs/sites/ubuntu-intel/packages.yaml
+RUN echo "add line" && sed -i 's/cmake\/3.22.1//g' /root/.bashenv 
+COPY landda.specs /opt/spack-stack
+RUN . ./setup.sh && spack compiler rm gcc@9.4.0 && spack external find boost && spack stack create env --site ubuntu-intel --template empty --name landda && \
+    sed -i 's/\[\]//g' envs/landda/spack.yaml && \
+    cat landda.specs >> envs/landda/spack.yaml && \
+    cat envs/landda/site/compilers.yaml | head -n 14 > comp.yaml && cp comp.yaml envs/landda/site/compilers.yaml && \
+    spack env activate envs/landda && \ 
+    spack concretize  && \
+    echo "done"
+RUN source ./setup.sh && spack env activate envs/landda && spack install
+ENV SHELL=/bin/bash
+RUN . ./setup.sh && source /usr/share/lmod/lmod/init/bash && \
+    mpiver=`spack find intel-oneapi-mpi | grep intel-oneapi-mpi | awk -F "@" '{print $2}'` && \
+    compver=`spack find intel-oneapi-compilers | grep intel-oneapi-compilers | awk -F "@" '{print $2}'` && \
+    echo $mpiver && echo $compver && \
+    spack env activate envs/landda && \ 
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    sed -i 's/2023.0.0/2021.8.0/g' envs/landda/site/packages.yaml && \
+    spack stack setup-meta-modules && \
+    spack module lmod refresh -y && \
+    module use /opt/spack-stack/envs/landda/install/modulefiles/Core && \
+    module avail && \
+    ls -l /opt/spack-stack/envs/landda/install/modulefiles/Core && \
+    sed -i 's/impi/intel-oneapi-mpi/g' /opt/spack-stack/envs/landda/install/modulefiles/intel/*/stack-intel-oneapi-mpi/*.lua && \
+    find /opt/spack-stack/envs/landda/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g' && \
+    echo "module use /opt/spack-stack/envs/landda/install/modulefiles/Core" >> /root/.bashenv && \
+    echo "module load stack-intel stack-intel-oneapi-mpi" >> /root/.bashenv && \
+    source /root/.bashenv && \
+    module spider >& mods && grep ": " mods | awk -F ":" '{print "module load " $2}' | grep -v intel >> /root/.bashenv && \
+    sed -i '/ca-cert/d' /root/.bashenv && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
+    cp ~/.bashenv /opt/spack-stack && \
+    echo "DONE2" 
+WORKDIR /opt
+RUN git clone -b feature/landda https://github.com/NOAA-EPIC/fv3-bundle.git
+RUN source /opt/spack-stack/.bashenv && \
+    sed -i "$ d" $ecmwf_atlas_ROOT/lib/cmake/atlas_io/atlas_io-config.cmake && \
+    echo "set(atlas_FOUND TRUE)" >> $ecmwf_atlas_ROOT/lib/cmake/atlas_io/atlas_io-config.cmake && \
+    cd fv3-bundle && git pull origin feature/landda && mkdir build && cd build && ecbuild .. && \
+    make -j 4
+RUN git clone -b feature/landda https://github.com/NOAA-EPIC/ioda-bundle.git
+WORKDIR /opt/ioda-bundle
+RUN source /opt/spack-stack/.bashenv && \
+    python -m pip install pybind11 && \
+    export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 && \
+    mkdir build && cd build && ecbuild -DBUILD_IODA_CONVERTERS=ON .. && \
+    make -j 8
+RUN pip install netCDF4 && pip install numpy
+WORKDIR /opt/spack-stack
+RUN source /root/.bashenv && module list && \
+    export PATH=$PATH:/opt/fv3-bundle/build/bin:/opt/land-offline_workflow/build/bin && \
+    echo "ENV PATH=$PATH" > locenvs && \
+    echo "ENV MODULEPATH=$MODULEPATH" >> locenvs && \
+    echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> locenvs && \
+    echo "ENV LMOD_DEFAULT_MODULEPATH=$LMOD_DEFAULT_MODULEPATH" >> locenvs && \
+    echo "ENV LMOD_PKG=$LMOD_PKG" >> locenvs && \
+    echo "ENV LMOD_CMD=$LMOD_CMD" >> locenvs && \
+    echo "ENV LMOD_DIR=$LMOD_DIR" >> locenvs && \
+    echo "ENV MODULESHOME=$MODULESHOME" >> locenvs && \
+    echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> locenvs && \
+    echo "ENV CC=$CC" >> locenvs && \
+    echo "ENV CXX=$CXX" >> locenvs && \
+    echo "ENV FC=$FC" >> locenvs && \
+    cp ~/.bashenv /opt/spack-stack

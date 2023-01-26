@@ -17,7 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 RUN ls -l /bin/sh
 RUN mkdir -p /opt
 WORKDIR /opt
-RUN git clone -b feature/oneapi --recursive https://github.com/NOAA-EPIC/spack-stack.git
+RUN git clone -b develop --recursive https://github.com/NOAA-EMC/spack-stack.git
 WORKDIR spack-stack
 RUN pwd && ls -l /bin/sh && sed -i 's/source/./g' ./setup.sh && . ./setup.sh && spack install intel-oneapi-compilers && \
     ls -l /bin/sh  && \
@@ -41,8 +41,7 @@ RUN . ./setup.sh && \
     spack external find libjpeg-turbo && \
     spack external find perl && \
     spack external find python && \
-    spack install zlib@1.2.12 && \
-    spack install cmake@3.22.1 && \
+    spack install cmake@3.19.8 && \
     spack install curl@7.49.1 && \
     spack module tcl refresh -y --delete-tree && source /usr/share/lmod/lmod/init/bash && module avail
 
@@ -50,6 +49,21 @@ RUN . ./setup.sh && \
 RUN . ./setup.sh && \
     echo "source /usr/share/lmod/lmod/init/bash" >> /root/.bashenv && \
     echo "module use $MODULEPATH" >> /root/.bashenv && \
-    echo "module load cmake/3.22.1 intel-oneapi-compilers/2022.1.0 intel-oneapi-mpi/2021.6.0 " >> /root/.bashenv && \
+    echo "module load cmake/3.22.1 intel-oneapi-compilers intel-oneapi-mpi " >> /root/.bashenv && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc
+RUN apt update && apt install -y libboost1.71-dev &&\
+    apt install -y libboost-chrono1.71-dev &&\
+    apt install -y libboost-date-time1.71-dev &&\
+    apt install -y libboost-exception1.71-dev &&\
+    apt install -y libboost-filesystem1.71-dev &&\
+    apt install -y libboost-program-options1.71-dev &&\
+    apt install -y libboost-python1.71-dev &&\
+    apt install -y libboost-regex1.71-dev &&\
+    apt install -y libboost-serialization1.71-dev &&\
+    apt install -y libboost-system1.71-dev &&\
+    apt install -y libboost-test1.71-dev &&\
+    apt install -y libboost-thread1.71-dev &&\
+    apt install -y libboost-timer1.71-dev && \
+    apt install -y python3.8-venv
+

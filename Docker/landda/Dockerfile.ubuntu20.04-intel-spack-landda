@@ -83,6 +83,7 @@ WORKDIR /opt/spack-stack
 RUN source /root/.bashenv && module list && \
     export PATH=$PATH:/opt/fv3-bundle/build/bin:/opt/land-offline_workflow/build/bin && \
     echo "ENV PATH=$PATH" > locenvs && \
+    echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> locenvs && \
     echo "ENV MODULEPATH=$MODULEPATH" >> locenvs && \
     echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> locenvs && \
     echo "ENV LMOD_DEFAULT_MODULEPATH=$LMOD_DEFAULT_MODULEPATH" >> locenvs && \

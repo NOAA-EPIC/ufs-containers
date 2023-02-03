@@ -16,7 +16,7 @@ docker push -t noaaepic/ubuntu20.04-base-intel:intel-2021.8.0
 cp Dockerfile.ubuntu20.04-intel-spack-landda Dockerfile.ubuntu20.04-intel-stage2
 docker build -f Dockerfile.ubuntu20.04-intel-stage2 -t noaaepic/ubuntu20.04-intel-spack-landda:$tag_name . 
 docker push noaaepic/ubuntu20.04-intel-spack-landda:$tag_name 
-rm Dockerfile.ubuntu20.04-intel-stage2
+#rm Dockerfile.ubuntu20.04-intel-stage2
 
 #the last step of the build for ubuntu20.04-spack is to get the paths and LD_LIBRARY stuff written to a file
 #copy out that file so that we can set those paths for anyone executing the container later
@@ -37,6 +37,7 @@ docker rm  -f landda-tmp
 #Build the final container with the WM and environment variables (path, LD_LIBRARY_PATH, etc.) set for use with singularity
 echo tagname is $tag_name
 docker build --no-cache -f Dockerfile.ubuntu20.04-intel-stage3 -t noaaepic/ubuntu20.04-intel-landda:$tag_name .
+#docker build -f Dockerfile.ubuntu20.04-intel-stage3 -t noaaepic/ubuntu20.04-intel-landda:$tag_name .
 docker push noaaepic/ubuntu20.04-intel-landda:$tag_name 
 rm Dockerfile*stage*
 ##Convert the finished docker container into a singularity container for use on HPC systems. 

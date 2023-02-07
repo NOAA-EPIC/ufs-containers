@@ -6,9 +6,8 @@ WORKDIR /opt
 RUN git clone -b feature/release-v1.beta --recursive https://github.com/NOAA-EPIC/land-offline_workflow.git
 RUN source /opt/spack-stack/.bashenv && \
     cd land-offline_workflow && \
-    mkdir build && cd build && ecbuild .. && make -j 8 && \
-    cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fv3files ../DA_update/jedi/fv3-jedi/Data && \
-    cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fieldmetadata ../DA_update/jedi/fv3-jedi/Data 
+    mkdir build && cd build && \
+    ecbuild -DCMAKE_PREFIX_PATH="/opt/fv3-bundle/install/lib/cmake;/opt/ioda-bundle/install/lib/cmake" .. && make -j 8 
 COPY run_container_executable.sh /opt/land-offline_workflow
 WORKDIR /opt/land-offline_workflow
 RUN mkdir -p singularity/bin && cd singularity/bin && \

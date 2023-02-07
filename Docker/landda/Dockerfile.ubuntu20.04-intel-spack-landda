@@ -69,19 +69,20 @@ RUN git clone -b feature/landda https://github.com/NOAA-EPIC/fv3-bundle.git
 RUN source /opt/spack-stack/.bashenv && \
     sed -i "$ d" $ecmwf_atlas_ROOT/lib/cmake/atlas_io/atlas_io-config.cmake && \
     echo "set(atlas_FOUND TRUE)" >> $ecmwf_atlas_ROOT/lib/cmake/atlas_io/atlas_io-config.cmake && \
-    cd fv3-bundle && git pull origin feature/landda && mkdir build && cd build && ecbuild .. && \
+    cd fv3-bundle && git pull origin feature/landda && mkdir build && cd build && \
+    ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
     make -j 4
 RUN git clone -b feature/landda https://github.com/NOAA-EPIC/ioda-bundle.git
 WORKDIR /opt/ioda-bundle
 RUN source /opt/spack-stack/.bashenv && \
     python -m pip install pybind11 && \
     export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 && \
-    mkdir build && cd build && ecbuild -DBUILD_IODA_CONVERTERS=ON .. && \
+    mkdir build && cd build && ecbuild -DBUILD_IODA_CONVERTERS=ON -DCMAKE_INSTALL_PREFIX=../install .. && \
     make -j 8
 RUN pip install netCDF4 && pip install numpy
 WORKDIR /opt/spack-stack
 RUN source /root/.bashenv && module list && \
-    export PATH=$PATH:/opt/fv3-bundle/build/bin:/opt/land-offline_workflow/build/bin && \
+    export PATH=$PATH:/opt/fv3-bundle/install/bin:/opt/land-offline_workflow/build/bin && \
     echo "ENV PATH=$PATH" > locenvs && \
     echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> locenvs && \
     echo "ENV MODULEPATH=$MODULEPATH" >> locenvs && \
@@ -96,3 +97,5 @@ RUN source /root/.bashenv && module list && \
     echo "ENV CXX=$CXX" >> locenvs && \
     echo "ENV FC=$FC" >> locenvs && \
     cp ~/.bashenv /opt/spack-stack
+RUN source /opt/spack-stack/.bashenv && cd /opt/fv3-bundle/build && make install && \
+    cd /opt/ioda-bundle/build && make install

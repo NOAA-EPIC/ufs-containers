@@ -3,7 +3,7 @@ WORKDIR /opt/spack-stack
 
 
 WORKDIR /opt
-RUN git clone -b feature/release-v1.beta --recursive https://github.com/NOAA-EPIC/land-offline_workflow.git
+RUN git clone -b feature/release-v1.beta2 --recursive https://github.com/NOAA-EPIC/land-offline_workflow.git
 RUN source /opt/spack-stack/.bashenv && \
     cd land-offline_workflow && \
     mkdir build && cd build && \

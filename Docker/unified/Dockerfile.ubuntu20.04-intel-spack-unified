@@ -4,7 +4,7 @@ WORKDIR /opt/spack-stack
 RUN git config --global --add safe.directory /opt/spack-stack 
 RUN git config --global --add safe.directory /opt/spack-stack/spack 
 RUN git remote add epic https://github.com/NOAA-EPIC/spack-stack.git && git remote update && git checkout epic/feature/unified-env 
-RUN apt -y install libcurl4-openssl-dev
+RUN apt update && apt -y install libcurl4-openssl-dev
 RUN git submodule sync && git submodule update 
 RUN source ./setup.sh && \
     sed -i s/"'%apple-clang', '%gcc', //g"  configs/templates/unified-dev/spack.yaml && \

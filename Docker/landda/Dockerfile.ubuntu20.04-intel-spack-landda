@@ -1,4 +1,4 @@
-FROM noaaepic/ubuntu20.04-base-intel:develop
+FROM noaaepic/ubuntu20.04-base-intel:TAGNAME
 WORKDIR /opt/spack-stack
 
 

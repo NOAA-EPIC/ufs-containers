@@ -44,5 +44,5 @@ RUN mkdir -p singularity/bin && cd singularity/bin && \
     chmod +x ../../run_container_executable.sh
 ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda
 RUN mkdir /opt/landda-data
-ADD test-comp.tar.gz /opt/landda-data
-ADD test-inps.tar.gz /opt/landda-data
+ADD landda-test-comps.tar.gz /opt/landda-data
+ADD landda-test-inps.tar.gz /opt/landda-data

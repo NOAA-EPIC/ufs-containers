@@ -1,4 +1,4 @@
-FROM noaaepic/ubuntu20.04-base-intel:develop
+FROM noaaepic/ubuntu20.04-base-intel:intel-2021.8.0 
 WORKDIR /opt/spack-stack
 
 RUN git config --global --add safe.directory /opt/spack-stack 

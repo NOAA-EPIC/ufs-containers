@@ -5,7 +5,7 @@ tag_name=$1
 
 echo "tag is " $tag_name
 docker build -f Dockerfile.ubuntu20.04-base-intel -t noaaepic/ubuntu20.04-base-intel:intel-2021.8.0-amd .
-docker push -t noaaepic/ubuntu20.04-base-intel:intel-2021.8.0-amd 
+docker push noaaepic/ubuntu20.04-base-intel:intel-2021.8.0-amd 
 
 #copy out locenvs, which will be cat'ed onto the end of the Dockerfile for the final recipe
 #We need to do this extra stuff because spack installs packages in unpredictable places (they are appended with a long hash)

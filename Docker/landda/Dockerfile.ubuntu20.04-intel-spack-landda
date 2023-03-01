@@ -1,4 +1,4 @@
-FROM noaaepic/ubuntu20.04-base-intel:TAGNAME
+FROM noaaepic/ubuntu20.04-base-intel:intel-2021.8.0-amd
 WORKDIR /opt/spack-stack
 
 

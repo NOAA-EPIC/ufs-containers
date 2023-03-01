@@ -46,3 +46,9 @@ ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/
 RUN mkdir /opt/landda-data
 ADD landda-test-comps.tar.gz /opt/landda-data
 ADD landda-test-inps.tar.gz /opt/landda-data
+RUN source /opt/spack-stack/.bashenv  && \
+    cd /opt/fv3-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/fv3-bundle/install .. && \
+    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
+    cd /opt/ioda-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/ioda-bundle/install .. && \
+    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
+    cd /opt/spack-stack && rm -rf spack/var/spack/cache/_source-cache/archive/* 

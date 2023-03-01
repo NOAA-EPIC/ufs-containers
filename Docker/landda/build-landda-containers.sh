@@ -1,5 +1,5 @@
 #!/bin/bash
-set +x
+set -x
 
 tag_name=$1
 

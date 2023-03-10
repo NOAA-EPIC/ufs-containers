@@ -52,3 +52,4 @@ RUN source /opt/spack-stack/.bashenv  && \
     cd /opt/ioda-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/ioda-bundle/install .. && \
     make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
     cd /opt/spack-stack && rm -rf spack/var/spack/cache/_source-cache/archive/* 
+RUN cd /opt/land-offline_workflow && git remote update && git pull origin release/public-v1.0.0

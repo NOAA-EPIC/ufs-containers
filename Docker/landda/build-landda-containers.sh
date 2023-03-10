@@ -34,10 +34,12 @@ sed -i "s/TAGNAME/$tag_name/g" Dockerfile.ubuntu20.04-intel-stage3
 docker rm  -f landda-tmp
 #Build the final container with the WM and environment variables (path, LD_LIBRARY_PATH, etc.) set for use with singularity
 echo tagname is $tag_name
-wget https://epic-sandbox-srw.s3.amazonaws.com/landda-test-comps.tar.gz 
-wget https://epic-sandbox-srw.s3.amazonaws.com/landda-test-inps.tar.gz 
+#wget https://epic-sandbox-srw.s3.amazonaws.com/landda-test-comps.tar.gz 
+#wget https://epic-sandbox-srw.s3.amazonaws.com/landda-test-inps.tar.gz 
 docker build --no-cache -f Dockerfile.ubuntu20.04-intel-stage3 -t noaaepic/ubuntu20.04-intel-landda:$tag_name  .
-docker push noaaepic/ubuntu20.04-intel-landda:$tag_name 
+#docker build -f Dockerfile.ubuntu20.04-intel-stage3 -t noaaepic/ubuntu20.04-intel-landda:release-v1.0.0 .
+#docker push noaaepic/ubuntu20.04-intel-landda:$tag_name 
+docker push noaaepic/ubuntu20.04-intel-landda:release-v1.0.0
 rm Dockerfile*stage*
 ##Convert the finished docker container into a singularity container for use on HPC systems. 
 #

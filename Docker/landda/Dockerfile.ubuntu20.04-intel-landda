@@ -1,14 +1,17 @@
-FROM noaaepic/ubuntu20.04-intel-spack-landda:develop
+FROM noaaepic/ubuntu20.04-intel-spack-landda:TAGNAME
 WORKDIR /opt/spack-stack
 
 
 WORKDIR /opt
-RUN git clone -b feature/release-v1.beta --recursive https://github.com/NOAA-EPIC/land-offline_workflow.git
-RUN source /opt/spack-stack/.bashenv && \
-    cd land-offline_workflow && \
-    mkdir build && cd build && ecbuild .. && make -j 8 && \
-    cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fv3files ../DA_update/jedi/fv3-jedi/Data && \
-    cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fieldmetadata ../DA_update/jedi/fv3-jedi/Data 
+RUN git clone -b release/public-v1.0.0 --recursive https://github.com/NOAA-EPIC/land-offline_workflow.git
+RUN source /opt/spack-stack/.bashenv  && \
+    ln -s /opt/spack-stack/envs/landda /opt/spack-stack/envs/landda-release-1.0-intel && \
+    cd land-offline_workflow && ls -l /opt/land-offline_workflow/modulefiles && \
+    module use /opt/land-offline_workflow/modulefiles && \
+    module load landda_singularity.intel && \
+    mkdir build && cd build && \
+    ecbuild .. && make -j 8 && cd ../DA_update/jedi/fv3-jedi/Data/ && rm f* && \
+    cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fv3files .
 COPY run_container_executable.sh /opt/land-offline_workflow
 WORKDIR /opt/land-offline_workflow
 RUN mkdir -p singularity/bin && cd singularity/bin && \
@@ -18,6 +21,35 @@ RUN mkdir -p singularity/bin && cd singularity/bin && \
     ln -s ../../run_container_executable.sh vector2tile_converter.exe && \
     ln -s ../../run_container_executable.sh python && \
     ln -s ../../run_container_executable.sh fv3jedi_letkf.x && \
-    ln -s /opt/spack-stack/envs/landda /opt/spack-stack/envs/landda-release-1.0-intel && \
+    mkdir -p /work && \
+    mkdir -p /work2 && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /scratch1 && \
+    mkdir -p /scratch2 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir -p /export && \
+    mkdir -p /Users && \
+    mkdir -p /ncrc && \
     chmod +x ../../run_container_executable.sh
 ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda
+RUN mkdir /opt/landda-data
+ADD landda-test-comps.tar.gz /opt/landda-data
+ADD landda-test-inps.tar.gz /opt/landda-data
+RUN source /opt/spack-stack/.bashenv  && \
+    cd /opt/fv3-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/fv3-bundle/install .. && \
+    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
+    cd /opt/ioda-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/ioda-bundle/install .. && \
+    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
+    cd /opt/spack-stack && rm -rf spack/var/spack/cache/_source-cache/archive/* 
+RUN cd /opt/land-offline_workflow && git remote update && git pull origin release/public-v1.0.0

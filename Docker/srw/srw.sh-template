@@ -6,5 +6,5 @@ img="IMAGE"
 cmd=$(basename "$0")
 arg="$@"
 echo running: singularity exec "${img}" $cmd $arg
-PATH_TO_SINGULARITY exec -B /BINDDIR:/BINDDIR -B /LOCDIR:/LOCDIR "${img}" $cmd $arg
+PATH_TO_SINGULARITY exec -B /BINDDIR -B /LOCDIR -B /ROCOTODIR "${img}" $cmd $arg
 

@@ -1,0 +1,74 @@
+FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.3.0
+LABEL AUTHOR EPIC-AUS
+
+# install srw
+WORKDIR /opt
+RUN git clone https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
+    ./manage_externals/checkout_externals && mkdir build 
+WORKDIR /opt/ufs-srweather-app/build
+RUN source /opt/spack-stack/.bashenv && \
+     find /opt/spack-stack/envs/unified/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g' && \
+     module load stack-intel stack-intel-oneapi-mpi && \
+     grep load ../modulefiles/srw_common_spack.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
+     sed -i 's/pio/parallelio/g' load_mods && \
+     sed -i 's/wrf_io/wrf-io/g' load_mods && source ./load_mods && module load libjpeg && module load openblas && module list && \
+     cmake -DBUILD_RRFS_UTILS=ON -DBUILD_GSI=ON -DBUILD_NEXUS=ON -DBUILD_AQM_UTILS=ON \
+     -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
+WORKDIR /opt/ufs
+RUN git clone https://github.com/NOAA-EPIC/EPIC-Documentation.git && \
+    cd EPIC-Documentation/miniconda3 && \
+    sed -i 's/home\/ubuntu/opt/g' *.sh && \
+    bash && \
+    ./miniconda3_install.sh && \
+    sed -i 's/home\/ubuntu/opt/g' /opt/miniconda3/modulefiles/miniconda3/4.12.0.lua && \
+    sed -i 's/myShellType()/"sh"/g' /opt/miniconda3/modulefiles/miniconda3/4.12.0.lua && \
+    ./miniconda3_regional_workflow_new.sh && \
+    mkdir -p /work && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /scratch1 && \
+    mkdir -p /scratch2 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir /opt/ufs-srweather-app/container-bin && \
+    mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
+    mkdir -p /opt/ufs-srweather-app/container-scripts     
+COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
+RUN echo "test"
+COPY stage-srw-develop.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
+#COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
+#COPY wflow_singularity.lua /opt/ufs-srweather-app/modulefiles/wflow_singularity.lua
+WORKDIR /opt/ufs-srweather-app
+RUN rm -rf /opt/ufs /opt/build /opt/dist 
+RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
+RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
+RUN mkdir /opt/ufs-srweather-app/tarballs
+COPY test_python.sh /opt/ufs-srweather-app/container-scripts
+COPY f90nml.tar.gz /opt/ufs-srweather-app/tarballs
+COPY Jinja2-3.1.2.tar.gz /opt/ufs-srweather-app/tarballs 
+COPY MarkupSafe-2.1.2.tar.gz /opt/ufs-srweather-app/tarballs
+COPY PyYAML-6.0.tar.gz /opt/ufs-srweather-app/tarballs
+ENV PATH=/opt/ufs-srweather-app/container-bin:/opt/miniconda3/4.12.0/envs/regional_workflow/bin:/opt/miniconda3/4.12.0/condabin:/opt/miniconda3/4.12.0/condabin:/opt/miniconda3/4.12.0/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/libjpeg-turbo-2.1.0-ibo74yj/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/wgrib2-2.0.8-4hbia3q/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/nemsio-2.5.2-nozpyp4/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/mapl-2.22.0-2z73qpb/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/bufr-11.7.1-yoze47y/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/esmf-8.3.0b09-vwu2ghr/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/netcdf-fortran-4.6.0-eqojxed/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/netcdf-c-4.9.2-7at3rmt/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/libpng-1.6.37-nr5najk/bin:/opt/spack-stack/envs/unified/install/intel/2021.8.0/jasper-2.0.32-6maoneq/bin:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-mwfbgmxe2rm3wd4uxwqmahnkwxnxf3yg/mpi/2021.8.0/libfabric/bin:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-mwfbgmxe2rm3wd4uxwqmahnkwxnxf3yg/mpi/2021.8.0/bin:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/lib/oclfpga/bin:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/bin/intel64:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local:/opt/ufs-srweather-app/container-bin
+ENV LD_LIBRARY_PATH=/opt/ufs-srweather-app/lib:/opt/miniconda3/4.12.0/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/libjpeg-turbo-2.1.0-ibo74yj/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/wgrib2-2.0.8-4hbia3q/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/ncio-1.1.2-dou4x4x/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/wrf-io-1.2.0-srrsb7w/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/w3nco-2.4.1-42lx7u7/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/sigio-2.3.2-zh4nzl4/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/sfcio-1.4.1-fxwi3bm/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/nemsio-2.5.2-nozpyp4/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/mapl-2.22.0-2z73qpb/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/w3emc-2.9.2-5yhfftj/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/sp-2.3.3-gnke6dy/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/ip-3.3.3-ickkuw4/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/g2tmpl-1.10.2-vucq66q/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/g2-3.4.5-mkzxfsr/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/crtm-2.4.0-4ler5pk/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/bacio-2.4.1-ern2m6h/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/bufr-11.7.1-yoze47y/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/fms-2022.04-waygzlh/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/esmf-8.3.0b09-vwu2ghr/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/parallelio-2.5.9-prat5qr/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/netcdf-fortran-4.6.0-eqojxed/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/netcdf-c-4.9.2-7at3rmt/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/libpng-1.6.37-nr5najk/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/zlib-1.2.13-pmntgh3/lib:/opt/spack-stack/envs/unified/install/intel/2021.8.0/jasper-2.0.32-6maoneq/lib:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-mwfbgmxe2rm3wd4uxwqmahnkwxnxf3yg/mpi/2021.8.0/libfabric/lib:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-mwfbgmxe2rm3wd4uxwqmahnkwxnxf3yg/mpi/2021.8.0/lib/release:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-mwfbgmxe2rm3wd4uxwqmahnkwxnxf3yg/mpi/2021.8.0/lib:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/lib:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/lib/x64:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/lib/oclfpga/host/linux64/lib:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/compiler/lib/intel64_lin
+ENV MODULEPATH=/opt/miniconda3/modulefiles:/opt/spack-stack/envs/unified/install/modulefiles/intel-oneapi-mpi/2021.8.0/intel/2021.8.0:/opt/spack-stack/envs/unified/install/modulefiles/intel/2021.8.0:/opt/spack-stack/envs/unified/install/modulefiles/Core:/opt/spack-stack/spack/share/spack/modules/linux-ubuntu20.04-skylake
+ENV FI_PROVIDER_PATH=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-mwfbgmxe2rm3wd4uxwqmahnkwxnxf3yg/mpi/2021.8.0/libfabric/lib/prov:/usr/lib64/libfabric
+ENV LMOD_DEFAULT_MODULEPATH=/opt/miniconda3/modulefiles:/opt/spack-stack/envs/unified/install/modulefiles/Core:/opt/spack-stack/spack/share/spack/modules/linux-ubuntu20.04-skylake:/opt/spack-stack/envs/unified/install/modulefiles/intel-oneapi-mpi/2021.8.0/intel/2021.8.0:/opt/spack-stack/envs/unified/install/modulefiles/intel/2021.8.0
+ENV LMOD_PKG=/usr/share/lmod/lmod
+ENV LMOD_CMD=/usr/share/lmod/lmod/libexec/lmod
+ENV LMOD_DIR=/usr/share/lmod/lmod/libexec
+ENV MODULESHOME=/usr/share/lmod/lmod
+ENV CMAKE_PREFIX_PATH=/opt/spack-stack/envs/unified/install/intel/2021.8.0/libjpeg-turbo-2.1.0-ibo74yj:/opt/spack-stack/envs/unified/install/intel/2021.8.0/wgrib2-2.0.8-4hbia3q:/opt/spack-stack/envs/unified/install/intel/2021.8.0/ncio-1.1.2-dou4x4x:/opt/spack-stack/envs/unified/install/intel/2021.8.0/wrf-io-1.2.0-srrsb7w:/opt/spack-stack/envs/unified/install/intel/2021.8.0/w3nco-2.4.1-42lx7u7:/opt/spack-stack/envs/unified/install/intel/2021.8.0/sigio-2.3.2-zh4nzl4:/opt/spack-stack/envs/unified/install/intel/2021.8.0/sfcio-1.4.1-fxwi3bm:/opt/spack-stack/envs/unified/install/intel/2021.8.0/nemsio-2.5.2-nozpyp4:/opt/spack-stack/envs/unified/install/intel/2021.8.0/mapl-2.22.0-2z73qpb:/opt/spack-stack/envs/unified/install/intel/2021.8.0/yafyaml-0.5.1-7yqopxt:/opt/spack-stack/envs/unified/install/intel/2021.8.0/gftl-shared-1.5.0-5ngq5ou:/opt/spack-stack/envs/unified/install/intel/2021.8.0/w3emc-2.9.2-5yhfftj:/opt/spack-stack/envs/unified/install/intel/2021.8.0/sp-2.3.3-gnke6dy:/opt/spack-stack/envs/unified/install/intel/2021.8.0/ip-3.3.3-ickkuw4:/opt/spack-stack/envs/unified/install/intel/2021.8.0/g2tmpl-1.10.2-vucq66q:/opt/spack-stack/envs/unified/install/intel/2021.8.0/g2-3.4.5-mkzxfsr:/opt/spack-stack/envs/unified/install/intel/2021.8.0/crtm-2.4.0-4ler5pk:/opt/spack-stack/envs/unified/install/intel/2021.8.0/bacio-2.4.1-ern2m6h:/opt/spack-stack/envs/unified/install/intel/2021.8.0/bufr-11.7.1-yoze47y:/opt/spack-stack/envs/unified/install/intel/2021.8.0/fms-2022.04-waygzlh:/opt/spack-stack/envs/unified/install/intel/2021.8.0/esmf-8.3.0b09-vwu2ghr:/opt/spack-stack/envs/unified/install/intel/2021.8.0/parallelio-2.5.9-prat5qr:/opt/spack-stack/envs/unified/install/intel/2021.8.0/netcdf-fortran-4.6.0-eqojxed:/opt/spack-stack/envs/unified/install/intel/2021.8.0/netcdf-c-4.9.2-7at3rmt:/opt/spack-stack/envs/unified/install/intel/2021.8.0/libpng-1.6.37-nr5najk:/opt/spack-stack/envs/unified/install/intel/2021.8.0/zlib-1.2.13-pmntgh3:/opt/spack-stack/envs/unified/install/intel/2021.8.0/jasper-2.0.32-6maoneq:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-mwfbgmxe2rm3wd4uxwqmahnkwxnxf3yg:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/2023.0.0/linux/IntelDPCPP:/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox
+ENV ESMFMKFILE=/opt/spack-stack/envs/unified/install/intel/2021.8.0/esmf-8.3.0b09-vwu2ghr/lib/esmf.mk
+ENV CC=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/latest/linux/bin/intel64/icc
+ENV CXX=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/latest/linux/bin/intel64/icpc
+ENV FC=/opt/spack-stack/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2023.0.0-r4v4wzb2nglaet3utty5gv6l2xyw2dox/compiler/latest/linux/bin/intel64/ifort
+

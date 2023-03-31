@@ -28,19 +28,14 @@ singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
 
 #get the name of the root directory where data is staged
 BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${MACHINE}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
+#get the path to python, rocoto and singularity on the host
 PYTHONPATH=`which python | head -n 1 | xargs dirname`
-unalias which
 SINGULARITY=`which singularity`
 ROCOTODIR=`which rocotorun | awk -F '/' '{print "/"$2}'`
-echo $ROCOTODIR
-#BINDDIR=$ROCOTODIR
 
-#change the RUN cmds to mpirun
-sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpirun -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-sed -i 's/rgn_/rgnl_/g' ufs-srweather-app/scripts/exregional_make_grid.sh 
+#copy the template to use as the srw script
 cp ufs-srweather-app/container-scripts/srw.sh-template srw.sh
+#replace the paths in the script
 LOCDIR=`echo $PWD | awk -F "/" '{print $2}'`
 sed -i "s|IMAGE|$IMAGE|g" srw.sh
 sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
@@ -48,7 +43,24 @@ sed -i "s|LOCDIR|$LOCDIR|g" srw.sh
 sed -i "s|ROCOTODIR|$ROCOTODIR|g" srw.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
 sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/scripts/exregional_* 
-#sed -i "2 i export PATH=/${PWD}/ufs-srweather-app/bin:\$PATH" ufs-srweather-app/scripts/exregional_* 
+
+#test python install for required packages and install them if they are missing
+$PWD/ufs-srweather-app/container-scripts/test_python.sh
+
+#create a new module file to use that has only the compiler and mpi loaded
+cp $PWD/ufs-srweather-app/container-scripts/build_singularity_intel.lua $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
+sed -i "s|COMPILERMOD|$COMPILER|g" $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
+sed -i "s|MPIMOD|$MPI|g" $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
+#use the same module for all tasks
+cp ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
+#remove any extra modules
+rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
+
+#change the RUN cmds to mpirun needed for using singularity 
+sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpirun -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+
 
 #create links to the srw.sh script in ufs-srweather-app/bin dir
 cd ufs-srweather-app/bin
@@ -79,16 +91,8 @@ ln -s ../../srw.sh vcoord_gen
 cd ..
 cp -r bin exec
 cd ..
-set -x
-unalias grep
-#line_num=`grep -in ^load ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua | grep python | awk -F ":" '{print $1}'`
-#sed -i "${line_num} s/./--&/" ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua 
-line_num=`grep -in ^load ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua | grep miniconda | awk -F ":" '{print $1}'`
-echo $line_num
-sed -i "${line_num} s/./--&/" ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua 
-cp ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
-sed -i "/rocoto/a load(\"${COMPILER}\")\nload(\"${MPI}\")" ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
-sed -i "/rocoto/a load(\"${COMPILER}\")\nload(\"${MPI}\")" ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
-rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
+
+#make sure we have the path to our executable scripts at the head of our PATH variable
 sed -i "2 i export PATH=/${PWD}/ufs-srweather-app/bin:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
+#Remove the --cpus-per-task section of the submit script, since it breaks with singularity for some reason
 sed -i 's/--cpus-per-task {fcst_threads}//g' $PWD/ufs-srweather-app/ush/generate_FV3LAM_wflow.py

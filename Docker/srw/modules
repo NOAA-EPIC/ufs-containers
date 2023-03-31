@@ -1,0 +1,45 @@
+module load jasper
+module load zlib
+module load libpng
+module load netcdf-c
+module load netcdf-fortran
+module load parallelio
+module load esmf
+module load fms
+module load bufr
+module load bacio
+module load crtm
+module load g2
+module load g2tmpl
+module load ip
+module load sp
+module load w3emc
+module load gftl-shared
+module load yafyaml
+module load mapl
+module load nemsio
+module load sfcio
+module load sigio
+module load w3nco
+module load wrf-io
+module load ncio
+module load wgrib2
+module load libjpeg
+module use /opt/miniconda3/modulefiles
+module load miniconda3
+conda activate regional_workflow
+echo "env PATH=/opt/ufs-srweather-app/container-bin:$PATH" > locenvs && \
+>     echo "ENV LD_LIBRARY_PATH=/opt/ufs-srweather-app/lib:$LD_LIBRARY_PATH" >> locenvs && \
+>     echo "ENV MODULEPATH=$MODULEPATH" >> locenvs && \
+>     echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> locenvs && \
+>     echo "ENV LMOD_DEFAULT_MODULEPATH=$LMOD_DEFAULT_MODULEPATH" >> locenvs && \
+>     echo "ENV LMOD_PKG=$LMOD_PKG" >> locenvs && \
+>     echo "ENV LMOD_CMD=$LMOD_CMD" >> locenvs && \
+>     echo "ENV LMOD_DIR=$LMOD_DIR" >> locenvs && \
+>     echo "ENV MODULESHOME=$MODULESHOME" >> locenvs && \
+>     echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> locenvs && \
+>     echo "ENV ESMFMKFILE=$ESMFMKFILE" >> locenvs && \
+>     echo "ENV CC=$CC" >> locenvs && \
+>     echo "ENV CXX=$CXX" >> locenvs && \
+>     echo "ENV FC=$FC" >> locenvs
+

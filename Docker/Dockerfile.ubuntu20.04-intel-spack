@@ -30,7 +30,7 @@ RUN mkdir -p /opt/spack-stack/configs/sites/ubuntu-intel && \
 ENV branch=$branch_name
 RUN echo "branch is " $branch 
 RUN git clone -b $branch https://github.com/ufs-community/ufs-srweather-app.git 
-COPY srw.specs /opt/spack-stack
+COPY ufs.specs /opt/spack-stack
 RUN . ./setup.sh && spack stack create env --site ubuntu-intel --template empty --name $branch && \
     echo $branch && \
     sed -i 's/\[\]//g' envs/$branch/spack.yaml && \

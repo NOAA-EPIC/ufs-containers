@@ -5,7 +5,7 @@
   - netcdf-fortran@4.5.4
   - parallelio@2.5.2~shared
   - esmf@8.3.0b09
-  - fms@2022.01
+  - fms@2022.04
   - bufr@11.7.0
   - bacio@2.4.1
   - crtm@2.3.0

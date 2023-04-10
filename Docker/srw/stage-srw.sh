@@ -29,7 +29,7 @@ singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
 #get the name of the root directory where data is staged
 BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${MACHINE}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
 #get the path to python, rocoto and singularity on the host
-PYTHONPATH=`which python | head -n 1 | xargs dirname`
+PYTHONPATH=`which python3 | head -n 1 | xargs dirname`
 SINGULARITY=`which singularity`
 ROCOTODIR=`which rocotorun | awk -F '/' '{print "/"$2}'`
 
@@ -93,6 +93,6 @@ cp -r bin exec
 cd ..
 
 #make sure we have the path to our executable scripts at the head of our PATH variable
-sed -i "2 i export PATH=/${PWD}/ufs-srweather-app/bin:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
+sed -i "2 i export PATH=${PYTHONPATH}:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
 #Remove the --cpus-per-task section of the submit script, since it breaks with singularity for some reason
 sed -i 's/--cpus-per-task {fcst_threads}//g' $PWD/ufs-srweather-app/ush/generate_FV3LAM_wflow.py

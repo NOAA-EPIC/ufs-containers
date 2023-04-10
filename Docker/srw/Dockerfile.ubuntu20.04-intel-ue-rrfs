@@ -43,8 +43,8 @@ RUN git clone https://github.com/NOAA-EPIC/EPIC-Documentation.git && \
     mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
     mkdir -p /opt/ufs-srweather-app/container-scripts     
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
-COPY stage-srw-develop.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
-COPY build_singularity_intel.lua /opt/container-scripts/build_singularity_intel.lua
+COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
+COPY build_singularity_intel.lua /opt/ufs-srweather-app/container-scripts/build_singularity_intel.lua
 WORKDIR /opt/ufs-srweather-app
 RUN rm -rf /opt/ufs /opt/build /opt/dist 
 RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh

@@ -1,4 +1,0 @@
-# ufs-tools: semi-auto rt test run scripts
-Example rt runs (note to make sh script executable first):
-* ./rt-cheyenne_gnu.sh -f feature/stoch_spp -u https://github.com/JeffBeck-NOAA/ufs-weather-model -e rt-982
-* ./rt-orion_intel.sh -f feature/stoch_spp -u https://github.com/JeffBeck-NOAA/ufs-weather-model -e rt-982

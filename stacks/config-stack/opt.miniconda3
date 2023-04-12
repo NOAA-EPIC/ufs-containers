@@ -1,0 +1,6 @@
+#%Module######################################################################
+##
+##      Python prerequisites
+##
+module use -a /home/builder/modulefiles
+module load --ignore-cache miniconda/epic-4.12.0

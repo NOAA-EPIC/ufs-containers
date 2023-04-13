@@ -44,7 +44,8 @@ RUN . ./setup.sh && spack compiler rm gcc@9.4.0 && spack external find --all && 
     echo "done"
 COPY unified.pub /opt/spack-stack/spack-stack-1.3.0
 COPY unified.private /opt/spack-stack/spack-stack-1.3.0
-#RUN source ./setup.sh && spack env activate envs/unified-dev && \
+RUN source ./setup.sh && spack env activate envs/unified-dev && \
+     spack install  --no-check-signature --no-checksum |& tee install.log ; exit 0
 #    spack mirror add unified file:/opt/spack-mirror && spack gpg trust unified.pub && spack install --no-check-signature --no-checksum && exit 0 
 ENV SHELL=/bin/bash
 RUN . ./setup.sh && source /usr/share/lmod/lmod/init/bash && \

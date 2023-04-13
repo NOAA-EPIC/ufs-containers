@@ -7,7 +7,7 @@ RUN git config --global --add safe.directory /opt/spack-stack/spack
 RUN git remote update && git checkout release/1.3.0 && git pull origin release/1.3.0
 RUN git submodule sync && git submodule update 
 #ADD spack-mirror.tar.gz /opt
-RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
+#RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
 RUN apt update && apt -y install libcurl4-openssl-dev texinfo libmysqlclient-dev freetype2-demos libbz2-dev
 RUN source ./setup.sh && \
     sed -i s/"'%apple-clang', '%gcc', //g"  configs/templates/unified-dev/spack.yaml && \
@@ -45,8 +45,8 @@ RUN . ./setup.sh && spack compiler rm gcc@9.4.0 && spack external find --all && 
     echo "done"
 COPY unified.pub /opt/spack-stack
 COPY unified.private /opt/spack-stack
-RUN source ./setup.sh && spack env activate envs/unified && \
-    spack mirror add unified file:/opt/spack-mirror && spack gpg trust unified.pub && spack install --no-check-signature --no-checksum && exit 0 
+#RUN source ./setup.sh && spack env activate envs/unified && \
+#    spack mirror add unified file:/opt/spack-mirror && spack gpg trust unified.pub && spack install --no-check-signature --no-checksum && exit 0 
 ENV SHELL=/bin/bash
 RUN . ./setup.sh && source /usr/share/lmod/lmod/init/bash && \
     mpiver=`spack find intel-oneapi-mpi | grep intel-oneapi-mpi | awk -F "@" '{print $2}'` && \

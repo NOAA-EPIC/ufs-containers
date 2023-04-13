@@ -10,7 +10,8 @@ RUN apt install -y lmod && \
     ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt -y install build-essential git vim python3 wget libexpat1-dev lmod bc time && \
-    apt-get install -yq libtiff-dev git-lfs python3-distutils python3-pip wget m4 unzip curl
+    apt-get install -yq libtiff-dev git-lfs python3-distutils python3-pip wget m4 unzip && \
+    apt-get install libcurl4-openssl-dev
 RUN apt-get install -y --no-install-recommends apt-utils
 RUN echo "dash dash/sh boolean false" | debconf-set-selections
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
@@ -41,15 +42,14 @@ RUN . ./setup.sh && \
     spack external find libjpeg-turbo && \
     spack external find perl && \
     spack external find python && \
-    spack install cmake@3.19.8 && \
-    spack install curl@7.49.1 && \
+    spack external find cmake && \
     spack module tcl refresh -y --delete-tree && source /usr/share/lmod/lmod/init/bash && module avail
 
 #set up modules to be loaded automatically when shelling into the container
 RUN . ./setup.sh && \
     echo "source /usr/share/lmod/lmod/init/bash" >> /root/.bashenv && \
     echo "module use $MODULEPATH" >> /root/.bashenv && \
-    echo "module load cmake/3.22.1 intel-oneapi-compilers intel-oneapi-mpi " >> /root/.bashenv && \
+    echo "module load intel-oneapi-compilers intel-oneapi-mpi " >> /root/.bashenv && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc
 RUN apt update && apt install -y libboost1.71-dev &&\

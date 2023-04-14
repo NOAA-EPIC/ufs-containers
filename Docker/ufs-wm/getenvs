@@ -1,0 +1,10 @@
+echo ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH > locenvs
+echo ENV PATH=$PATH >> locenvs
+echo ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> locenvs
+echo ENV LIBRARY_PATH=$LIBRARY_PATH >> locenvs
+echo ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> locenvs
+echo ENV MODULEPATH=$MODULEPATH >> locenvs
+echo ENV CC=`which mpiicc` >> locenvs
+echo ENV FC=`which mpiifort` >> locenvs
+echo ENV CXX=`which mpiicpc` >> locenvs
+  

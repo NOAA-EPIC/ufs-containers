@@ -19,8 +19,19 @@ case $i in
     ;;
 esac
 done
-#singularity exec -H $PWD ${IMAGE} tar xvfz /opt/files.tar.gz 
-tar xvfz files.tar.gz
+
+singularity exec -H $PWD $IMAGE cp /opt/ufs-weather-model/container-scripts/run_container_executable.sh .
+singularity exec -H $PWD $IMAGE cp /opt/ufs-weather-model/container-scripts/build_container_executable.sh .
+mkdir -p bin
+cd bin
+ln -s ../build_container_executable.sh make
+ln -s ../build_container_executable.sh cmake
+cd ..
+export line=`/bin/grep -n "cp ${PATHRT}" tests/run_test.sh | /bin/grep fv3.exe | awk -F ":" '{print $1}'`
+sed -i "${line}s/^/#/g" tests/run_test.sh
+sed -i "${line}a ln -s \$\{PATHRT\}\/..\/run_container_executable.sh fv3_\$\{COMPILE_NR\}.exe" tests/run_test.sh
+sed -i 's/srun/#srun/g' tests/fv3_conf/fv3_slurm.IN*
+sed -i '/#srun/a mpiexec -n @[TASKS] ./fv3_${COMPILE_NR}.exe' tests/fv3_conf/fv3_slurm.IN*
 
 SINGULARITY=`which singularity`
 LOCDIR=`echo $PWD | awk -F "/" '{print $2}'`

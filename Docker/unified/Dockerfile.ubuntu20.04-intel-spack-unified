@@ -27,6 +27,7 @@ RUN source ./setup.sh && \
     echo "    compiler:: [intel@$compver]" >> /opt/spack-stack/spack-stack-1.3.0/configs/sites/ubuntu-intel/packages.yaml && \
     echo "    providers:" >> /opt/spack-stack/spack-stack-1.3.0/configs/sites/ubuntu-intel/packages.yaml && \
     echo "      mpi:: [intel-oneapi-mpi@$mpiver]" >> /opt/spack-stack/spack-stack-1.3.0/configs/sites/ubuntu-intel/packages.yaml && \
+    echo "    target: [core2]" >> /opt/spack-stack/spack-stack-1.3.0/configs/sites/ubuntu-intel/packages.yaml && \
     echo "  mpi:" >> /opt/spack-stack/spack-stack-1.3.0/configs/sites/ubuntu-intel/packages.yaml && \
     echo "    buildable: False" >> /opt/spack-stack/spack-stack-1.3.0/configs/sites/ubuntu-intel/packages.yaml && \
     echo "  intel-oneapi-mpi:" >> /opt/spack-stack/spack-stack-1.3.0/configs/sites/ubuntu-intel/packages.yaml && \

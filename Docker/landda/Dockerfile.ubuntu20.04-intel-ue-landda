@@ -1,0 +1,81 @@
+FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.3.0
+WORKDIR /opt/spack-stack/spack-stack-1.3.0
+
+ENV SHELL=/bin/bash
+WORKDIR /opt
+RUN git clone https://github.com/JCSDA/jedi-bundle.git
+WORKDIR /opt/jedi-bundle
+RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv && \
+    python -m pip install pybind11 && \
+    module load zlib/1.2.13  openblas/0.3.19 hdf5/1.14.0 nccmp/1.9.0.1 libpng/1.6.37 eigen/3.4.0 netcdf-c/4.9.2 && \
+    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit/1.20.2 netcdf-fortran/4.6.0 parallelio/2.5.9 && \
+    module load ecbuild/3.6.5 fckit/0.10.0 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 jedi-fv3-env/unified-dev atlas/0.32.1 && \
+    module load nco/5.0.6 crtm/v2.4-jedi.2 && \
+    export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 && \
+    mkdir build && cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install ..
+WORKDIR /opt/jedi-bundle/build
+RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv  && \
+    module load zlib/1.2.13  openblas/0.3.19 hdf5/1.14.0 nccmp/1.9.0.1 libpng/1.6.37 eigen/3.4.0 netcdf-c/4.9.2 && \
+    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit/1.20.2 netcdf-fortran/4.6.0 parallelio/2.5.9 && \
+    module load ecbuild/3.6.5 fckit/0.10.0 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 jedi-fv3-env/unified-dev atlas/0.32.1 && \
+    module load nco/5.0.6 crtm/v2.4-jedi.2 && \
+    make -j 4
+RUN pip install netCDF4 && pip install numpy
+WORKDIR /opt/spack-stack/spack-stack-1.3.0
+RUN source /root/.bashenv && cd /opt && git clone --recursive https://github.com/ufs-community/land-DA_workflow.git && \
+    cd land-DA_workflow && mkdir build && cd build && module load ecbuild netcdf-c netcdf-fortran && \
+    export JEDI_INSTALL=/opt/jedi-bundle/build && ecbuild .. && make -j 8
+RUN cd /opt/land-DA_workflow/DA_update/jedi/fv3-jedi/Data/ && rm f* && \
+    cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fv3files .
+COPY run_container_executable.sh /opt/land-DA_workflow
+WORKDIR /opt/land-DA_workflow
+RUN mkdir -p singularity/bin && cd singularity/bin && \
+    ln -s ../../run_container_executable.sh apply_incr.exe && \
+    ln -s ../../run_container_executable.sh calcfIMS.exe && \
+    ln -s ../../run_container_executable.sh ufsLandDriver.exe && \
+    ln -s ../../run_container_executable.sh vector2tile_converter.exe && \
+    ln -s ../../run_container_executable.sh python && \
+    ln -s ../../run_container_executable.sh fv3jedi_letkf.x && \
+    mkdir -p /work && \
+    mkdir -p /work2 && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /scratch1 && \
+    mkdir -p /scratch2 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir -p /export && \
+    mkdir -p /Users && \
+    mkdir -p /ncrc && \
+    chmod +x ../../run_container_executable.sh
+ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda
+RUN mkdir /opt/landda-data
+ADD landda-test-comps.tar.gz /opt/landda-data
+ADD landda-test-inps.tar.gz /opt/landda-data
+RUN cd /opt/jedi-bundle/build && source  /root/.bashenv && make -j 8 install && rm -rf * && mv ../install/* . && \
+    cd /opt/spack-stack/spack-stack-1.3.0 && rm -rf spack/var/spack/cache/_source-cache/archive/* 
+RUN source /root/.bashenv && module list && \
+    export PATH=$PATH:/opt/jedi-bundle/build/bin:/opt/land-DA_workflow/build/bin && \
+    echo "ENV PATH=$PATH" > locenvs && \
+    echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> locenvs && \
+    echo "ENV MODULEPATH=$MODULEPATH" >> locenvs && \
+    echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> locenvs && \
+    echo "ENV LMOD_DEFAULT_MODULEPATH=$LMOD_DEFAULT_MODULEPATH" >> locenvs && \
+    echo "ENV LMOD_PKG=$LMOD_PKG" >> locenvs && \
+    echo "ENV LMOD_CMD=$LMOD_CMD" >> locenvs && \
+    echo "ENV LMOD_DIR=$LMOD_DIR" >> locenvs && \
+    echo "ENV MODULESHOME=$MODULESHOME" >> locenvs && \
+    echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> locenvs && \
+    echo "ENV CC=$CC" >> locenvs && \
+    echo "ENV CXX=$CXX" >> locenvs && \
+    echo "ENV FC=$FC" >> locenvs && \
+    cp ~/.bashenv /opt/spack-stack/spack-stack-1.3.0

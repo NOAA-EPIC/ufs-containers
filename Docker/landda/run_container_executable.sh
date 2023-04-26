@@ -2,7 +2,6 @@
 
 export SINGULARITYENV_FI_PROVIDER=tcp
 export SINGULARITY_SHELL=/bin/bash
-export SINGULARITYENV_APPEND_PATH=/opt/fv3-bundle/build/bin
 BINDDIR="/"`pwd | awk -F"/" '{print $2}'`
 CONTAINERLOC=${EPICCONTAINERS:-${HOME}}
 img=${img:-${CONTAINERLOC}/ubuntu20.04-intel-spack-landda.img}

@@ -23,7 +23,11 @@ RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv  && \
 RUN pip install netCDF4 && pip install numpy
 WORKDIR /opt/spack-stack/spack-stack-1.3.0
 RUN source /root/.bashenv && cd /opt && git clone --recursive https://github.com/ufs-community/land-DA_workflow.git && \
-    cd land-DA_workflow && mkdir build && cd build && module load ecbuild netcdf-c netcdf-fortran && \
+    cd land-DA_workflow && mkdir build && cd build && \
+    module load ecbuild/3.6.5 fckit/0.10.0 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 jedi-fv3-env/unified-dev atlas/0.32.1 && \
+    module load libjpeg/2.1.0 pkg-config/0.29.2 curl/7.68.0 zstd/1.5.2 esmf/8.3.0b09 fms/2022.04 bacio/2.4.1 crtm-fix/2.4.0_emc && \
+    module load git-lfs/2.9.2 crtm/2.4.0 g2/3.4.5 g2tmpl/1.10.2 ip/3.3.3 sp/2.3.3 w3emc/2.9.2 gftl/1.8.1 gftl-shared/1.5.0 && \
+    module load yafyaml/0.5.1 mapl/2.22.0-esmf-8.3.0b09 && \
     export JEDI_INSTALL=/opt/jedi-bundle/build && ecbuild .. && make -j 8
 RUN cd /opt/land-DA_workflow/DA_update/jedi/fv3-jedi/Data/ && rm f* && \
     cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fv3files .

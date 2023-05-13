@@ -86,8 +86,8 @@ RUN source /root/.bashenv && module list && \
     export PATH=$PATH:/opt/jedi-bundle/build/bin:/opt/land-DA_workflow/build/bin && \
     export LD_LIBRARY_PATH=/opt/land-DA_workflow/build/lib:$LD_LIBRARY_PATH && \
     echo "ENV PATH=$PATH" > landda.envs && \
-    echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" > landda.envs && \
-    echo "ENV LIBRARY_PATH=$LIBRARY_PATH" > landda.envs && \
+    echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> landda.envs && \
+    echo "ENV LIBRARY_PATH=$LIBRARY_PATH" >> landda.envs && \
     echo "ENV MODULEPATH=$MODULEPATH" >> landda.envs && \
     echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> landda.envs && \
     echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> landda.envs && \
@@ -99,8 +99,8 @@ RUN source /root/.bashenv && module list && \
     module load parallelio/2.5.9 crtm/2.4.0 sp/2.3.3 mapl/2.22.0-esmf-8.3.0b09 w3nco/2.4.1 libpng/1.6.37 esmf/8.3.0b09 g2/3.4.5 && \
     module load w3emc/2.9.2 nemsio/2.5.2 wrf-io/1.2.0 netcdf-c/4.9.2 bufr/11.7.1 g2tmpl/1.10.2 gftl-shared/1.5.0 sfcio/1.4.1 ncio/1.1.2 &&\
     echo "ENV PATH=$PATH" > srw.envs && \
-    echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" > srw.envs && \
-    echo "ENV LIBRARY_PATH=$LIBRARY_PATH" > srw.envs && \
+    echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> srw.envs && \
+    echo "ENV LIBRARY_PATH=$LIBRARY_PATH" >> srw.envs && \
     echo "ENV MODULEPATH=$MODULEPATH" >> srw.envs && \
     echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> srw.envs && \
     echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> srw.envs && \

@@ -83,7 +83,7 @@ RUN source /root/.bashenv && module list && \
     module load git-lfs/2.9.2 crtm/2.4.0 g2/3.4.5 g2tmpl/1.10.2 ip/3.3.3 sp/2.3.3 w3emc/2.9.2 gftl/1.8.1 gftl-shared/1.5.0 && \
     module load yafyaml/0.5.1 mapl/2.22.0-esmf-8.3.0b09 netcdf-c netcdf-fortran parallelio && \
     module load zlib libpng hdf5 && \
-    export PATH=$PATH:/opt/jedi-bundle/build/bin:/opt/land-DA_workflow/build/bin && \
+    export PATH=$PATH:/opt/jedi-bundle/build/bin:/opt/land-DA_workflow/singularity/bin && \
     export LD_LIBRARY_PATH=/opt/land-DA_workflow/build/lib:$LD_LIBRARY_PATH && \
     echo "ENV PATH=$PATH" > landda.envs && \
     echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> landda.envs && \

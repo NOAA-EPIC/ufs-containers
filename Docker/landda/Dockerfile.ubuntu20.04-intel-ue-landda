@@ -62,7 +62,7 @@ RUN mkdir -p singularity/bin && cd singularity/bin && \
     mkdir -p /export && \
     mkdir -p /Users && \
     mkdir -p /ncrc && \
-    chmod +x ../../run_container_executable.sh
+    chmod a+rx ../../run_container_executable.sh
 ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda
 RUN mkdir /opt/landda-data
 ADD landda-test-comps.tar.gz /opt/landda-data

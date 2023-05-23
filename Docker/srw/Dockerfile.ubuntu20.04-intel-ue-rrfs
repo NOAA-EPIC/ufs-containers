@@ -1,4 +1,5 @@
-FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.3.0
+#FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.3.0
+FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.3.0-new
 LABEL AUTHOR EPIC-AUS
 
 # install srw
@@ -7,7 +8,7 @@ RUN git clone https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-s
     ./manage_externals/checkout_externals && mkdir build 
 WORKDIR /opt/ufs-srweather-app/build
 RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv && \
-     find /opt/spack-stack/spack-stack-1.3.0/envs/unified/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g' && \
+     find /opt/spack-stack/spack-stack-1.3.0/envs/unified-dev/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g' && \
      module load stack-intel stack-intel-oneapi-mpi && \
      grep load ../modulefiles/srw_common_spack.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
      sed -i 's/pio/parallelio/g' load_mods && \

@@ -18,8 +18,8 @@ RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 RUN ls -l /bin/sh
 RUN mkdir -p /opt/spack-stack
 WORKDIR /opt/spack-stack
-RUN git clone -b release/1.3.0 --recursive https://github.com/NOAA-EMC/spack-stack.git spack-stack-1.3.0
-WORKDIR /opt/spack-stack/spack-stack-1.3.0
+RUN git clone -b release/1.4.0 --recursive https://github.com/jcsda/spack-stack.git spack-stack-1.4.0
+WORKDIR /opt/spack-stack/spack-stack-1.4.0
 RUN pwd && ls -l /bin/sh && sed -i 's/source/./g' ./setup.sh && . ./setup.sh && spack install intel-oneapi-compilers && \
     ls -l /bin/sh  && \
     pwd && ls -l && . ./setup.sh && spack install intel-oneapi-compilers && \
@@ -52,18 +52,8 @@ RUN . ./setup.sh && \
     echo "module load intel-oneapi-compilers intel-oneapi-mpi " >> /root/.bashenv && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc
-RUN apt update && apt install -y libboost1.71-dev &&\
-    apt install -y libboost-chrono1.71-dev &&\
-    apt install -y libboost-date-time1.71-dev &&\
-    apt install -y libboost-exception1.71-dev &&\
-    apt install -y libboost-filesystem1.71-dev &&\
-    apt install -y libboost-program-options1.71-dev &&\
-    apt install -y libboost-python1.71-dev &&\
-    apt install -y libboost-regex1.71-dev &&\
-    apt install -y libboost-serialization1.71-dev &&\
-    apt install -y libboost-system1.71-dev &&\
-    apt install -y libboost-test1.71-dev &&\
-    apt install -y libboost-thread1.71-dev &&\
-    apt install -y libboost-timer1.71-dev && \
-    apt install -y python3.8-venv
-
+# install boost from source
+RUN cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz && \
+    tar xvfz boost_1_78_0.tar.gz && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ && ./b2 install && \
+    cd .. && rm -rf boost* && \
+    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.4.0/cache/*

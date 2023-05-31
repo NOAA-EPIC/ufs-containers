@@ -48,14 +48,6 @@ packages:
     externals:
     - spec: findutils@4.7.0
       prefix: /usr
-  gcc:
-    externals:
-    - spec: gcc@9.4.0 languages=c,c++
-      prefix: /usr
-      extra_attributes:
-        compilers:
-          c: /usr/bin/x86_64-linux-gnu-gcc-9
-          cxx: /usr/bin/x86_64-linux-gnu-g++-9
   git:
     externals:
     - spec: git@2.25.1~tcltk
@@ -112,4 +104,17 @@ packages:
     externals:
     - spec: boost@1.78.0
       prefix: /usr
+  bison:
+    buildable: false
+    externals:
+    - spec: bison@3.5.1
+      prefix: /usr
+  flex:
+    buildable: false
+    externals:
+    - spec: flex@2.6.4
+      prefix: /usr
+
+
+
 

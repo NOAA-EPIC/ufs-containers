@@ -1,45 +1,17 @@
-FROM noaaepic/ubuntu20.04-base-intel:unified-dev-v1.4.0
+FROM noaaepic/ubuntu20.04-base-intel:release-v1.4.0    
 WORKDIR  /opt/spack-stack/spack-stack-1.4.0
 RUN git config --global --add safe.directory /opt/spack-stack/spack-stack-1.4.0
 RUN git config --global --add safe.directory /opt/spack-stack/spack-stack-1.4.0/spack
 RUN git remote update && git checkout release/1.4.0 && git pull origin release/1.4.0
 RUN git submodule sync && git submodule update 
 #RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
-RUN apt update && apt -y install libcurl4-openssl-dev texinfo libmysqlclient-dev freetype2-demos libbz2-dev
-RUN source ./setup.sh && \
-    sed -i s/"'%apple-clang', '%gcc', //g"  configs/templates/unified-dev/spack.yaml && \
-    mkdir -p /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel && \
-    cp /root/.spack/linux/compilers.yaml /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel && ls -l /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel && \
-    find /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/ -iname intel-oneapi-mpi* && \
-    loc=`find /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/ -iname intel-oneapi-mpi* | head -n 1` && \
-    mpiver=`spack find intel-oneapi-mpi | grep intel-oneapi-mpi | awk -F "@" '{print $2}'` && \
-    compver=`spack find intel-oneapi-compilers | grep intel-oneapi-compilers | awk -F "@" '{print $2}'` && \
-    echo "config:" > /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/config.yaml && \
-    echo "  build_jobs: 8" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/config.yaml && \
-    echo "modules:" > /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/modules.yaml && \
-    echo "  default:" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/modules.yaml && \
-    echo "    enable::" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/modules.yaml && \
-    echo "    - lmod" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/modules.yaml && \
-    echo "packages:" > /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "  all:" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "    compiler:: [intel@$compver]" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "    providers:" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "      mpi:: [intel-oneapi-mpi@$mpiver]" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "    target: [core2]" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "  mpi:" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "    buildable: False" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "  intel-oneapi-mpi:" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "    externals:" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "    - spec: intel-oneapi-mpi@$mpiver" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "      modules:" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "      - impi/$mpiver" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml && \
-    echo "      prefix: $loc" >> /opt/spack-stack/spack-stack-1.4.0/configs/sites/ubuntu-intel/packages.yaml
-RUN echo "add line" && sed -i 's/cmake\/3.22.1//g' /root/.bashenv 
-RUN . ./setup.sh && spack compiler rm gcc@9.4.0 && spack external find --all && spack stack create env --site ubuntu-intel --template unified-dev --name unified-dev 
-RUN cat envs/unified-dev/site/compilers.yaml | head -n 14 > comp.yaml && cp comp.yaml envs/unified-dev/site/compilers.yaml && \
-    sed -i 's/2023.0.0/2021.8.0/g' envs/unified-dev/site/packages.yaml 
+RUN apt update && apt -y install libcurl4-openssl-dev texinfo libmysqlclient-dev freetype2-demos libbz2-dev libbz2-dev
+ADD ubuntu-intel.tar.gz /opt/spack-stack/spack-stack-1.4.0/configs/sites
+#RUN . ./setup.sh && spack compiler rm gcc@9.4.0 && spack external find --all && spack stack create env --site ubuntu-intel --template unified-dev --name unified-dev 
+RUN . ./setup.sh && spack compiler rm gcc@9.4.0 && spack stack create env --site ubuntu-intel --template unified-dev --name unified-dev 
 WORKDIR  /opt/spack-stack/spack-stack-1.4.0
-RUN cat /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/site/packages.yaml && . ./setup.sh && spack env activate envs/unified-dev && \ 
+COPY packages.yaml /opt/spack-stack/spack-stack-1.4.0
+RUN . ./setup.sh && spack env activate envs/unified-dev && \ 
     spack concretize  && mkdir /usr/bin/info && \
     echo "done"
 COPY unified.pub /opt/spack-stack/spack-stack-1.4.0
@@ -49,52 +21,26 @@ ADD spack-mirror-ue-1.4.0.tar.gz /opt
 #RUN cd /opt && wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror-ue.tar.gz && tar xvfz spack-mirror-ue.tar.gz && rm spack-mirror-ue.tar.gz
 #RUN cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz && \
 #    tar xvfz boost_1_78_0.tar.gz && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ && ./b2 install
-COPY packages.yaml /opt/spack-stack/spack-stack-1.4.0
+#COPY spack.lock /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev
 RUN ls -l /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev && source ./setup.sh && spack env activate envs/unified-dev && \
      spack mirror add unified file:/opt/spack-mirror && spack gpg trust unified.pub && spack gpg trust unified.private && \
-     ln -s /usr/bin/python3 /usr/bin/python && spack external find python && mv packages.yaml envs/unified-dev/site &&\
      spack install  --no-check-signature --no-checksum |& tee install.log ; exit 0
-#RUN apt remove -y libboost-chrono1.71-dev &&\
-#    apt remove -y libboost-date-time1.71-dev &&\
-#    apt remove -y libboost-exception1.71-dev &&\
-#    apt remove -y libboost-filesystem1.71-dev &&\
-#    apt remove -y libboost-program-options1.71-dev &&\
-#    apt remove -y libboost-python1.71-dev &&\
-#    apt remove -y libboost-regex1.71-dev &&\
-#    apt remove -y libboost-serialization1.71-dev &&\
-#    apt remove -y libboost-system1.71-dev &&\
-#    apt remove -y libboost-test1.71-dev &&\
-#    apt remove -y libboost-thread1.71-dev &&\
-#    apt remove -y libboost-timer1.71-dev && \
-#    ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.a /usr/lib/libpython3.8.a && \
-#    ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib/libpython3.8.so && \
-#    cd /opt/boost_1_78_0 && ./b2 install  
-#RUN cd /opt/spack-stack/spack-stack-1.4.0 && . ./setup.sh && spack env activate envs/unified-dev && spack install
-    
+
 ENV SHELL=/bin/bash
-RUN . ./setup.sh && source /usr/share/lmod/lmod/init/bash && \
-    mpiver=`spack find intel-oneapi-mpi | grep intel-oneapi-mpi | awk -F "@" '{print $2}'` && \
-    compver=`spack find intel-oneapi-compilers | grep intel-oneapi-compilers | awk -F "@" '{print $2}'` && \
-    echo $mpiver && echo $compver && \
-    spack env activate envs/unified-dev && \ 
-    sed -i 's/2023.0.0/2021.8.0/g' envs/unified-dev/site/packages.yaml && \
-    yes | spack uninstall --dependents --force  hdf/bpm && \
-    yes | spack uninstall --dependents --force  odc/akv && \
-    yes | spack uninstall --dependents --force  eckit/srw && \
-    spack module lmod refresh -y && \
-    spack stack setup-meta-modules && \
-    module use /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/Core && \
-    module avail && \
-    ls -l /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/Core && \
-    sed -i 's/impi/intel-oneapi-mpi/g' /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/intel/*/stack-intel-oneapi-mpi/*.lua && \
-    find /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g' && \
-    echo "module use /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/Core" >> /root/.bashenv && \
-    echo "module load stack-intel stack-intel-oneapi-mpi" >> /root/.bashenv && \
-    source /root/.bashenv && \
-    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
-    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
-    cp ~/.bashenv /opt/spack-stack/spack-stack-1.4.0 && \
-    echo "DONE2" 
+RUN  . ./setup.sh && source /usr/share/lmod/lmod/init/bash && spack env activate envs/unified-dev && spack module lmod refresh -y && \
+     spack stack setup-meta-modules && \
+     module use /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/Core && \
+     module avail && \
+     ls -l /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/Core && \
+     sed -i 's/impi/intel-oneapi-mpi/g' /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/intel/*/stack-intel-oneapi-mpi/*.lua && \
+     find /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles -iname "*.lua" | xargs grep -l depends_on | xargs sed -i 's/depends_on/-- depends_on/g' && \
+     echo "module use /opt/spack-stack/spack-stack-1.4.0/envs/unified-dev/install/modulefiles/Core" >> /root/.bashenv && \
+     echo "module load stack-intel stack-intel-oneapi-mpi" >> /root/.bashenv && \
+     source /root/.bashenv && \
+     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
+     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
+     cp ~/.bashenv /opt/spack-stack/spack-stack-1.4.0 && \
+     echo "DONE2" 
 WORKDIR /opt/spack-stack/spack-stack-1.4.0
 RUN source ./setup.sh && spack env activate envs/unified-dev && \
     head -n 5 ./.bashenv > bashenv && mv ./bashenv ./.bashenv && source ./.bashenv && \

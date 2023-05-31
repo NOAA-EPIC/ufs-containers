@@ -10,9 +10,11 @@ RUN apt install -y lmod && \
     ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt -y install build-essential git vim python3 wget libexpat1-dev lmod bc time && \
-    apt-get install -yq libtiff-dev git-lfs python3-distutils python3-pip wget m4 unzip && \
-    apt-get install libcurl4-openssl-dev
-RUN apt-get install -y --no-install-recommends apt-utils
+    apt -y install -yq libtiff-dev git-lfs python3-distutils python3-pip wget m4 unzip && \
+    apt -y install libcurl4-openssl-dev bison flex && \
+    apt -y install libcurl4-openssl-dev texinfo libmysqlclient-dev freetype2-demos libbz2-dev libbz2-dev 
+RUN apt -y install texinfo libmysqlclient-dev freetype2-demos libbz2-dev && \
+    apt -y install --no-install-recommends apt-utils
 RUN echo "dash dash/sh boolean false" | debconf-set-selections
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
 RUN ls -l /bin/sh
@@ -45,6 +47,7 @@ RUN . ./setup.sh && \
     spack external find cmake && \
     spack module tcl refresh -y --delete-tree && source /usr/share/lmod/lmod/init/bash && module avail
 
+RUN ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.a /usr/lib && ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib
 #set up modules to be loaded automatically when shelling into the container
 RUN . ./setup.sh && \
     echo "source /usr/share/lmod/lmod/init/bash" >> /root/.bashenv && \
@@ -54,6 +57,7 @@ RUN . ./setup.sh && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc
 # install boost from source
 RUN cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz && \
-    tar xvfz boost_1_78_0.tar.gz && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ && ./b2 install && \
+    tar xvfz boost_1_78_0.tar.gz && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ --with-python=/usr/bin/python3 && ./b2 install && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     cd .. && rm -rf boost* && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.4.0/cache/*

@@ -3,31 +3,34 @@ WORKDIR /opt/spack-stack/spack-stack-1.4.0
 
 ENV SHELL=/bin/bash
 WORKDIR /opt
-RUN git clone -b 3.0.0 https://github.com/JCSDA/jedi-bundle.git
+RUN git clone -b 4.0.0 https://github.com/JCSDA/jedi-bundle.git
 WORKDIR /opt/jedi-bundle
 RUN source /opt/spack-stack/spack-stack-1.4.0/.bashenv && \
-    python -m pip install pybind11 && \
+    python -m pip install pybind11 && pip install netCDF4 && pip install numpy && \
     module load zlib/1.2.13  openblas/0.3.19 hdf5 nccmp/1.9.0.1 libpng/1.6.37 eigen/3.4.0 netcdf-c/4.9.2 && \
     module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit/1.23.0 netcdf-fortran/4.6.0 parallelio/2.5.9 && \
     module load ecbuild/3.7.2 fckit/0.10.1 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 atlas/0.33.0 && \
     module load nco/5.0.6 crtm/v2.4.1-jedi jedi-cmake && \
     export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 && \
-    mkdir build && cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install ..
-WORKDIR /opt/jedi-bundle/build
-RUN source /opt/spack-stack/spack-stack-1.4.0/.bashenv  && \
-    module load zlib/1.2.13  openblas/0.3.19 hdf5 nccmp/1.9.0.1 libpng/1.6.37 eigen/3.4.0 netcdf-c/4.9.2 && \
-    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit/1.23.0 netcdf-fortran/4.6.0 parallelio/2.5.9 && \
-    module load ecbuild/3.7.2 fckit/0.10.1 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 atlas/0.33.0 && \
-    module load nco/5.0.6 crtm/v2.4.1-jedi && \
-    make -j 4
-RUN pip install netCDF4 && pip install numpy
+    mkdir build && cd build && \
+    ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
+    cd ../ufo && git checkout origin/develop src/ufo/operators/crtm/ufo_crtm_utils_mod.F90 && \
+    cd ../build && make -j 6
+#WORKDIR /opt/jedi-bundle/build
+#RUN source /opt/spack-stack/spack-stack-1.4.0/.bashenv  && \
+#    module load zlib/1.2.13  openblas/0.3.19 hdf5 nccmp/1.9.0.1 libpng/1.6.37 eigen/3.4.0 netcdf-c/4.9.2 && \
+#    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit/1.23.0 netcdf-fortran/4.6.0 parallelio/2.5.9 && \
+#    module load ecbuild/3.7.2 fckit/0.10.1 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 atlas/0.33.0 && \
+#    module load nco/5.0.6 crtm/v2.4.1-jedi jedi-cmake && \
+#    make -j 4
+#RUN pip install netCDF4 && pip install numpy
 WORKDIR /opt/spack-stack/spack-stack-1.4.0
 RUN source /root/.bashenv && cd /opt && git clone -b release/public-v1.1.0 --recursive https://github.com/ufs-community/land-DA_workflow.git && \
     cd land-DA_workflow && mkdir build && cd build && \
     module load ecbuild/3.7.2 fckit/0.10.1 gsl-lite/0.37.0 jasper/2.0.32 atlas/0.33.0 && \
-    module load libjpeg/2.1.0 pkg-config/0.29.2 curl/7.68.0 zstd/1.5.2 esmf/8.3.0b09 fms/2022.04 bacio/2.4.1 crtm-fix/2.4.0_emc && \
-    module load git-lfs/2.9.2 crtm/2.4.0 g2/3.4.5 g2tmpl/1.10.2 ip/3.3.3 sp/2.3.3 w3emc/2.9.2 gftl/1.8.1 gftl-shared/1.5.0 && \
-    module load yafyaml/0.5.1 mapl/2.22.0-esmf-8.3.0b09 netcdf-c netcdf-fortran parallelio && \
+    module load libjpeg/2.1.0 pkg-config/0.29.2 curl zstd/1.5.2 esmf fms bacio/2.4.1 crtm-fix/2.4.0_emc && \
+    module load git-lfs/2.9.2 crtm/2.4.0 g2/3.4.5 g2tmpl/1.10.2 ip/3.3.3 sp/2.3.3 w3emc/2.9.2 gftl gftl-shared && \
+    module load yafyaml/0.5.1 mapl netcdf-c netcdf-fortran parallelio && \
     module load jasper zlib libpng hdf5 && \
     export JEDI_INSTALL=/opt/jedi-bundle/build && ecbuild .. && make -j 8
 RUN cd /opt/land-DA_workflow/DA_update/jedi/fv3-jedi/Data/ && rm f* && \

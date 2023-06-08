@@ -1,37 +1,49 @@
 FROM ubuntu:20.04 as build
+
 RUN mkdir -p /opt/build && mkdir -p /opt/dist
 RUN apt-get update &&   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends     ca-certificates curl &&   rm -rf /var/lib/apt/lists/*
 # install cmake
 RUN cd /opt/build &&     curl -LO https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-x86_64.sh && /bin/bash cmake-3.23.1-linux-x86_64.sh --prefix=/usr/local --skip-license
-RUN apt update -y --allow-unauthenticated
+
+# update apt
 RUN apt-get update -yq --allow-unauthenticated
+
+# Install some basics that will be needed by all apps
 RUN apt install -y lmod && \
     apt install -y tzdata && \
     ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt -y install build-essential git vim python3 wget libexpat1-dev lmod bc time && \
-    apt -y install -yq libtiff-dev git-lfs python3-distutils python3-pip wget m4 unzip && \
-    apt -y install libcurl4-openssl-dev bison flex && \
-    apt -y install libcurl4-openssl-dev texinfo libmysqlclient-dev freetype2-demos libbz2-dev libbz2-dev 
-RUN apt -y install texinfo libmysqlclient-dev freetype2-demos libbz2-dev && \
+    apt -y install -yq libtiff-dev git-lfs python3-distutils python3-pip wget m4 unzip 
+RUN apt -y install bison flex && \
+    apt -y install texinfo libmysqlclient-dev freetype2-demos libbz2-dev && \
     apt -y install --no-install-recommends apt-utils
 RUN echo "dash dash/sh boolean false" | debconf-set-selections
+
+# the dash shell breaks everything. Replace it with bash as default /bin/sh
 RUN DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash
-RUN ls -l /bin/sh
+
+# Prepare spack-stack just like it is built on RDHPCS platforms under the spack-stack umbrella
 RUN mkdir -p /opt/spack-stack
 WORKDIR /opt/spack-stack
+
+# This clone version will change for each successive release
 RUN git clone -b release/1.4.0 --recursive https://github.com/jcsda/spack-stack.git spack-stack-1.4.0
 WORKDIR /opt/spack-stack/spack-stack-1.4.0
-RUN pwd && ls -l /bin/sh && sed -i 's/source/./g' ./setup.sh && . ./setup.sh && spack install intel-oneapi-compilers && \
-    ls -l /bin/sh  && \
-    pwd && ls -l && . ./setup.sh && spack install intel-oneapi-compilers && \
-    spack install intel-oneapi-mpi && spack compiler list && spack find && \
-    spack compiler add `spack location -i intel-oneapi-compilers`/compiler/latest/linux/bin/intel64 && spack compiler list && \
+
+# Install the intel-oneapi compilers using spack and add them to the spack compiler list
+RUN . ./setup.sh && spack install intel-oneapi-compilers && \
+    spack install intel-oneapi-mpi && \
+# add the new compilers to spack's compiler list
+    spack compiler add `spack location -i intel-oneapi-compilers`/compiler/latest/linux/bin/intel64 && \
+# remove the gcc compiler
     spack compiler rm gcc@9.4.0
 ENV PATH="${PATH}:/usr/local"
+
 #this module.yaml file sets the format for tcl modules built by spack to have no extra hashes
 COPY modules.yaml spack/etc/spack/defaults
-#Add the intel compiler to spack and find externals, then install any general packages (cmake) that don't need to be 
+
+# Find some of the spack externals, then install any general packages (cmake) that don't need to be 
 #part of the concretization
 RUN . ./setup.sh && \
     spack compiler add && \
@@ -45,9 +57,12 @@ RUN . ./setup.sh && \
     spack external find perl && \
     spack external find python && \
     spack external find cmake && \
+# generate the tcl modules for the compilers and mpi
     spack module tcl refresh -y --delete-tree && source /usr/share/lmod/lmod/init/bash && module avail
 
+# some packages can't find libpython in x86_64, so link them in /usr/lib
 RUN ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.a /usr/lib && ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib
+
 #set up modules to be loaded automatically when shelling into the container
 RUN . ./setup.sh && \
     echo "source /usr/share/lmod/lmod/init/bash" >> /root/.bashenv && \
@@ -55,9 +70,12 @@ RUN . ./setup.sh && \
     echo "module load intel-oneapi-compilers intel-oneapi-mpi " >> /root/.bashenv && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc
+
 # install boost from source
 RUN cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz && \
     tar xvfz boost_1_78_0.tar.gz && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ --with-python=/usr/bin/python3 && ./b2 install && \
+# without an actual python executable, env python fails, so link python3 to python
     ln -s /usr/bin/python3 /usr/bin/python && \
+# remove build artifacts to reduce size
     cd .. && rm -rf boost* && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.4.0/cache/*

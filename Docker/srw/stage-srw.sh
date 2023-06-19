@@ -87,12 +87,18 @@ ln -s ../../srw.sh shave
 ln -s ../../srw.sh ufs_model
 ln -s ../../srw.sh upp.x
 ln -s ../../srw.sh vcoord_gen
+ln -s ../../srw.sh process_NSSL_mosaic.exe
+ln -s ../../srw.sh process_imssnow_fv3lam.exe 
+ln -s ../../srw.sh process_larccld.exe
+ln -s ../../srw.sh process_metarcld.exe
+ln -s ../../srw.sh process_updatesst.exe
 
 cd ..
 cp -r bin exec
 cd ..
 
 #make sure we have the path to our executable scripts at the head of our PATH variable
-sed -i "2 i export PATH=${PYTHONPATH}:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
+#sed -i "2 i export PATH=${PYTHONPATH}:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
+sed -i "2 i export PATH=${PYTHONPATH}:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
 #Remove the --cpus-per-task section of the submit script, since it breaks with singularity for some reason
 sed -i 's/--cpus-per-task {fcst_threads}//g' $PWD/ufs-srweather-app/ush/generate_FV3LAM_wflow.py

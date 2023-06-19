@@ -2,6 +2,7 @@
 set -x
 export SINGULARITYENV_FI_PROVIDER=tcp
 export SINGULARITY_SHELL=/bin/bash
+export SINGULARITYENV_PREPEND_PATH="/opt/ufs-srweather-app/container-bin"
 img="IMAGE"
 cmd=$(basename "$0")
 arg="$@"

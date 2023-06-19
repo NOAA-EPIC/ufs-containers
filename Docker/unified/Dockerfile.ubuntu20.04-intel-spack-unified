@@ -95,8 +95,8 @@ RUN source /root/.bashenv && module list && \
     echo ENV FC=`which mpiifort` >> landda.envs && \
     echo ENV CXX=`which mpiicpc` >> landda.envs && \
     module purge && source /root/.bashenv && \
-    module load jasper/2.0.32 netcdf-fortran/4.6.0 bacio/2.4.1 ip/3.3.3 yafyaml/0.5.1 sigio/2.3.2 wgrib2/2.0.8 zlib/1.2.13 && \
-    module load parallelio/2.5.9 crtm/2.4.0 sp/2.3.3 mapl/2.22.0-esmf-8.3.0b09 w3nco/2.4.1 libpng/1.6.37 esmf/8.3.0b09 g2/3.4.5 && \
+    module load jasper/2.0.32 netcdf-fortran/4.6.0 bacio/2.4.1 ip/3.3.3 yafyaml/0.5.1 sigio/2.3.2 wgrib2/2.0.8 zlib/1.2.13 openblas/0.3.19 && \
+    module load parallelio/2.5.9 crtm/2.4.0 sp/2.3.3 mapl/2.22.0-esmf-8.3.0b09 w3nco/2.4.1 libpng/1.6.37 esmf/8.3.0b09 g2/3.4.5 libjpeg/2.1.0 && \
     module load w3emc/2.9.2 nemsio/2.5.2 wrf-io/1.2.0 netcdf-c/4.9.2 bufr/11.7.1 g2tmpl/1.10.2 gftl-shared/1.5.0 sfcio/1.4.1 ncio/1.1.2 &&\
     echo "ENV PATH=$PATH" > srw.envs && \
     echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> srw.envs && \

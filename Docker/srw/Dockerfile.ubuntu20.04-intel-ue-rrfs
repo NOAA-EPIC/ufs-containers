@@ -45,7 +45,6 @@ RUN git clone https://github.com/NOAA-EPIC/EPIC-Documentation.git && \
     mkdir -p /opt/ufs-srweather-app/container-scripts     
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
 COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
-RUN chmod a+rx /opt/ufs-srweather-app/container-scripts/stage-srw.sh
 COPY build_singularity_intel.lua /opt/ufs-srweather-app/container-scripts/build_singularity_intel.lua
 WORKDIR /opt/ufs-srweather-app
 RUN rm -rf /opt/ufs /opt/build /opt/dist 
@@ -57,3 +56,5 @@ COPY f90nml.tar.gz /opt/ufs-srweather-app/tarballs
 COPY Jinja2-3.1.2.tar.gz /opt/ufs-srweather-app/tarballs 
 COPY MarkupSafe-2.1.2.tar.gz /opt/ufs-srweather-app/tarballs
 COPY PyYAML-6.0.tar.gz /opt/ufs-srweather-app/tarballs
+RUN chmod -R a+rx /opt/ufs-srweather-app/container-scripts
+RUN chmod -R a+rx /opt/ufs-srweather-app/tarballs

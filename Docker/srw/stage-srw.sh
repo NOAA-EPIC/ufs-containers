@@ -87,6 +87,7 @@ ln -s ../../srw.sh shave
 ln -s ../../srw.sh ufs_model
 ln -s ../../srw.sh upp.x
 ln -s ../../srw.sh vcoord_gen
+ln -s ../../srw.sh process_Lightning.exe
 ln -s ../../srw.sh process_NSSL_mosaic.exe
 ln -s ../../srw.sh process_imssnow_fv3lam.exe 
 ln -s ../../srw.sh process_larccld.exe

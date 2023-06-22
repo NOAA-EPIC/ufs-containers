@@ -1,10 +1,15 @@
-echo ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH > locenvs
-echo ENV PATH=$PATH >> locenvs
-echo ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> locenvs
-echo ENV LIBRARY_PATH=$LIBRARY_PATH >> locenvs
-echo ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> locenvs
-echo ENV MODULEPATH=$MODULEPATH >> locenvs
-echo ENV CC=`which mpiicc` >> locenvs
-echo ENV FC=`which mpiifort` >> locenvs
-echo ENV CXX=`which mpiicpc` >> locenvs
+module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio crtm g2 g2tmpl ip sp w3emc gftl-shared mapl
+echo ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.envs
+echo ENV PATH=$PATH >> ufswm.envs
+echo ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.envs
+echo ENV LIBRARY_PATH=$LIBRARY_PATH >> ufswm.envs
+echo ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufswm.envs
+echo ENV MODULEPATH=$MODULEPATH >> ufswm.envs
+echo ENV CC=`which mpiicc` >> ufswm.envs
+echo ENV FC=`which mpiifort` >> ufswm.envs
+echo ENV CXX=`which mpiicpc` >> ufswm.envs
+echo ENV CMAKE_C_COMPILER=`which mpiicc` >> ufswm.envs
+echo ENV CMAKE_CXX_COMPILER=`which mpiicpc` >> ufswm.envs
+echo ENV CMAKE_Fortran_COMPILER=`which mpiifort` >> ufswm.envs
+echo ENV ESMFMKFILE=$ESMFMKFILE >> ufswm.envs
   

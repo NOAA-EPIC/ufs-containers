@@ -1,4 +1,5 @@
-FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.4.0
+#FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.4.0
+FROM noaaepic/ubuntu20.04-intel-21.3-spack:unified-dev-v1.4.0   
 LABEL AUTHOR EPIC-AUS
 
 # install srw

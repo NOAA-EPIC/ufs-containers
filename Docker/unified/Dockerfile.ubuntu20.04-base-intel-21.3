@@ -29,8 +29,8 @@ RUN mkdir -p /opt/spack-stack
 WORKDIR /opt/spack-stack
 
 # This clone version will change for each successive release
-RUN git clone -b release/1.4.0 --recursive https://github.com/jcsda/spack-stack.git spack-stack-1.4.0
-WORKDIR /opt/spack-stack/spack-stack-1.4.0
+RUN git clone -b release/1.4.1 --recursive https://github.com/jcsda/spack-stack.git spack-stack-1.4.1
+WORKDIR /opt/spack-stack/spack-stack-1.4.1
 
 # Install the intel-oneapi compilers using spack and add them to the spack compiler list
 RUN . ./setup.sh && spack install intel-oneapi-compilers@2021.3.0 && \
@@ -79,4 +79,4 @@ RUN cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/so
     ln -s /usr/bin/python3 /usr/bin/python && \
 # remove build artifacts to reduce size
     cd .. && rm -rf boost* && \
-    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.4.0/cache/*
+    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.4.1/cache/*

@@ -1,14 +1,14 @@
-FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.4.0
-WORKDIR /opt/spack-stack/spack-stack-1.4.0
+FROM noaaepic/ubuntu20.04-intel-21.3-spack:unified-dev-v1.4.1 
+WORKDIR /opt/spack-stack/spack-stack-1.4.1
 
 ENV SHELL=/bin/bash
 WORKDIR /opt
 RUN git clone -b 4.0.0 https://github.com/JCSDA/jedi-bundle.git
 WORKDIR /opt/jedi-bundle
-RUN source /opt/spack-stack/spack-stack-1.4.0/.bashenv && \
+RUN source /opt/spack-stack/spack-stack-1.4.1/.bashenv && \
     python -m pip install pybind11 && pip install netCDF4 && pip install numpy && \
     module load zlib/1.2.13  openblas/0.3.19 hdf5 nccmp/1.9.0.1 libpng/1.6.37 eigen/3.4.0 netcdf-c/4.9.2 && \
-    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit/1.23.0 netcdf-fortran/4.6.0 parallelio/2.5.9 && \
+    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit netcdf-fortran/4.6.0 parallelio/2.5.9 && \
     module load ecbuild/3.7.2 fckit/0.10.1 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 atlas/0.33.0 && \
     module load nco/5.0.6 crtm/v2.4.1-jedi jedi-cmake && \
     export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 && \
@@ -17,14 +17,14 @@ RUN source /opt/spack-stack/spack-stack-1.4.0/.bashenv && \
     cd ../ufo && git checkout origin/develop src/ufo/operators/crtm/ufo_crtm_utils_mod.F90 && \
     cd ../build && make -j 6
 #WORKDIR /opt/jedi-bundle/build
-#RUN source /opt/spack-stack/spack-stack-1.4.0/.bashenv  && \
+#RUN source /opt/spack-stack/spack-stack-1.4.1/.bashenv  && \
 #    module load zlib/1.2.13  openblas/0.3.19 hdf5 nccmp/1.9.0.1 libpng/1.6.37 eigen/3.4.0 netcdf-c/4.9.2 && \
-#    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit/1.23.0 netcdf-fortran/4.6.0 parallelio/2.5.9 && \
+#    module load parallel-netcdf/1.12.2 udunits/2.2.28 eckit netcdf-fortran/4.6.0 parallelio/2.5.9 && \
 #    module load ecbuild/3.7.2 fckit/0.10.1 gsl-lite/0.37.0 fms/release-jcsda jasper/2.0.32 atlas/0.33.0 && \
 #    module load nco/5.0.6 crtm/v2.4.1-jedi jedi-cmake && \
 #    make -j 4
 #RUN pip install netCDF4 && pip install numpy
-WORKDIR /opt/spack-stack/spack-stack-1.4.0
+WORKDIR /opt/spack-stack/spack-stack-1.4.1
 RUN source /root/.bashenv && cd /opt && git clone -b release/public-v1.1.0 --recursive https://github.com/ufs-community/land-DA_workflow.git && \
     cd land-DA_workflow && mkdir build && cd build && \
     module load ecbuild/3.7.2 fckit/0.10.1 gsl-lite/0.37.0 jasper/2.0.32 atlas/0.33.0 && \
@@ -70,5 +70,5 @@ RUN mkdir /opt/landda-data
 ADD landda-test-comps.tar.gz /opt/landda-data
 ADD landda-test-inps.tar.gz /opt/landda-data
 RUN cd /opt/jedi-bundle/build && source  /root/.bashenv && make -j 8 install && rm -rf * && mv ../install/* . && \
-    cd /opt/spack-stack/spack-stack-1.4.0 && rm -rf spack/var/spack/cache/_source-cache/archive/* 
+    cd /opt/spack-stack/spack-stack-1.4.1 && rm -rf spack/var/spack/cache/_source-cache/archive/* 
 RUN cd /opt/land-DA_workflow && mv build/bin . && mv singularity/bin build && mv bin singularity 

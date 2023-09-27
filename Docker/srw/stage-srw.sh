@@ -57,9 +57,9 @@ cp ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua ufs-srweather-app/modulefi
 rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
 
 #change the RUN cmds to mpirun needed for using singularity 
-sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpirun -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+#sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+#sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpirun -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+#sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
 
 
 #create links to the srw.sh script in ufs-srweather-app/bin dir

@@ -29,8 +29,8 @@ RUN mkdir -p /opt/spack-stack
 WORKDIR /opt/spack-stack
 
 # This clone version will change for each successive release
-RUN git clone -b release/1.4.1 --recursive https://github.com/jcsda/spack-stack.git spack-stack-1.4.1
-WORKDIR /opt/spack-stack/spack-stack-1.4.1
+RUN git clone -b release/1.5.0 --recursive https://github.com/jcsda/spack-stack.git spack-stack-1.5.0
+WORKDIR /opt/spack-stack/spack-stack-1.5.0
 
 # Install the intel-oneapi compilers using spack and add them to the spack compiler list
 RUN . ./setup.sh && spack install intel-oneapi-compilers@2021.3.0 && \
@@ -59,7 +59,8 @@ RUN . ./setup.sh && \
     spack external find python && \
     spack external find cmake && \
 # generate the tcl modules for the compilers and mpi
-    spack module tcl refresh -y --delete-tree && source /usr/share/lmod/lmod/init/bash && module avail
+    spack module tcl refresh -y --delete-tree
+#   spack module tcl refresh -y --delete-tree  && source /usr/share/lmod/lmod/init/bash && module avail
 
 # some packages can't find libpython in x86_64, so link them in /usr/lib
 RUN ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.a /usr/lib && ln -s /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib
@@ -79,4 +80,4 @@ RUN cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/so
     ln -s /usr/bin/python3 /usr/bin/python && \
 # remove build artifacts to reduce size
     cd .. && rm -rf boost* && \
-    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.4.1/cache/*
+    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.5.0/cache/*

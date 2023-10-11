@@ -1,19 +1,35 @@
-FROM noaaepic/ubuntu20.04-intel-spack-landda:TAGNAME
-WORKDIR /opt/spack-stack
-
+#change the FROM line to build using a different version of spack-stack
+#note that every instance of spack-stack-1.3.0 will need to be changed below as well
+FROM noaaepic/ubuntu20.04-intel-spack-unified:unified-dev-v1.3.0-core2
 
 WORKDIR /opt
-RUN git clone -b release/public-v1.0.0 --recursive https://github.com/NOAA-EPIC/land-offline_workflow.git
-RUN source /opt/spack-stack/.bashenv  && \
-    ln -s /opt/spack-stack/envs/landda /opt/spack-stack/envs/landda-release-1.0-intel && \
-    cd land-offline_workflow && ls -l /opt/land-offline_workflow/modulefiles && \
-    module use /opt/land-offline_workflow/modulefiles && \
-    module load landda_singularity.intel && \
-    mkdir build && cd build && \
-    ecbuild .. && make -j 8 && cd ../DA_update/jedi/fv3-jedi/Data/ && rm f* && \
-    cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/fv3-bundle/fv3-jedi/test/Data/fv3files .
-COPY run_container_executable.sh /opt/land-offline_workflow
-WORKDIR /opt/land-offline_workflow
+#clone the jedi bundle and checkout the appropriate release
+RUN git clone -b release/skylab-v4 https://github.com/JCSDA/jedi-bundle.git && mkdir jedi-bundle/build
+WORKDIR /opt/jedi-bundle
+#delete a few unnecessary packages
+RUN sed -i '/soca/d' CMakeLists.txt && sed -i '/gsw/d' CMakeLists.txt && sed -i '/mom6/d' CMakeLists.txt && \
+#the .bashenv file activates lmod and loads the intel and intelmpi modules
+#load up the modules needed for skylab build, configure and build
+   source /opt/spack-stack/spack-stack-1.3.0/.bashenv && \
+   module load zlib openblas hdf5 nccmp libpng eigen netcdf-c parallel-netcdf udunits eckit netcdf-fortran parallelio ecbuild fckit gsl-lite fms/release-jcsda jasper atlas nco crtm/v2.4-jedi.2 jedi-cmake && \
+   cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
+#this removes the unneeded tests for skylab which take forever to build
+   find ../ -iname CMakeLists.txt | xargs sed -i '/add_subdirectory( test )/g' && \
+   make -j 8 
+WORKDIR /opt
+#clone and build the land-DA workflow
+RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_workflow.git
+RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv  && \
+     cd land-DA_workflow && \
+     module use /opt/land-DA_workflow/modulefiles && \
+     module load landda_singularity.intel && \
+     mkdir build && cd build && \
+     ecbuild .. && make -j 8 && \
+# Not sure the next lines are needed
+     cd ../DA_update/jedi/fv3-jedi/Data/ && rm f* && \
+     cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fv3files .
+COPY run_container_executable.sh /opt/land-DA_workflow
+WORKDIR /opt/land-DA_workflow
 RUN mkdir -p singularity/bin && cd singularity/bin && \
     ln -s ../../run_container_executable.sh apply_incr.exe && \
     ln -s ../../run_container_executable.sh calcfIMS.exe && \
@@ -43,13 +59,17 @@ RUN mkdir -p singularity/bin && cd singularity/bin && \
     mkdir -p /ncrc && \
     chmod +x ../../run_container_executable.sh
 ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda
-RUN mkdir /opt/landda-data
-ADD landda-test-comps.tar.gz /opt/landda-data
-ADD landda-test-inps.tar.gz /opt/landda-data
-RUN source /opt/spack-stack/.bashenv  && \
-    cd /opt/fv3-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/fv3-bundle/install .. && \
-    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
-    cd /opt/ioda-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/ioda-bundle/install .. && \
-    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
-    cd /opt/spack-stack && rm -rf spack/var/spack/cache/_source-cache/archive/* 
-RUN cd /opt/land-offline_workflow && git remote update && git pull origin release/public-v1.0.0
+#uncomment the following to put some sample data into the container. This allows for simple testing on basically any platform
+#RUN mkdir /opt/landda-data
+#ADD landda-test-comps.tar.gz /opt/landda-data
+#ADD landda-test-inps.tar.gz /opt/landda-data
+#Uncomment to do some cleanup of the build in /opt/jedi-bundle and remove all the build artifacts
+#RUN source /opt/spack-stack/.bashenv  && \
+#    cd /opt/jedi-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/jedi-bundle/install .. && \
+#    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
+#    cd /opt/ioda-bundle/build && ecbuild -DCMAKE_INSTALL_PREFIX=/opt/ioda-bundle/install .. && \
+#    make -j 8 install && rm -rf * && mv ../install/* . && rm -rf ../install && \
+#uncomment to remove spack build artifacts and extra source code
+#    cd /opt/spack-stack && rm -rf spack/var/spack/cache/_source-cache/archive/* 
+#Uncomment to pull in last minute changes to scripts, modulefiles, etc. (not source code) without having to rebuild everything
+#RUN cd /opt/land-DA_workflow && git remote update && git pull origin release/public-v1.0.0

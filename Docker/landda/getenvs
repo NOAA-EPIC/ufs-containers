@@ -1,0 +1,10 @@
+echo "ENV PATH=/opt/jedi-bundle/install/bin:/opt/land-DA_workflow/install/bin:$PATH"   
+echo "ENV LD_LIBRARY_PATH=/opt/jedi-bundle/install/lib:$LD_LIBRARY_PATH"   
+echo "ENV MODULEPATH=$MODULEPATH"   
+echo "ENV LIBRARY_PATH=/opt/jedi-bundle/install/lib:$LIBRARY_PATH"   
+echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH:/usr/lib64/libfabric"   
+echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH"   
+echo "ENV CC=$CC"   
+echo "ENV FC=$FC"   
+echo "ENV CXX=$CXX"   
+

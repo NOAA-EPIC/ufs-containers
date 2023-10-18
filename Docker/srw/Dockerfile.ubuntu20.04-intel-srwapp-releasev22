@@ -10,7 +10,7 @@ RUN source /opt/spack-stack/spack-stack-1.4.1/.bashenv && \
      module load stack-intel stack-intel-oneapi-mpi && \
      grep load ../modulefiles/srw_common.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
      sed -i 's/pio/parallelio/g' load_mods && \
-     sed -i 's/wrf_io/wrf-io/g' load_mods && source ./load_mods && module load libpng netcdf-c netcdf-fortran libjpeg && module load openblas gsi-ncdiag && module list && \
+     sed -i 's/wrf_io/wrf-io/g' load_mods && source ./load_mods && module load libpng netcdf-c netcdf-fortran libjpeg && module list && \
      cmake -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
 WORKDIR /opt/ufs
 RUN git clone https://github.com/NOAA-EPIC/EPIC-Documentation.git && \

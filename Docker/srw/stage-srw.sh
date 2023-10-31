@@ -88,9 +88,13 @@ ln -s ../../srw.sh ufs_model
 ln -s ../../srw.sh upp.x
 ln -s ../../srw.sh vcoord_gen
 
+#Cd back to the working dir
 cd ..
 cp -r bin exec
 cd ..
+
+#Link ush dir to working dir so the workflow tools can find it
+ln -s ufs-srweather-app/ush .
 
 #make sure we have the path to our executable scripts at the head of our PATH variable
 sed -i "2 i export PATH=${PYTHONPATH}:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh

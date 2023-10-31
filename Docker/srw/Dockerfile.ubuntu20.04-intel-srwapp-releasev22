@@ -53,3 +53,5 @@ COPY f90nml.tar.gz /opt/ufs-srweather-app/tarballs
 COPY Jinja2-3.1.2.tar.gz /opt/ufs-srweather-app/tarballs 
 COPY MarkupSafe-2.1.2.tar.gz /opt/ufs-srweather-app/tarballs
 COPY PyYAML-6.0.tar.gz /opt/ufs-srweather-app/tarballs
+RUN chmod -R a+rx /opt/ufs-srweather-app/container-scripts
+RUN chmod -R a+rx /opt/ufs-srweather-app/tarballs

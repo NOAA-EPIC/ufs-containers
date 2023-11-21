@@ -1,0 +1,56 @@
+FROM noaaepic/ubuntu20.04-intel-21.3-spack:unified-dev-v1.4.1
+LABEL AUTHOR EPIC-AUS
+
+# install srw
+WORKDIR /opt
+RUN git clone https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
+    ./manage_externals/checkout_externals && mkdir build 
+WORKDIR /opt/ufs-srweather-app/build
+RUN source /opt/spack-stack/spack-stack-1.4.1/.bashenv && \
+     module load stack-intel stack-intel-oneapi-mpi && \
+     grep load ../modulefiles/srw_common.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
+     sed -i 's/pio/parallelio/g' load_mods && \
+     sed -i 's/wrf_io/wrf-io/g' load_mods && source ./load_mods && module load libpng netcdf-c netcdf-fortran libjpeg && module list && \
+     cmake -DBUILD_NEXUS=ON -DBUILD_AQM_UTILS=ON -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
+ENV LMOD_PKG=/usr/share/lmod/lmod
+WORKDIR /opt/ufs
+RUN git clone https://github.com/NOAA-EPIC/miniconda3.git && \
+    cd miniconda3 && \
+    bash && \
+    ./miniconda3_install.sh /opt/miniconda3 && \
+    sed -i 's/myShellType()/"sh"/g' /opt/miniconda3/modulefiles/miniconda3/4.12.0.lua && \
+    ./miniconda3_workflow_tools_env.sh /opt/miniconda3 && \
+    mkdir -p /work && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /scratch1 && \
+    mkdir -p /scratch2 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir /opt/ufs-srweather-app/container-bin && \
+    mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
+    mkdir -p /opt/ufs-srweather-app/container-scripts     
+COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
+COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
+COPY build_singularity_intel.lua /opt/ufs-srweather-app/container-scripts/build_singularity_intel.lua
+WORKDIR /opt/ufs-srweather-app
+RUN rm -rf /opt/ufs /opt/build /opt/dist 
+RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
+RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
+RUN mkdir /opt/ufs-srweather-app/tarballs
+COPY test_python.sh /opt/ufs-srweather-app/container-scripts
+COPY f90nml.tar.gz /opt/ufs-srweather-app/tarballs
+COPY Jinja2-3.1.2.tar.gz /opt/ufs-srweather-app/tarballs 
+COPY MarkupSafe-2.1.2.tar.gz /opt/ufs-srweather-app/tarballs
+COPY PyYAML-6.0.tar.gz /opt/ufs-srweather-app/tarballs
+RUN chmod -R a+rx /opt/ufs-srweather-app/container-scripts
+RUN chmod -R a+rx /opt/ufs-srweather-app/tarballs

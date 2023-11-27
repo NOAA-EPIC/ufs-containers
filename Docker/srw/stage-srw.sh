@@ -56,11 +56,27 @@ cp ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua ufs-srweather-app/modulefi
 #remove any extra modules
 rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
 
-#change the RUN cmds to mpirun needed for using singularity 
-#sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-#sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpirun -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-#sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+#make modifications for Hercules and Orion
+if [[ ${MACHINE} =~  "orion" ]] || [[ ${MACHINE} =~  "hercules" ]] ; then
 
+    #add python path to jobs scripts
+    sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/jobs/JREGIONAL_*
+
+    #change the RUN cmds to mpiexec needed for using singularity
+    sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpiexec -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+    sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpiexec -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+    sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpiexec -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
+
+    #load nco path so make_grid task can find ncdump
+    sed -i '12 i load("nco")' ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
+
+    #update wall time for make_sfc task only for Hercules
+    [[ ${MACHINE} =~  "hercules" ]] && sed -i "s|walltime: 00:20:00|walltime: 00:50:00|g" ufs-srweather-app/parm/wflow/prep.yaml
+
+    #update nodes and processors for run_post task
+    sed -i "s|nnodes: 2|nnodes: 4|g" ufs-srweather-app/parm/wflow/post.yaml
+    sed -i "s|ppn: 24|ppn: 12|g" ufs-srweather-app/parm/wflow/post.yaml
+fi
 
 #create links to the srw.sh script in ufs-srweather-app/bin dir
 cd ufs-srweather-app/bin

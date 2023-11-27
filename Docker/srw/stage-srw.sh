@@ -76,6 +76,7 @@ if [[ ${MACHINE} =~  "orion" ]] || [[ ${MACHINE} =~  "hercules" ]] ; then
     #update nodes and processors for run_post task
     sed -i "s|nnodes: 2|nnodes: 4|g" ufs-srweather-app/parm/wflow/post.yaml
     sed -i "s|ppn: 24|ppn: 12|g" ufs-srweather-app/parm/wflow/post.yaml
+    sed -i "s|walltime: 00:15:00|walltime: 00:35:00|g" ufs-srweather-app/parm/wflow/post.yaml
 fi
 
 #create links to the srw.sh script in ufs-srweather-app/bin dir

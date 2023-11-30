@@ -27,6 +27,7 @@ RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv  && \
      module load landda_singularity.intel && \
      mkdir build && cd build && \
      ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && make -j 8 install && \
+     mv ufs-weather-model/src/ufs-weather-model-build/ufs_model ../install/bin/
      cd .. && rm -rf build && mkdir -p build/bin && mkdir -p build/ufs-weather-model/src/ufs-weather-model-build && \
 # Not sure the next lines are needed
      cd DA_update/jedi/fv3-jedi/Data/ && rm f* && \

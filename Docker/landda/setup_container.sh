@@ -5,12 +5,12 @@
 Help()
 {
     # Display Help
-    echo "This script setups up the Land DA workflow to run on Hercules/Orion, Gaea, and Derecho"
+    echo "This script sets up the Land DA workflow to run on Derecho and Gaea."
     echo
-    echo "Syntax: setup_container.sh [-h|-p=<platform>]"
+    echo "Syntax: ./setup_container.sh [-h|-p=<platform>]"
     echo "options:"
     echo "-h     Prints out help function."
-    echo "-p     Name of platform you are running on. Only Hercules, Orion, Gaea, and Dercho are accepted."
+    echo "-p     Name of platform you are running on. Only Derecho and Gaea are accepted."
 }
 
 
@@ -24,8 +24,6 @@ do
     esac
 done
 
-echo "$platform"
-
 
 if [[ "$platform" =~ derecho ]]; then
 
@@ -35,7 +33,7 @@ if [[ "$platform" =~ derecho ]]; then
      sed -i '/export MPIEXEC=/c export MPIEXEC=/glade/u/apps/derecho/23.06/spack/opt/spack/intel-oneapi-mpi/2021.8.0/oneapi/2023.0.0/mhf4/mpi/2021.8.0/bin/mpiexec' do_submit_cycle.sh
      sed -i 's|sbatch|qsub|g' do_submit_cycle.sh
 
-     echo "Updating submit_cycle.sh file with PBS info."
+     echo "Updating submit_cycle.sh file with PBS info for Derecho."
      sed -i '/^#SBATCH/d' submit_cycle.sh
      sed -i '2i #PBS -N ufs_land_da' submit_cycle.sh 
      sed -i '3i #PBS -A NRAL0032' submit_cycle.sh

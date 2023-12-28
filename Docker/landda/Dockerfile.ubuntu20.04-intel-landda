@@ -34,6 +34,7 @@ RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv  && \
      cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fv3files . 
 COPY run_container_executable.sh /opt/land-DA_workflow
 COPY build_container_executable.sh /opt/land-DA_workflow
+COPY setup_container.sh /opt/land-DA_workflow
 WORKDIR /opt/land-DA_workflow
 RUN mkdir -p singularity/bin && cd singularity/bin && \
     ln -s ../../run_container_executable.sh apply_incr.exe && \

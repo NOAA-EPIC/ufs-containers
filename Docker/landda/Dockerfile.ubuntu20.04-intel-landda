@@ -78,7 +78,7 @@ RUN mkdir -p singularity/bin && cd singularity/bin && \
     mkdir -p /export && \
     mkdir -p /Users && \
     mkdir -p /ncrc && \
-    chmod a+rx ../../../../run_container_executable.sh ../../../../build_container_executable.sh && \
+    chmod a+rx ../../../../run_container_executable.sh ../../../../build_container_executable.sh ../../../../setup_container.sh && \
     pip install numpy && pip install matplotlib &&  pip install argparse && pip install pyyaml && \
     pip install f90nml netcdf4
 ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda

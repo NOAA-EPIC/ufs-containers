@@ -88,15 +88,15 @@ RUN source ./setup.sh && spack env activate envs/unified-env && \
 #    module load jasper/2.0.32 netcdf-fortran/4.6.0 bacio/2.4.1 ip/3.3.3 yafyaml/0.5.1 sigio/2.3.2 wgrib2/2.0.8 zlib/1.2.13 && \
 #    module load parallelio/2.5.9 crtm/2.4.0 sp/2.3.3 mapl w3nco/2.4.1 libpng/1.6.37 esmf g2/3.4.5 libjpeg/2.1.0 && \
 #    module load w3emc/2.9.2 nemsio/2.5.2 wrf-io/1.2.0 netcdf-c/4.9.2 bufr g2tmpl/1.10.2 gftl-shared sfcio/1.5.0 ncio/1.1.2 &&\
-#    echo "ENV PATH=$PATH" > srw.envs && \
-#    echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> srw.envs && \
-#    echo "ENV LIBRARY_PATH=$LIBRARY_PATH" >> srw.envs && \
-#    echo "ENV MODULEPATH=$MODULEPATH" >> srw.envs && \
-#    echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> srw.envs && \
-#    echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> srw.envs && \
-#    echo ENV CC=`which mpiicc` >> srw.envs && \
-#    echo ENV FC=`which mpiifort` >> srw.envs && \
-#    echo ENV CXX=`which mpiicpc` >> srw.envs && \
+     echo "ENV PATH=$PATH" > srw.envs && \
+     echo "ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> srw.envs && \
+     echo "ENV LIBRARY_PATH=$LIBRARY_PATH" >> srw.envs && \
+     echo "ENV MODULEPATH=$MODULEPATH" >> srw.envs && \
+     echo "ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH" >> srw.envs && \
+     echo "ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> srw.envs && \
+     echo ENV CC=`which mpiicc` >> srw.envs && \
+     echo ENV FC=`which mpiifort` >> srw.envs && \
+     echo ENV CXX=`which mpiicpc` >> srw.envs && \
 #    cp ~/.bashenv /opt/spack-stack/spack-stack-1.5.0 && \
 #    rm -rf /opt/spack-mirror
 #RUN rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-1.5.0/cache/* /opt/spack-mirror

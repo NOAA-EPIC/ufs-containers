@@ -77,86 +77,55 @@ RUN echo "dash dash/sh boolean false" | debconf-set-selections && \
 RUN mkdir -p /opt/spack-stack
 WORKDIR /opt/spack-stack
 
+#Copy in the ubuntu-intel configuration files
+ADD ubuntu-intel-21.3.tar.gz /opt/spack-stack 
+## Either copy in the spack-mirror or pull it from s3
+ADD spack-mirror.tar.gz /opt
+##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
+
 # This clone version will change for each successive release
-RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch
-WORKDIR /opt/spack-stack/spack-stack-$branch
-
-# Find some of the spack externals, then install any general packages (cmake) that don't need to be 
-#part of the concretization
-#RUN . ./setup.sh && \
-#    spack compiler add && \
-#    spack external find wget && \
-#    spack external find m4 && \
-#    spack external find git && \
-#    spack external find curl && \
-#    spack external find git-lfs && \
-#    spack external find openssl && \
-#    spack external find libjpeg-turbo && \
-#    spack external find perl && \
-#    spack external find python && \
-#    spack external find cmake && \
-## generate the tcl modules for the compilers and mpi
-##   spack module tcl refresh -y --delete-tree
-
-WORKDIR  /opt/spack-stack/spack-stack-$branch
-
+RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
+  cd /opt/spack-stack/spack-stack-$branch && \
 # set the spack directories to be safe for use by git even though they are in /opt
-RUN git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch
-RUN git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch/spack
+    git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch && \
+    git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch/spack && \
 
 # Get any recent updates to the release
-RUN git remote update && git checkout release/$branch && git pull origin release/$branch
-RUN git submodule sync && git submodule update 
-
-#Copy in the ubuntu-intel configuration files
-ADD ubuntu-intel-21.3.tar.gz /opt/spack-stack/spack-stack-$branch/configs/sites
+    git remote update && git checkout release/$branch && git pull origin release/$branch && \
+    git submodule sync && git submodule update  && \
+    mv /opt/spack-stack/ubuntu-intel configs/sites && \ 
 
 # Create the environment
-RUN . ./setup.sh && spack compiler rm gcc@11.4.0 && \
+    . ./setup.sh && spack compiler rm gcc@11.4.0 && \
     export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env && \
-#spack external find --scope system --exclude bison --exclude cmake  --exclude curl --exclude openssl --exclude openssh && \
-#spack external find --scope system wget && \
-#spack external find --scope system meson && \
-#spack external find --scope system mysql && \
-#spack external find --scope system texlive && \
-#spack external find --scope system sed && \
     spack compiler add oneapi && spack compiler list && sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
-    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml 
+    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
 
 # Concretize 
-RUN . ./setup.sh && spack env activate envs/unified-env && \ 
+    . ./setup.sh && spack env activate envs/unified-env && \ 
     unset SPACK_SYSTEM_CONFIG_PATH && \ 
     spack config add "packages:fontconfig:variants:+pic" && \
     spack config add "packages:pixman:variants:+pic" && \
     spack config add "packages:cairo:variants:+pic" && \
+    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.6.0/spack/var/spack/repos/jcsda-emc-bundles/packages/ewok-env/package.py && \
     spack concretize  && mkdir /usr/bin/info && \
-    echo "done"
-
-## Either copy in the spack-mirror or pull it from s3
-ADD spack-mirror.tar.gz /opt
-##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
-#
-
-#COPY ubuntu22.04.patch /opt/spack-stack/spack-stack-$branch/spack
-RUN . ./setup.sh && spack env activate envs/unified-env && \
-    spack mirror add unified file:/opt/spack-mirror && spack install --no-check-signature --no-checksum |& tee install.log ; exit 0
+    spack mirror add unified file:/opt/spack-mirror && spack install --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
+    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
+# refresh the modulefiles and create meta-modules
+    source /usr/lmod/lmod/init/bash && \
+    sed -i '/intel-oneapi-mpi/d' envs/unified-env/common/modules.yaml && \
+    spack module lmod refresh -y && rm -rf ~/.spack && \
+    spack stack setup-meta-modules && \
+    module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
+    module avail && \
+    echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
+    echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
+    echo "module load stack-intel intel-oneapi-mpi" >> /root/.bashenv && \
+    echo "module load stack-intel-oneapi-mpi" >> /root/.bashenv && \
+    echo "module load jedi-ufs-env" >> /root/.bashenv && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
+    cp ~/.bashenv /opt/spack-stack/spack-stack-$branch && \
+    echo "DONE2" 
 
 ENV SHELL=/bin/bash
-# refresh the modulefiles and create meta-modules
-RUN  . ./setup.sh && source /usr/lmod/lmod/init/bash && spack env activate envs/unified-env && \
-     sed -i '/intel-oneapi-mpi/d' envs/unified-env/common/modules.yaml && \
-     spack module lmod refresh -y && rm -rf ~/.spack && \
-     spack stack setup-meta-modules && \
-     module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
-     module avail && \
-     echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
-     echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
-     echo "module load stack-intel intel-oneapi-mpi" >> /root/.bashenv && \
-     echo "module load stack-intel-oneapi-mpi" >> /root/.bashenv && \
-     echo "module load jedi-ufs-env" >> /root/.bashenv && \
-     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
-     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
-     cp ~/.bashenv /opt/spack-stack/spack-stack-$branch && \
-     echo "DONE2" 
-
-RUN rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror

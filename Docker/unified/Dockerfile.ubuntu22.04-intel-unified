@@ -28,9 +28,9 @@ apt install -y --no-install-recommends apt-utils && \
 apt install -y tcl-dev && \
 apt install -y rsync && \
 apt install -y texinfo && \
-apt install -y libbz2-dev 
+apt install -y libbz2-dev && \
 
-RUN apt install -y environment-modules && \
+#RUN apt install -y environment-modules && \
 apt install -y build-essential && \
 apt install -y libkrb5-dev && \
 apt install -y m4 && \
@@ -142,8 +142,8 @@ ADD spack-mirror.tar.gz /opt
 ##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
 #
 
-COPY ubuntu22.04.patch /opt/spack-stack/spack-stack-$branch/spack
-RUN cd spack && git apply ubuntu22.04.patch && cd .. && . ./setup.sh && spack env activate envs/unified-env && \
+#COPY ubuntu22.04.patch /opt/spack-stack/spack-stack-$branch/spack
+RUN . ./setup.sh && spack env activate envs/unified-env && \
     spack mirror add unified file:/opt/spack-mirror && spack install --no-check-signature --no-checksum |& tee install.log ; exit 0
 
 ENV SHELL=/bin/bash

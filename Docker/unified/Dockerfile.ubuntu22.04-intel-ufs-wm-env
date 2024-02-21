@@ -80,7 +80,7 @@ WORKDIR /opt/spack-stack
 #Copy in the ubuntu-intel configuration files
 ADD ubuntu-intel-21.3-1.5.1.tar.gz /opt/spack-stack 
 ## Either copy in the spack-mirror or pull it from s3
-ADD spack-mirror-ufs-wm-1.5.1.tar.gz /opt
+ADD spack-mirror-1.6.0.tar.gz /opt
 ##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
 
 # This clone version will change for each successive release

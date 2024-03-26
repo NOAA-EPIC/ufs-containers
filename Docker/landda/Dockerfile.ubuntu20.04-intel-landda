@@ -28,10 +28,10 @@ RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv  && \
      module load build_singularity_intel && \
      mkdir build && cd build && \
      ecbuild -DCMAKE_INSTALL_PREFIX=../install ../sorc && make -j 8 install && \
-     mv ufs-weather-model/src/ufs-weather-model-build/ufs_model ../install/bin/ && \
+     mv ufs_model.fd/src/ufs_model.fd-build/ufs_model ../install/bin/ && \
      cd .. && rm -rf build && mkdir -p build/bin && mkdir -p build/ufs-weather-model/src/ufs-weather-model-build && \
 # Not sure the next lines are needed
-     cd DA_update/jedi/fv3-jedi/Data/ && rm f* && \
+     cd sorc/DA_update/jedi/fv3-jedi/Data/ && rm f* && \
      cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fv3files . 
 COPY run_container_executable.sh /opt/land-DA_workflow
 COPY build_container_executable.sh /opt/land-DA_workflow

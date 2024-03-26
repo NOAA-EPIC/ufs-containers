@@ -21,13 +21,13 @@ RUN rm -rf /opt/jedi-bundle/build
 WORKDIR /opt
 #clone and build the land-DA workflow
 #RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_workflow.git
-RUN git clone -b expand-container-support https://github.com/EdwardSnyder-NOAA/land-DA_workflow.git
+RUN git clone -b expand-container-support --recursive https://github.com/EdwardSnyder-NOAA/land-DA_workflow.git
 RUN source /opt/spack-stack/spack-stack-1.3.0/.bashenv  && \
      cd land-DA_workflow && \
      module use /opt/land-DA_workflow/modulefiles && \
      module load build_singularity_intel && \
      mkdir build && cd build && \
-     ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && make -j 8 install && \
+     ecbuild -DCMAKE_INSTALL_PREFIX=../sorc && make -j 8 install && \
      mv ufs-weather-model/src/ufs-weather-model-build/ufs_model ../install/bin/ && \
      cd .. && rm -rf build && mkdir -p build/bin && mkdir -p build/ufs-weather-model/src/ufs-weather-model-build && \
 # Not sure the next lines are needed

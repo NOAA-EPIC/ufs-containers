@@ -55,7 +55,7 @@ RUN mkdir -p singularity/bin && cd singularity/bin && \
     ln -s ../../run_container_executable.sh tile2tile_converter.exe && \
     ln -s ../../run_container_executable.sh fv3jedi_letkf.x && \
     ln -s ../../run_container_executable.sh python && \
-    cd ../../ufs-land-driver-emc-dev/run/ && \
+    cd ../../ufsLand.fd/run/ && \
     ln -s ../../run_container_executable.sh ufsLand.exe && \
     cd ../../build/ufs-weather-model/src/ufs-weather-model-build && \
     ln -s ../../../../run_container_executable.sh ufs_model && \

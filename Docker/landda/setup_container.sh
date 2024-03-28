@@ -43,7 +43,8 @@ if [[ "$platform" =~ derecho ]]; then
      sed -i '7i #PBS -V' submit_cycle.sh
      sed -i '8i #PBS -o log_noahmp.%j.log' submit_cycle.sh
      sed -i '9i #PBS -e err_noahmp.%j.err' submit_cycle.sh
-
+     
+     sed -i 's|${MPIRUN}|${MPIEXEC}|g' submit_cycle.sh
      sed -i 's|sbatch|qsub|g' submit_cycle.sh
 
 elif [[ "$platform" =~ gaea ]]; then

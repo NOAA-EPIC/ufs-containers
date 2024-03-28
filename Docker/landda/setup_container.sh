@@ -58,7 +58,7 @@ elif [[ "$platform" =~ gaea ]]; then
     sed -i 's|${MPIRUN} -n ${TASKS}|${MPIRUN} -n ${TASKS} --mpi=pmi2|g' submit_cycle.sh
     
     echo "Updating DA_update/do_landDA.sh file with Gaea specific info."
-    sed -i 's|${MPIEXEC} -n $NPROC_JEDI|${MPIEXEC} -n $NPROC_JEDI --mpi=pmi2|g' DA_update/do_landDA.sh
+    sed -i 's|${MPIEXEC} -n $NPROC_JEDI|${MPIEXEC} -n $NPROC_JEDI --mpi=pmi2|g' sorc/DA_update/do_landDA.sh
 
     echo "Updating module_check.sh file with srun for Gaea."
     sed -i 's|mpiexec|srun|g' module_check.sh 

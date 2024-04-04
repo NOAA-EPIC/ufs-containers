@@ -158,6 +158,6 @@ RUN source /root/.bashenv && module list && \
     echo ENV FC=`which mpiifort` >> srw.envs && \
     echo ENV CXX=`which mpiicpc` >> srw.envs && \
     echo "DONE" 
-COPY stage-container.sh /opt
-COPY sing-bin.tar.gz /opt
+#COPY stage-container.sh /opt
+#COPY sing-bin.tar.gz /opt
 ENV SHELL=/bin/bash

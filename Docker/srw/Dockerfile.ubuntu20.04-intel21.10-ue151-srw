@@ -69,4 +69,4 @@ RUN chmod -R a+rx /opt/ufs-srweather-app/tarballs
 
 # Update env
 WORKDIR /opt/spack-stack
-RUN chmod a+rx srw.envs && sed -i 's|ENV|export|g' srw.envs && source srw.envs
+RUN chmod a+rx /opt/spack-stack/srw.envs && sed -i 's|ENV|export|g' /opt/spack-stack/srw.envs && source /opt/spack-stack/srw.envs

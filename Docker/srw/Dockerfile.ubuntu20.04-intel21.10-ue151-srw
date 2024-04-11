@@ -6,16 +6,10 @@ WORKDIR /opt
 RUN git clone -b develop https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
     ./manage_externals/checkout_externals && mkdir build
 WORKDIR /opt/ufs-srweather-app/build
-#RUN sed -i 's|module load jedi-ufs-env||g' /opt/spack-stack/spack-stack-1.5.1/.bashenv 
 RUN source /opt/spack-stack/spack-stack-1.5.1/.bashenv && \
-     #module load stack-intel stack-intel-oneapi-mpi && \
      grep load ../modulefiles/srw_common.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
-     #sed -i 's/parallelio/pio/g' load_mods && \
-     #sed -i 's/wrf-io/wrf_io/g'  load_mods && \
      source ./load_mods && module load fms/2023.02.01 && module list && \
-     #source ./load_mods && module load libpng netcdf-c netcdf-fortran libjpeg fms/2023.02.01 && module list && \
      cmake -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
-#ENV LMOD_PKG=/usr/share/lmod/lmod
 WORKDIR /opt/ufs-srweather-app
 RUN export os=$(uname) && \
     export hardware=$(uname -m) && \
@@ -25,12 +19,6 @@ RUN export os=$(uname) && \
     rm ${installer} && \
     source conda/etc/profile.d/conda.sh && \ 
     conda activate && mamba env create -n srw_app --file environment.yml && \ 
-#RUN git clone https://github.com/NOAA-EPIC/miniconda3.git && \
-#    cd miniconda3 && \
-#    bash && \
-#    ./miniconda3_install.sh /opt/miniconda3 && \
-#    sed -i 's/myShellType()/"sh"/g' /opt/miniconda3/modulefiles/miniconda3/4.12.0.lua && \
-#    ./miniconda3_workflow_tools_env.sh /opt/miniconda3 && \
     mkdir -p /work && \
     mkdir -p /contrib && \
     mkdir -p /lustre  && \
@@ -50,7 +38,6 @@ RUN export os=$(uname) && \
     mkdir /opt/ufs-srweather-app/container-bin && \
     mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
     mkdir -p /opt/ufs-srweather-app/container-scripts
-#WORKDIR /opt/ufs
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
 COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
 COPY build_singularity_intel.lua /opt/ufs-srweather-app/container-scripts/build_singularity_intel.lua
@@ -69,4 +56,4 @@ RUN chmod -R a+rx /opt/ufs-srweather-app/tarballs
 
 # Update env
 WORKDIR /opt/spack-stack
-RUN chmod a+rx /opt/spack-stack/srw.envs && sed -i 's|ENV|export|g' /opt/spack-stack/srw.envs && source /opt/spack-stack/srw.envs
+RUN chmod a+rx /opt/spack-stack/srw.envs && sed -i 's|ENV|export|g' /opt/spack-stack/srw.envs

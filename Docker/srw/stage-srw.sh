@@ -24,12 +24,27 @@ case $i in
     ;;
 esac
 done
+
+#get container vars and add container bin directory
+singularity exec -H $PWD ${IMAGE} cp /opt/spack-stack/srw.envs .
+sed -i 's|export PATH=|export PATH=/opt/ufs-srweather-app/container-bin:|g' srw.envs
+SRW_ENV=$PWD/srw.envs
+
+#copy out srw app 
 singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
 
 #get the name of the root directory where data is staged
 BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${MACHINE}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
-#get the path to python, rocoto and singularity on the host
+#set python from container to the host
+conda_python=$PWD/ufs-srweather-app/conda/envs/srw_app/bin
+if [ ! -d $conda_python ]; then
+     echo "conda env doesn't exists, exiting!"
+     exit 1
+fi
+export PATH=$conda_python:$PATH
+echo -e "Run this command when the script is done: \n  export PATH=$conda_python:$PATH"
 PYTHONPATH=`which python3 | head -n 1 | xargs dirname`
+#get the path to rocoto and singularity on the host
 SINGULARITY=`which singularity`
 ROCOTODIR=`which rocotorun | awk -F '/' '{print "/"$2}'`
 
@@ -42,7 +57,8 @@ sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
 sed -i "s|LOCDIR|$LOCDIR|g" srw.sh
 sed -i "s|ROCOTODIR|$ROCOTODIR|g" srw.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
-sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/scripts/exregional_* 
+sed -i "s|SRW_ENV|$SRW_ENV|g" srw.sh
+sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/scripts/exregional_*.sh 
 
 #test python install for required packages and install them if they are missing
 $PWD/ufs-srweather-app/container-scripts/test_python.sh
@@ -96,3 +112,10 @@ cd ..
 sed -i "2 i export PATH=${PYTHONPATH}:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
 #Remove the --cpus-per-task section of the submit script, since it breaks with singularity for some reason
 sed -i 's/--cpus-per-task {fcst_threads}//g' $PWD/ufs-srweather-app/ush/generate_FV3LAM_wflow.py
+
+#update conda paths for a few files
+sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/envs/srw_app/bin/uw
+sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/etc/profile.d/conda.sh
+sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/bin/conda
+#create conda loc file
+echo "$PWD/ufs-srweather-app/conda" > $PWD/ufs-srweather-app/conda_loc

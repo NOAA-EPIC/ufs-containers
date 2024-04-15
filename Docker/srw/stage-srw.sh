@@ -35,14 +35,16 @@ singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
 
 #get the name of the root directory where data is staged
 BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${MACHINE}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
+#find rocotorun bin
+rocoto_bin=`which rocotorun | awk -F '/rocotorun' '{print $1}'`
 #set python from container to the host
 conda_python=$PWD/ufs-srweather-app/conda/envs/srw_app/bin
 if [ ! -d $conda_python ]; then
      echo "conda env doesn't exists, exiting!"
      exit 1
 fi
-export PATH=$conda_python:$PATH
-echo -e "Run this command when the script is done: \n  export PATH=$conda_python:$PATH"
+export PATH=$conda_python:$rocoto_bin:$PATH
+echo -e "Run this command when the script is done: \n  export PATH=$conda_python:$rocoto_bin:$PATH"
 PYTHONPATH=`which python3 | head -n 1 | xargs dirname`
 #get the path to rocoto and singularity on the host
 SINGULARITY=`which singularity`

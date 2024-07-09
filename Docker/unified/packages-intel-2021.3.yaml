@@ -1,0 +1,129 @@
+packages:
+  bash:
+    externals:
+    - spec: bash@5.0.17
+      prefix: /usr
+  binutils:
+    externals:
+    - spec: binutils@2.34
+      prefix: /usr
+  bison:
+    externals:
+    - spec: bison@3.5.1
+      prefix: /usr
+  bzip2:
+    externals:
+    - spec: bzip2@1.0.8
+      prefix: /usr
+  cmake:
+    externals:
+    - spec: cmake@3.23.1
+      prefix: /usr/local
+  coreutils:
+    externals:
+    - spec: coreutils@8.30
+      prefix: /usr
+  curl:
+    externals:
+    - spec: curl@7.68.0+gssapi+ldap+nghttp2
+      prefix: /usr
+  diffutils:
+    externals:
+    - spec: diffutils@3.7
+      prefix: /usr
+  file:
+    externals:
+    - spec: file@5.38
+      prefix: /usr
+  findutils:
+    externals:
+    - spec: findutils@4.7.0
+      prefix: /usr
+  flex:
+    externals:
+    - spec: flex@2.6.4+lex
+      prefix: /usr
+# gcc:
+#   externals:
+#   - spec: gcc@9.4.0 languages=c
+#     prefix: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.3.0-dmufq7vii2bxqjzqfjyjtjopb6tp6pfg/mpi/2021.3.0
+#     extra_attributes:
+#       compilers:
+#         c: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.3.0-dmufq7vii2bxqjzqfjyjtjopb6tp6pfg/mpi/2021.3.0/bin/mpigcc
+#   - spec: gcc@9.4.0 languages=c,c++
+#     prefix: /usr
+#     extra_attributes:
+#       compilers:
+#         c: /usr/bin/x86_64-linux-gnu-gcc-9
+#         cxx: /usr/bin/x86_64-linux-gnu-g++-9
+  git:
+    externals:
+    - spec: git@2.25.1~tcltk
+      prefix: /usr
+  git-lfs:
+    externals:
+    - spec: git-lfs@2.9.2
+      prefix: /usr
+  gmake:
+    externals:
+    - spec: gmake@4.2.1
+      prefix: /usr
+  intel:
+    externals:
+    - spec: intel@2021.3.0
+      prefix: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2021.3.0-voelb27fv54rcpfl7mgi77r2fuyfikrw/compiler/2021.3.0/linux
+      extra_attributes:
+        compilers:
+          c: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2021.3.0-voelb27fv54rcpfl7mgi77r2fuyfikrw/compiler/2021.3.0/linux/bin/intel64/icc
+          cxx: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2021.3.0-voelb27fv54rcpfl7mgi77r2fuyfikrw/compiler/2021.3.0/linux/bin/intel64/icpc
+          fortran: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-compilers-2021.3.0-voelb27fv54rcpfl7mgi77r2fuyfikrw/compiler/2021.3.0/linux/bin/intel64/ifort
+  libfabric:
+    externals:
+    - spec: libfabric@1.12.1 fabrics=shm,sockets,tcp
+      prefix: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.3.0-dmufq7vii2bxqjzqfjyjtjopb6tp6pfg/mpi/2021.3.0/libfabric
+  m4:
+    externals:
+    - spec: m4@1.4.18
+      prefix: /usr
+  mysql:
+    externals:
+    - spec: mysql@8.0.33
+      prefix: /usr
+  openssh:
+    externals:
+    - spec: openssh@8.2p1
+      prefix: /usr
+  openssl:
+    externals:
+    - spec: openssl@1.1.1f
+      prefix: /usr
+  perl:
+    externals:
+    - spec: perl@5.30.0~cpanm+open+shared+threads
+      prefix: /usr
+  python:
+    externals:
+    - spec: python@3.8.10+bz2+crypt+ctypes+dbm+lzma+nis+pyexpat+pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
+      prefix: /usr
+    - spec: python@3.8.10+bz2+crypt+ctypes+dbm+lzma+nis+pyexpat~pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
+      prefix: /usr
+  sed:
+    externals:
+    - spec: sed@4.7
+      prefix: /usr
+  tar:
+    externals:
+    - spec: tar@1.30
+      prefix: /usr
+  wget:
+    externals:
+    - spec: wget@1.20.3
+      prefix: /usr
+  xz:
+    externals:
+    - spec: xz@5.2.4
+      prefix: /usr
+  boost:
+    externals:
+    - spec: boost@1.78.0
+      prefix: /usr

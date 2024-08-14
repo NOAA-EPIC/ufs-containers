@@ -7,6 +7,8 @@ packages:
   intel-oneapi-mpi:
     externals:
     - spec: intel-oneapi-mpi@2021.9.0
+      modules:
+      - intel-oneapi-mpi/2021.9.0
   findutils:
     externals:
     - spec: findutils@4.8.0

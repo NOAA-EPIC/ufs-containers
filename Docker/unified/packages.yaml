@@ -1,120 +1,100 @@
 packages:
   all:
-    compiler:: [intel@2021.8.0]
+    compiler:: [intel@2021.10.0]
     providers:
-      mpi:: [intel-oneapi-mpi@2021.8.0]
+      mpi:: [intel-oneapi-mpi@2021.9.0]
     target: [core2]
-  mpi:
-    buildable: False
   intel-oneapi-mpi:
     externals:
-    - spec: intel-oneapi-mpi@2021.8.0
+    - spec: intel-oneapi-mpi@2021.9.0
       modules:
-      - impi/2021.8.0
-      prefix: /opt/spack-stack/spack-stack-1.4.0/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.4.0/intel-oneapi-mpi-2021.8.0-slgdtvysm3xxsbmr54vf4arais5jfted
-  bash:
+      - intel-oneapi-mpi/2021.9.0
+  findutils:
     externals:
-    - spec: bash@5.0.17
+    - spec: findutils@4.8.0
+      prefix: /usr
+  diffutils:
+    externals:
+    - spec: diffutils@3.8
       prefix: /usr
   binutils:
     externals:
-    - spec: binutils@2.34
+    - spec: binutils@2.38
       prefix: /usr
-  bzip2:
+  bison:
     externals:
-    - spec: bzip2@1.0.8
+    - spec: bison@3.8.2
+      prefix: /usr
+  flex:
+    externals:
+    - spec: flex@2.6.4+lex
       prefix: /usr
   cmake:
     externals:
     - spec: cmake@3.23.1
       prefix: /usr/local
-  coreutils:
+  python:
     externals:
-    - spec: coreutils@8.30
+    - spec: python@3.10.12+bz2+crypt+ctypes+dbm+lzma+nis+pyexpat~pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
       prefix: /usr
-  curl:
+  perl:
     externals:
-    - spec: curl@7.68.0+gssapi+ldap+nghttp2
+    - spec: perl@5.34.0~cpanm+open+shared+threads
       prefix: /usr
-  diffutils:
+  openssl:
     externals:
-    - spec: diffutils@3.7
-      prefix: /usr
-  file:
-    externals:
-    - spec: file@5.38
-      prefix: /usr
-  findutils:
-    externals:
-    - spec: findutils@4.7.0
+    - spec: openssl@3.0.2
       prefix: /usr
   git:
     externals:
-    - spec: git@2.25.1~tcltk
+    - spec: git@2.40.0+man+nls+perl+subtree~svn~tcltk
       prefix: /usr
   git-lfs:
     externals:
-    - spec: git-lfs@2.9.2
+    - spec: git-lfs@3.0.2
       prefix: /usr
-  gmake:
+  curl:
     externals:
-    - spec: gmake@4.2.1
+    - spec: curl@8.1.2~gssapi~ldap~libidn2~librtmp~libssh~libssh2~nghttp2
       prefix: /usr
   m4:
     externals:
     - spec: m4@1.4.18
       prefix: /usr
-  mysql:
-    externals:
-    - spec: mysql@8.0.33
-      prefix: /usr
-  openssh:
-    externals:
-    - spec: openssh@8.2p1
-      prefix: /usr
-  openssl:
-    externals:
-    - spec: openssl@1.1.1f
-      prefix: /usr
-  perl:
-    externals:
-    - spec: perl@5.30.0~cpanm+open+shared+threads
-      prefix: /usr
-  python:
-    externals:
-    - spec: python@3.8.10+bz2+crypt+ctypes+dbm+lzma+nis+pyexpat~pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
-      prefix: /usr
-  sed:
-    externals:
-    - spec: sed@4.7
-      prefix: /usr
-  tar:
-    externals:
-    - spec: tar@1.30
-      prefix: /usr
   wget:
     externals:
-    - spec: wget@1.20.3
-      prefix: /usr
-  xz:
-    externals:
-    - spec: xz@5.2.4
+    - spec: wget@1.21.2
       prefix: /usr
   boost:
     externals:
     - spec: boost@1.78.0
       prefix: /usr
-  bison:
-    buildable: false
+  mysql:
     externals:
-    - spec: bison@3.5.1
+    - spec: mysql@8.0.35
       prefix: /usr
-  flex:
-    buildable: false
+  meson:
     externals:
-    - spec: flex@2.6.4
+    - spec: meson@0.61.2
       prefix: /usr
-
-
-
+  py-scipy:
+    externals:
+    - spec: py-scipy@1.26.3
+      prefix: /usr/local/lib/python3.10/dist-packages
+  sed:
+    externals:
+    - spec: sed@4.8
+      prefix: /usr
+  awscli:
+    externals:
+    - spec: awscli@1.22.34
+      prefix: /usr
+  autoconf:
+    externals:
+    - spec: autoconf@2.71
+      prefix: /usr
+  automake:
+    externals:
+    - spec: automake@1.16.5
+      prefix: /usr
 

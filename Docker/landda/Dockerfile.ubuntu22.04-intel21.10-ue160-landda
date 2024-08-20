@@ -11,13 +11,11 @@ WORKDIR /opt/jedi-bundle
 #RUN sed -i '/soca/d' CMakeLists.txt && sed -i '/gsw/d' CMakeLists.txt && sed -i '/mom6/d' CMakeLists.txt && \
 #the .bashenv file activates lmod and loads the intel and intelmpi modules
 #load up the modules needed for skylab build, configure and build
+##    module load zlib openblas hdf5 nccmp libpng eigen netcdf-c parallel-netcdf udunits eckit netcdf-fortran parallelio ecbuild fckit gsl-lite fms/release-jcsda jasper atlas nco crtm/v2.4.1-jedi jedi-cmake && \
 RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv && \
-#    module load zlib openblas hdf5 nccmp libpng eigen netcdf-c parallel-netcdf udunits eckit netcdf-fortran parallelio ecbuild fckit gsl-lite fms/release-jcsda jasper atlas nco crtm/v2.4.1-jedi jedi-cmake && \
-    module load jedi−fv3−env/1.0.0 ewok−env/1.0.0 soca−env/1.0.0 && \
+    module load jedi−fv3−env ewok−env soca−env && \
     cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
-#this removes the unneeded tests for skylab which take forever to build
-   find ../ -iname CMakeLists.txt | xargs sed -i '/add_subdirectory( test )/g' && \
-   make -j 4 && make install 
+    make -j 4 && make install 
 RUN rm -rf /opt/jedi-bundle/build
 WORKDIR /opt
 #clone and build the land-DA workflow

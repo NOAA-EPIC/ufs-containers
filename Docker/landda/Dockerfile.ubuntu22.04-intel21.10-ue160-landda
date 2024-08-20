@@ -8,7 +8,7 @@ RUN git clone -b release/skylab-v7 https://github.com/JCSDA/jedi-bundle.git && m
 RUN cd /opt/spack-stack && rm -rf spack/var/spack/cache
 WORKDIR /opt/jedi-bundle
 #delete a few unnecessary packages
-RUN sed -i '/soca/d' CMakeLists.txt && sed -i '/gsw/d' CMakeLists.txt && sed -i '/mom6/d' CMakeLists.txt && \
+#RUN sed -i '/soca/d' CMakeLists.txt && sed -i '/gsw/d' CMakeLists.txt && sed -i '/mom6/d' CMakeLists.txt && \
 #the .bashenv file activates lmod and loads the intel and intelmpi modules
 #load up the modules needed for skylab build, configure and build
    source /opt/spack-stack/spack-stack-1.6.0/.bashenv && \

@@ -12,7 +12,7 @@ WORKDIR /opt/jedi-bundle
 #the .bashenv file activates lmod and loads the intel and intelmpi modules
 #load up the modules needed for skylab build, configure and build
 RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv && \
-    module load zlib openblas hdf5 nccmp libpng eigen netcdf-c parallel-netcdf udunits eckit netcdf-fortran parallelio ecbuild fckit gsl-lite fms/release-jcsda jasper atlas nco crtm/v2.4-jedi.2 jedi-cmake && \
+    module load zlib openblas hdf5 nccmp libpng eigen netcdf-c parallel-netcdf udunits eckit netcdf-fortran parallelio ecbuild fckit gsl-lite fms/release-jcsda jasper atlas nco crtm/v2.4.1-jedi jedi-cmake && \
     cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
 #this removes the unneeded tests for skylab which take forever to build
    find ../ -iname CMakeLists.txt | xargs sed -i '/add_subdirectory( test )/g' && \

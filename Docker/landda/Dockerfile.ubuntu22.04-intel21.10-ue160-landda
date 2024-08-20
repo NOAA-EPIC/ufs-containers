@@ -13,7 +13,7 @@ WORKDIR /opt/jedi-bundle
 #load up the modules needed for skylab build, configure and build
 ##    module load zlib openblas hdf5 nccmp libpng eigen netcdf-c parallel-netcdf udunits eckit netcdf-fortran parallelio ecbuild fckit gsl-lite fms/release-jcsda jasper atlas nco crtm/v2.4.1-jedi jedi-cmake && \
 RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv && \
-    #module load jedi−fv3−env ewok−env soca−env && \
+    module load ewok-env soc-env fms/release-jcsda && \
     cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
     make -j 4 && make install 
 RUN rm -rf /opt/jedi-bundle/build

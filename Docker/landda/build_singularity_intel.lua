@@ -13,8 +13,8 @@ load("intel-oneapi-mpi/2021.9.0")
 stack_intel_oneapi_mpi_ver=os.getenv("stack_intel_oneapi_mpi_ver") or "2021.9.0"
 load(pathJoin("stack-intel-oneapi-mpi", stack_intel_oneapi_mpi_ver))
 
-stack_python_ver=os.getenv("stack_python_ver") or "3.10.13"
-load(pathJoin("stack-python", stack_python_ver))
+--stack_python_ver=os.getenv("stack_python_ver") or "3.10.13"
+--load(pathJoin("stack-python", stack_python_ver))
 
 cmake_ver=os.getenv("cmake_ver") or "3.23.1"
 load(pathJoin("cmake", cmake_ver))

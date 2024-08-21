@@ -26,8 +26,9 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv  && \
      cd land-DA_workflow && \
      module use /opt/land-DA_workflow/modulefiles && \
      module load build_singularity_intel && \
-     mkdir build && cd build && \
-     ecbuild -DCMAKE_INSTALL_PREFIX=../install ../sorc && make -j 8 install && \
+     #mkdir build && cd build && \
+     #ecbuild -DCMAKE_INSTALL_PREFIX=../install ../sorc && make -j 8 install && \
+     cd sorc && ./app_build.sh && \
      mv ufs_model.fd/src/ufs_model.fd-build/ufs_model ../install/bin/ && \
      cd .. && rm -rf build && mkdir -p sorc/build/bin && mkdir exec && \
 # Not sure the next lines are needed

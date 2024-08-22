@@ -38,7 +38,7 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv  && \
      mkdir build && cd build && \
      ecbuild -DCMAKE_INSTALL_PREFIX=../install ../sorc && make -j 8 install && \
      mv ufs_model.fd/src/ufs_model.fd-build/ufs_model ../install/bin/ && \
-     cd .. && rm -rf build && mkdir -p sorc/build/bin && mkdir exec && \
+     cd .. && rm -rf build && mkdir -p sorc/build/bin && mkdir exec
 # Not sure the next lines are needed
 #     cd sorc/DA_update/jedi/fv3-jedi/Data/ && rm f* && \
 #     cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fv3files . 

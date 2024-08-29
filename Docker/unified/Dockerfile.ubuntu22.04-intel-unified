@@ -79,7 +79,7 @@ WORKDIR /opt/spack-stack
 #
 #Copy in the ubuntu-intel configuration files
 ADD ubuntu-intel-21.3.tar.gz /opt/spack-stack 
-ADD spack-mirror-1.7.0.tar.gz /opt
+ADD spack-mirror.tar.gz /opt
 ## Either copy in the spack-mirror or pull it from s3
 #ADD spack-mirror.tar.gz /opt
 ##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
@@ -108,9 +108,10 @@ RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stac
     spack config add "packages:fontconfig:variants:+pic" && \
     spack config add "packages:pixman:variants:+pic" && \
     spack config add "packages:cairo:variants:+pic" && \
-    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.7.0/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \
+#   sed -i '/awscli/d' /opt/spack-stack/spack-stack-$branch/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \ # for v1.7.0
+    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.6.0/spack/var/spack/repos/jcsda-emc-bundles/packages/ewok-env/package.py && \
     spack concretize  && mkdir /usr/bin/info && \
-    spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
+    spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
     echo "DONE"
 WORKDIR /opt/spack-stack/spack-stack-$branch
@@ -131,7 +132,7 @@ RUN . ./setup.sh && spack env activate envs/unified-env && sed -i '/intel-oneapi
      cp ~/.bashenv /opt/spack-stack/spack-stack-$branch && \
      sed -i '/MODULEPATH/a prepend_path\(\"PATH\",\"\/opt\/intel\/oneapi\/compiler\/2024.0\/bin\"\)' /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core/stack-intel/2021.10.0.lua && \
      echo "DONE2" 
-#ENV FI_PROVIDER_PATH=/opt/spack-stack/spack-stack-1.7.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-aszwejy/mpi/2021.9.0/libfabric/lib/prov:/usr/lib64/libfabric
+ENV FI_PROVIDER_PATH=/opt/spack-stack/spack-stack-$branch/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-aszwejy/mpi/2021.9.0/libfabric/lib/prov:/usr/lib64/libfabric
 ENV CC=/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64/icc
 ENV CXX=/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64/icpc
 ENV FC=/opt/intel/oneapi/compiler/2024.0/bin/ifort
@@ -143,4 +144,4 @@ RUN echo "source /usr/lmod/lmod/init/bash" > /etc/bash.bashrc && \
     echo "bind '\"\\e[A\": history-search-backward'" >> /etc/bash.bashrc && \
     echo "bind '\"\\e[B\": history-search-forward'" >> /etc/bash.bashrc && \
     echo "/bin/bash --init-file /etc/bash.bashrc" >> /bin/mybash && \
-    chmod +x /bin/mybash && chmod -R a+rX /root
+    chmod +x /bin/mybash && chmod -R a+rX /root && chmod a+x /opt/container-scripts/*

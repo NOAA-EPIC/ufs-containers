@@ -19,7 +19,8 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv && \
 RUN rm -rf /opt/jedi-bundle/build
 WORKDIR /opt
 #clone and build the land-DA workflow
-RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_workflow.git
+#RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_workflow.git
+RUN git clone -b ss160-container-update --recursive https://github.com/EdwardSnyder-NOAA/land-DA_workflow.git
 #COPY build_singularity_intel.lua /opt/land-DA_workflow/modulefiles
 #RUN chmod a+rx /opt/land-DA_workflow/modulefiles/build_singularity_intel.lua
 RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv  && \

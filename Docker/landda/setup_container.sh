@@ -43,9 +43,9 @@ singularity exec -H $PWD $image cp -r /opt/land-DA_workflow .
 
 # Get Land DA data
 echo "Checking if LANDDA_INPUTS variable exists and copying to land-DA_workflow"
-if [ -d $LANDDA_INPUTS/inputs/NaturalEarth ]; then
+if [ -d $LANDDA_INPUTS/NaturalEarth ]; then
     echo "Land DA data exists copying it over"
-    cp -r $LANDDA_INPUTS/inputs/* $PWD/land-DA_workflow/fix/
+    cp -r $LANDDA_INPUTS/* $PWD/land-DA_workflow/fix/
 fi
 
 # Update jobs and scripts files to work with container
@@ -75,6 +75,10 @@ sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/bin/conda
 sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/envs/land_da/bin/uw
 
 echo "$PWD/land-DA_workflow/sorc/conda" > $PWD/land-DA_workflow/parm/conda_loc
+
+# Append Python path to analysis and plot scripts
+sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:$PATH" $PWD/land-DA_workflow/scripts/exlandda_analysis.sh 
+sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:$PATH" $PWD/land-DA_workflow/scripts/exlandda_plot_stats.sh
 
 # Get JEDI Data
 echo "Getting the jedi test data from container"

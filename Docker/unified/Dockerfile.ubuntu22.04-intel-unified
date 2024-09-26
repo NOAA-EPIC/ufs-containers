@@ -84,6 +84,10 @@ ADD spack-mirror.tar.gz /opt
 #ADD spack-mirror.tar.gz /opt
 ##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
 #
+RUN apt update && apt install libncurses6 ncurses-base ncurses-bin -y && \
+    apt install libncurses-dev libxaw7-dev gcc libgssapi-krb5-2 libkrb5-dev libsasl2-modules-gssapi-mit -y
+
+
 # This clone version will change for each successive release
 RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
   cd /opt/spack-stack/spack-stack-$branch && \
@@ -94,11 +98,11 @@ RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stac
 # Get any recent updates to the release
     git remote update && git checkout release/$branch && git pull origin release/$branch && \
     git submodule sync && git submodule update  && \
-    mv /opt/spack-stack/ubuntu-intel configs/sites && \ 
+    mv /opt/spack-stack/ubuntu-intel configs/sites/tier1 && \ 
 #
 # Create the environment
     . ./setup.sh && spack compiler rm gcc@11.4.0 && \
-    export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env && \
+    export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler intel && \
     spack compiler add oneapi && spack compiler list && sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
     sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
 #
@@ -107,9 +111,14 @@ RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stac
     unset SPACK_SYSTEM_CONFIG_PATH && \ 
     spack config add "packages:fontconfig:variants:+pic" && \
     spack config add "packages:pixman:variants:+pic" && \
-    spack config add "packages:cairo:variants:+pic" && \
-#   sed -i '/awscli/d' /opt/spack-stack/spack-stack-$branch/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \ # for v1.7.0
-    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.6.0/spack/var/spack/repos/jcsda-emc-bundles/packages/ewok-env/package.py && \
+    spack config add "packages:cairo:variants:+pic" && \ 
+# for v1.7.0
+    sed -i '/boost/,+5d' /opt/spack-stack/spack-stack-1.8.0/envs/unified-env/common/packages.yaml && \
+#   sed -i '/awscli/d' /opt/spack-stack/spack-stack-$branch/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \
+#   sed -i '/ewok-env/d' /opt/spack-stack/spack-stack-$branch/configs/templates/unified-dev/spack.yaml
+#   sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.6.0/spack/var/spack/repos/jcsda-emc-bundles/packages/ewok-env/package.py
+#ADD envs.tar.gz /opt/spack-stack/spack-stack-1.8.0
+#RUN cd /opt/spack-stack/spack-stack-$branch && . ./setup.sh && spack env activate envs/unified-env && \ 
     spack concretize  && mkdir /usr/bin/info && \
     spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
@@ -131,6 +140,8 @@ RUN . ./setup.sh && spack env activate envs/unified-env && sed -i '/intel-oneapi
      echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
      cp ~/.bashenv /opt/spack-stack/spack-stack-$branch && \
      sed -i '/MODULEPATH/a prepend_path\(\"PATH\",\"\/opt\/intel\/oneapi\/compiler\/2024.0\/bin\"\)' /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core/stack-intel/2021.10.0.lua && \
+     sed -i '/I_MPI_/d' /opt/spack-stack/spack-stack-1.8.0/envs/unified-env/install/modulefiles/intel/2021.10.0/stack-intel-oneapi-mpi/2021.12.1.lua && \
+     module load patchelf && patchelf --add-needed libc.so.6 /opt/intel/oneapi/compiler/2024.0/lib/libirc.so && \
      echo "DONE2" 
 ENV FI_PROVIDER_PATH=/opt/spack-stack/spack-stack-$branch/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-aszwejy/mpi/2021.9.0/libfabric/lib/prov:/usr/lib64/libfabric
 ENV CC=/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64/icc

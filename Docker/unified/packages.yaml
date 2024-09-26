@@ -2,13 +2,13 @@ packages:
   all:
     compiler:: [intel@2021.10.0]
     providers:
-      mpi:: [intel-oneapi-mpi@2021.9.0]
+      mpi:: [intel-oneapi-mpi@2021.12.1]
     target: [core2]
   intel-oneapi-mpi:
     externals:
-    - spec: intel-oneapi-mpi@2021.9.0
+    - spec: intel-oneapi-mpi@2021.12.1
       modules:
-      - intel-oneapi-mpi/2021.9.0
+      - intel-oneapi-mpi/2021.12.1
   findutils:
     externals:
     - spec: findutils@4.8.0

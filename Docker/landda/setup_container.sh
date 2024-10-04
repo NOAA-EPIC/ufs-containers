@@ -61,6 +61,8 @@ sed -i 's|JEDI_EXECDIR=${JEDI_INSTALL}/build/bin|JEDI_EXECDIR=${EXEClandda}|g' $
 sed -i "s|COMPILER|$compiler|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
 sed -i "s|MPI|$mpi|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
 
+sed -i "s|PWD|$PWD|g" $PWD/land-DA_workflow/ush/hofx_analysis_stats.py
+
 # Setup run scripts
 echo "Updating run scripts"
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/land_analysis_singularity.yaml
@@ -77,8 +79,8 @@ sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/envs/land_da/bin/uw
 echo "$PWD/land-DA_workflow/sorc/conda" > $PWD/land-DA_workflow/parm/conda_loc
 
 # Append Python path to analysis and plot scripts
-sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:$PATH" $PWD/land-DA_workflow/scripts/exlandda_analysis.sh 
-sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:$PATH" $PWD/land-DA_workflow/scripts/exlandda_plot_stats.sh
+sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:\$PATH" $PWD/land-DA_workflow/scripts/exlandda_analysis.sh 
+sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:\$PATH" $PWD/land-DA_workflow/scripts/exlandda_plot_stats.sh
 
 # Get JEDI Data
 echo "Getting the jedi test data from container"
@@ -97,5 +99,11 @@ ln -s ../parm/run_container_executable.sh python
 ln -s ../parm/run_container_executable.sh setpdy.sh
 ln -s ../parm/run_container_executable.sh tile2tile_converter.exe
 ln -s ../parm/run_container_executable.sh ufs_model
+
+cd ../singularity/bin
+ln -s ../../parm/build_container_executable.sh ecbuild
+ln -s ../../parm/build_container_executable.sh make
+ln -s ../../parm/build_container_executable.sh cmake
+ln -s ../../parm/build_container_executable.sh ctest
 
 echo "Done"

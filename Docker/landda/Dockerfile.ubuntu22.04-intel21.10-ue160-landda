@@ -46,8 +46,8 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv  && \
 # Not sure the next lines are needed
 #     cd sorc/DA_update/jedi/fv3-jedi/Data/ && rm f* && \
 #     cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fieldmetadata . && cp -r /opt/jedi-bundle/fv3-jedi/test/Data/fv3files . 
-#COPY run_container_executable.sh /opt/land-DA_workflow
-#COPY build_container_executable.sh /opt/land-DA_workflow
+COPY run_container_executable.sh /opt/land-DA_workflow/parm
+COPY build_container_executable.sh /opt/land-DA_workflow/parm
 COPY setup_container.sh /opt/land-DA_workflow
 WORKDIR /opt/land-DA_workflow
 #RUN mkdir -p singularity/bin && cd singularity/bin && \
@@ -66,7 +66,8 @@ WORKDIR /opt/land-DA_workflow
     #ln -s ../../../run_container_executable.sh fv3jedi_letkf.x && \
  #   ln -s ../../../run_container_executable.sh python && \
  #   ln -s ../../../run_container_executable.sh ufs_model && \
-RUN mkdir -p /work && \
+RUN mkdir -p singularity/bin && \
+    mkdir -p /work && \
     mkdir -p /work2 && \
     mkdir -p /contrib && \
     mkdir -p /lustre  && \
@@ -87,7 +88,7 @@ RUN mkdir -p /work && \
     mkdir -p /Users && \
     mkdir -p /ncrc && \
     #chmod a+rx ../run_container_executable.sh ../build_container_executable.sh ../setup_container.sh
-    chmod a+rx setup_container.sh
+    chmod a+rx setup_container.sh parm/build_container_executable.sh parm/run_container_executable.sh
     #pip install numpy && pip install matplotlib &&  pip install argparse && pip install pyyaml && \
     #pip install f90nml netcdf4
 #ENV PYTHONPATH=/opt/ioda-bundle/build/lib/pyiodaconv:/opt/ioda-bundle/build/lib/python3.8/pyioda

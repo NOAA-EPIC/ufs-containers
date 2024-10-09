@@ -28,7 +28,7 @@ RUN . ./setup.sh && \
     module use /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/install/modulefiles/Core && \
     module avail && \
     echo "source /usr/lmod/lmod/init/bash" >> .bashenv-fms && \
-    echo "module use /opt/spack-stack/spack-stack-/envs/fms-2024.01/install/modulefiles/Core" >> .bashenv-fms && \
+    echo "module use /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/install/modulefiles/Core" >> .bashenv-fms && \
     echo "module load stack-intel intel-oneapi-mpi" >> .bashenv-fms && \
     echo "module load stack-intel-oneapi-mpi" >> .bashenv-fms && \
     echo "DONE2" 

@@ -9,14 +9,14 @@ RUN . ./setup.sh && \
     spack env activate . && \
     spack add upp-env %intel ^g2tmpl@1.13.0 ^g2@3.5.1 && \
     spack add ip %intel && \
-    spack add prod-util@2.1.1 %intel && \
-    spack add wgrib2@2.0.8 %intel && \
-    spack add grib-util@1.3.0 %intel ^g2@3.5.1 && \
-    spack add ufs-weather-model-env %intel ^g2tmpl@1.13.0 ^g2@3.5.1 && \
     spack add nco@5.0.6 %intel && \
     spack add met@11.1.0 %intel && \
     spack add metplus@5.1.0 %intel && \
     spack add fms@2024.01 %intel && \
+    spack add prod-util@2.1.1 %intel && \
+    spack add wgrib2@2.0.8 %intel && \
+    spack add grib-util@1.3.0 %intel ^g2@3.5.1 && \
+    spack add ufs-weather-model-env %intel ^g2tmpl@1.13.0 ^g2@3.5.1 && \
 #
 # Concretize
     spack concretize 2>&1 | tee log.concretize-fms202401 && \

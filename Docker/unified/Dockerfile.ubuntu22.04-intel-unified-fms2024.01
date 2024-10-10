@@ -8,7 +8,7 @@ RUN . ./setup.sh && \
     sed -i '20 i \    version("2024.01", sha256="29ac23a5a2a4765ae66d218bb261cb04f7ad44618205ab0924c4e66c9ef8fa38")' spack/var/spack/repos/builtin/packages/fms/package.py && \
     sed -i '28 i \    version("3.5.1", sha256="a9acdb5d23eca532838f21c4a917727ac85851fc9e1f100d65a6f27c1a563998")' spack/var/spack/repos/builtin/packages/g2/package.py && \
     sed -i '24 i \    version("1.13.0", sha256="7e52cccc91277bcedbd9e13ee3478480e744eb22d13c5b636bd0ad91bf43d38e")' spack/var/spack/repos/builtin/packages/g2tmpl/package.py && \
-    sed -i '34 i \    depends_on("g2c@1.8: +utils", when="+tests")' spack/var/spack/repos/builtin/packages/grib-util/package.py && \
+    sed -i '34 i \    depends_on("g2c@1.7:", when="^g2@3.5:")' spack/var/spack/repos/builtin/packages/grib-util/package.py && \
     cd /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01 && \
     spack env activate . && \
     spack add upp-env %intel ^g2tmpl@1.13.0 ^g2@3.5.1 && \

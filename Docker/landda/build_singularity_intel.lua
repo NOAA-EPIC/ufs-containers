@@ -4,7 +4,7 @@ loads UFS Model prerequisites for Singularity container
 
 setenv("EPICHOME", "/opt")
 
-prepend_path("MODULEPATH", pathJoin(os.getenv("EPICHOME"),"spack-stack/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core"))
+prepend_path("MODULEPATH", pathJoin(os.getenv("EPICHOME"),"spack-stack/spack-stack-1.6.0/envs/fms-2024.01/install/modulefiles/Core"))
 
 stack_intel_ver=os.getenv("stack_intel_ver") or "2021.10.0"
 load(pathJoin("stack-intel", stack_intel_ver))
@@ -46,19 +46,19 @@ load(pathJoin("parallelio", pio_ver))
 esmf_ver=os.getenv("esmf_ver") or "8.5.0"
 load(pathJoin("esmf", esmf_ver))
 
-fms_ver=os.getenv("fms_ver") or "2023.04"
+fms_ver=os.getenv("fms_ver") or "2024.01"
 load(pathJoin("fms",fms_ver))
 
 bacio_ver=os.getenv("bacio_ver") or "2.4.1"
 load(pathJoin("bacio", bacio_ver))
 
-crtm_ver=os.getenv("crtm_ver") or "2.4.0.1"
+crtm_ver=os.getenv("crtm_ver") or "2.4.0"
 load(pathJoin("crtm", crtm_ver))
 
-g2_ver=os.getenv("g2_ver") or "3.4.5"
+g2_ver=os.getenv("g2_ver") or "3.5.1"
 load(pathJoin("g2", g2_ver))
 
-g2tmpl_ver=os.getenv("g2tmpl_ver") or "1.10.2"
+g2tmpl_ver=os.getenv("g2tmpl_ver") or "1.13.0"
 load(pathJoin("g2tmpl", g2tmpl_ver))
 
 ip_ver=os.getenv("ip_ver") or "4.3.0"
@@ -75,6 +75,9 @@ load(pathJoin("gftl-shared", gftl_shared_ver))
 
 mapl_ver=os.getenv("mapl_ver") or "2.40.3-esmf-8.5.0"
 load(pathJoin("mapl", mapl_ver))
+
+scotch_ver=os.getenv("scotch_ver") or "7.0.4"
+load(pathJoin("scotch", scotch_ver))
 
 load("py-cftime/1.0.3.4")
 load("py-cython/0.29.36")

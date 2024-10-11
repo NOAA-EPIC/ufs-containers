@@ -43,7 +43,7 @@ load(pathJoin("netcdf-fortran", netcdf_fortran_ver))
 pio_ver=os.getenv("pio_ver") or "2.5.10"
 load(pathJoin("parallelio", pio_ver))
 
-esmf_ver=os.getenv("esmf_ver") or "8.5.0"
+esmf_ver=os.getenv("esmf_ver") or "8.6.0"
 load(pathJoin("esmf", esmf_ver))
 
 fms_ver=os.getenv("fms_ver") or "2024.01"
@@ -73,7 +73,7 @@ load(pathJoin("w3emc", w3emc_ver))
 gftl_shared_ver=os.getenv("gftl_shared_ver") or "1.6.1"
 load(pathJoin("gftl-shared", gftl_shared_ver))
 
-mapl_ver=os.getenv("mapl_ver") or "2.40.3-esmf-8.5.0"
+mapl_ver=os.getenv("mapl_ver") or "2.40.3-esmf-8.6.0"
 load(pathJoin("mapl", mapl_ver))
 
 scotch_ver=os.getenv("scotch_ver") or "7.0.4"

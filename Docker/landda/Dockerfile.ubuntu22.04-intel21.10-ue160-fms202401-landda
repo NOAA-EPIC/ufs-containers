@@ -41,7 +41,7 @@ RUN  source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms  &&
      conda activate && mamba env create -n land_da --file /opt/land-DA_workflow/parm/conda_environment.yml && \
      cd .. && \
      module use /opt/land-DA_workflow/modulefiles && \
-     module load build_singularity_intel && \
+     #module load build_singularity_intel && \
      mkdir build && cd build && \
      ecbuild -DCMAKE_INSTALL_PREFIX=../install ../sorc && make -j 8 install && \
      mv ufs_model.fd/src/ufs_model.fd-build/ufs_model ../install/bin/ && \

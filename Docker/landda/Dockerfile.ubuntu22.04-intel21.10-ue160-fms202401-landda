@@ -26,7 +26,7 @@ RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_wo
 RUN sed -i -e $'$a\\\n  - numpy=2.1.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - matplotlib=3.9.2' $PWD/land-DA_workflow/parm/conda_environment.yml
 RUN sed -i -e $'$a\\\n  - scipy=1.14.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - cartopy=0.23.0' $PWD/land-DA_workflow/parm/conda_environment.yml
 RUN sed -i -e $'$a\\\n  - xarray=2024.9.0' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - netcdf4=1.7.1' $PWD/land-DA_workflow/parm/conda_environment.yml
-RUN  source /opt/spack-stack/spack-stack-1.6.0/.bashenv-fms  && \
+RUN  source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms  && \
      module load bacio cmake crtm ecbuild esmf fms gftl-shared g2 g2tmpl hdf5 ip jasper libpng mapl netcdf-c netcdf-fortran parallelio && \
      module load prod_util py-cartopy py-matplotlib py-netcdf4 py-numpy py-pyyaml py-scipy py-xarray sp ufs-pyenv w3emc zlib scotch && \
      cd land-DA_workflow/sorc && \

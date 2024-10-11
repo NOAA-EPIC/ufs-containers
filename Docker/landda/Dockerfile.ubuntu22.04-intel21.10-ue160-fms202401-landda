@@ -21,7 +21,7 @@ WORKDIR /opt
 #clone and build the land-DA workflow
 RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_workflow.git
 #RUN git clone -b ss160-container-update --recursive https://github.com/EdwardSnyder-NOAA/land-DA_workflow.git
-#COPY build_singularity_intel.lua /opt/land-DA_workflow/modulefiles
+COPY build_singularity_intel.lua /opt/land-DA_workflow/modulefiles
 #RUN chmod a+rx /opt/land-DA_workflow/modulefiles/build_singularity_intel.lua
 RUN sed -i -e $'$a\\\n  - numpy=2.1.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - matplotlib=3.9.2' $PWD/land-DA_workflow/parm/conda_environment.yml
 RUN sed -i -e $'$a\\\n  - scipy=1.14.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - cartopy=0.23.0' $PWD/land-DA_workflow/parm/conda_environment.yml

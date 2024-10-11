@@ -27,7 +27,8 @@ RUN . ./setup.sh && \
     spack install 2>&1 | tee log.install-fms202401 && \
 #
 # Refresh modulefiles and create meta-modules
-    source /usr/lmod/lmod/init/bash && \ 
+    source /usr/lmod/lmod/init/bash && \
+    sed -i '/intel-oneapi-mpi/d' envs/fms-2024.01/common/modules.yaml && \ 
     spack module lmod refresh -y --upstream-modules && \
     spack stack setup-meta-modules && \
     module use /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/install/modulefiles/Core && \

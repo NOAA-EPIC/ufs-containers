@@ -89,7 +89,7 @@ load("py-pandas/1.5.3")
 load("py-python-dateutil/2.8.2")
 load("py-pyyaml/6.0")
 
-load("atlas")
+--load("atlas")
 
 setenv("CMAKE_C_COMPILER","mpiicc")
 setenv("CMAKE_CXX_COMPILER","mpicxx")

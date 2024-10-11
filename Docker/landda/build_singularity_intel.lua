@@ -90,6 +90,8 @@ load("py-python-dateutil/2.8.2")
 load("py-pyyaml/6.0")
 
 --load("atlas")
+setenv("CFLAGS","-diag-disable=10448")
+setenv("FFLAGS","-diag-disable=10448")
 
 setenv("CMAKE_C_COMPILER","mpiicc")
 setenv("CMAKE_CXX_COMPILER","mpicxx")

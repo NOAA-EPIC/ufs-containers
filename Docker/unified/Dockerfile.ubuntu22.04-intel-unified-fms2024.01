@@ -3,10 +3,11 @@ FROM noaaepic/ubuntu22.04-intel-unified:v1.6.0
 WORKDIR /opt/spack-stack/spack-stack-1.6.0 
 
 # Create the fms-2024.01 env
-RUN . ./setup.sh && spack compiler rm gcc@11.4.0 && \
+RUN . ./setup.sh && \ 
+    #spack compiler rm gcc@11.4.0 && \
     export SPACK_SYSTEM_CONFIG_PATH="/opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/site" && \
     spack stack create env --name fms-2024.01 --template empty --site ubuntu-intel --upstream /opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install && \
-    spack compiler add oneapi && spack compiler list && \
+   # spack compiler add oneapi && spack compiler list && \
    # sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
     sed -i '20 i \    version("2024.01", sha256="29ac23a5a2a4765ae66d218bb261cb04f7ad44618205ab0924c4e66c9ef8fa38")' spack/var/spack/repos/builtin/packages/fms/package.py && \
     sed -i '28 i \    version("3.5.1", sha256="a9acdb5d23eca532838f21c4a917727ac85851fc9e1f100d65a6f27c1a563998")' spack/var/spack/repos/builtin/packages/g2/package.py && \

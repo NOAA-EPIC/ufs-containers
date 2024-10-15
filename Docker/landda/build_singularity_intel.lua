@@ -93,12 +93,12 @@ load("py-pyyaml/6.0")
 setenv("CFLAGS","-diag-disable=10448")
 setenv("FFLAGS","-diag-disable=10448")
 
-setenv("CMAKE_C_COMPILER","mpiicc")
-setenv("CMAKE_CXX_COMPILER","mpicxx")
-setenv("CMAKE_Fortran_COMPILER","mpif90")
---setenv("CC", "mpiicc")
---setenv("CXX", "mpiicpc")
---setenv("FC", "mpiifort")
+--setenv("CMAKE_C_COMPILER","mpiicc")
+--setenv("CMAKE_CXX_COMPILER","mpicxx")
+--setenv("CMAKE_Fortran_COMPILER","mpif90")
+setenv("CC", "mpiicc")
+setenv("CXX", "mpiicpc")
+setenv("FC", "mpiifort")
 
 setenv("JEDI_INSTALL", pathJoin(os.getenv("EPICHOME"),""))
 

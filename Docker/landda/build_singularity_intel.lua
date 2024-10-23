@@ -91,14 +91,15 @@ load("py-pyyaml/6.0")
 
 --load("atlas")
 setenv("CFLAGS","-diag-disable=10448")
-setenv("FFLAGS","-I/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0//include -I/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/include -L/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib/release -L/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib -Xlinker --enable-new-dtags -Xlinker -rpath -Xlinker /opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib/release -Xlinker -rpath -Xlinker /opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib -lmpifort -lmpi -ldl -lrt -lpthread -diag-disable=10448")
-
-setenv("CMAKE_C_COMPILER","mpiicc")
-setenv("CMAKE_CXX_COMPILER","mpicxx")
-setenv("CMAKE_Fortran_COMPILER","mpiifort")
---setenv("CC", "mpiicc")
---setenv("CXX", "mpiicpc")
---setenv("FC", "mpiifort")
+setenv("FFLAGS","-diag-disable=10448")
+--setenv("FFLAGS","-I/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0//include -I/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/include -L/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib/release -L/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib -Xlinker --enable-new-dtags -Xlinker -rpath -Xlinker /opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib/release -Xlinker -rpath -Xlinker /opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/intel-oneapi-mpi-2021.9.0-6bnjcwc/mpi/2021.9.0/lib -lmpifort -lmpi -ldl -lrt -lpthread -diag-disable=10448")
+prepend_path("PATH","/opt/intel/oneapi/compiler/2024.0/bin:/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64")
+--setenv("CMAKE_C_COMPILER","mpiicc")
+--setenv("CMAKE_CXX_COMPILER","mpicxx")
+--setenv("CMAKE_Fortran_COMPILER","mpiifort")
+setenv("CC", "mpiicc")
+setenv("CXX", "mpiicpc")
+setenv("FC", "mpiifort")
 
 setenv("JEDI_INSTALL", pathJoin(os.getenv("EPICHOME"),""))
 

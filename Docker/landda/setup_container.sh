@@ -61,12 +61,13 @@ sed -i 's|JEDI_EXECDIR=${JEDI_INSTALL}/build/bin|JEDI_EXECDIR=${EXEClandda}|g' $
 sed -i "s|COMPILER|$compiler|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
 sed -i "s|MPI|$mpi|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
 
-sed -i "s|PWD|$PWD|g" $PWD/land-DA_workflow/ush/hofx_analysis_stats.py
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/ush/hofx_analysis_stats.py
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/ush/plot_forecast_restart.py
 
 # Setup run scripts
 echo "Updating run scripts"
-sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/land_analysis_singularity.yaml
-cp $PWD/land-DA_workflow/parm/land_analysis_singularity.yaml $PWD/land-DA_workflow/parm/land_analysis.yaml
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/parm_xml_singularity.yaml
+cp $PWD/land-DA_workflow/parm/parm_xml_singularity.yaml $PWD/land-DA_workflow/parm/parm_xml.yaml
 
 sed -i "s|IMAGE|$image|g" $PWD/land-DA_workflow/parm/run_container_executable.sh
 

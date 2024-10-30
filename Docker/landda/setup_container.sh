@@ -88,6 +88,15 @@ echo "Getting the jedi test data from container"
 mkdir -p $PWD/jedi-bundle/fv3-jedi/test
 singularity exec -H $PWD $image cp -r /opt/jedi-bundle/fv3-jedi/test/Data $PWD/jedi-bundle/fv3-jedi/test/
 
+# Check if it is using mpich (i.e. gaea)
+if [[ $mpi =~ cray-mpich/ ]]; then
+    sed -i 's|which mpiexec|which srun|g' $PWD/land-DA_workflow/scripts/exlandda_*
+    sed -i 's|${RUN_CMD} -n ${NPROCS_FORECAST}|${RUN_CMD} -n ${NPROCS_FORECAST} --mpi=pmi2|g' $PWD/land-DA_workflow/scripts/exlandda_forecast.sh
+    sed -i 's|${RUN_CMD} -n ${NPROCS_ANALYSIS}|${RUN_CMD} -n ${NPROCS_ANALYSIS} --mpi=pmi2|g' $PWD/land-DA_workflow/scripts/exlandda_analysis.sh
+    sed -i '30 i module reset' $PWD/land-DA_workflow/parm/task_load_modules_run_jjob.sh
+    sed -i 's|`which singularity`|"/usr/bin/singularity"|g' $PWD/land-DA_workflow/parm/run_container_executable.sh
+fi
+
 # Create links
 echo "Creating links for exe"
 cd land-DA_workflow/exec

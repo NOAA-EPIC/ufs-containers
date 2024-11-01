@@ -35,8 +35,10 @@ COPY stage-rt.sh /opt
 WORKDIR /opt/ufs-weather-model
 RUN chmod a+rx /opt/stage-rt.sh container-scripts/run_container_executable.sh container-scripts/build_container_executable.sh
 RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
-     grep pathJoin modulefiles/ufs_common_spack.lua | awk -F "\"" '{print "module load "$2}' > mods && \
-     source ./mods && module list && \
+     #grep pathJoin modulefiles/ufs_common.lua | awk -F "\"" '{print "module load "$2}' > mods && \
+     #source ./mods && module list && \
+     module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio %% \
+     module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch && \ 
      echo ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.envs && \
      echo ENV PATH=$PATH >> ufswm.envs && \
      echo ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.envs && \

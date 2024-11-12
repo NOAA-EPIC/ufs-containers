@@ -30,22 +30,26 @@ RUN mkdir -p /work && \
 COPY run_container_executable.sh /opt/ufs-weather-model/container-scripts
 COPY build_container_executable.sh /opt/ufs-weather-model/container-scripts
 WORKDIR /opt/ufs-weather-model/bin
-RUN rm -f * && ln -s ../build_container_executable.sh make && ln -s ../build_container_executable.sh cmake
+#RUN rm -f * && ln -s ../build_container_executable.sh make && ln -s ../build_container_executable.sh cmake
 COPY stage-rt.sh /opt
 WORKDIR /opt/ufs-weather-model
 RUN chmod a+rx /opt/stage-rt.sh container-scripts/run_container_executable.sh container-scripts/build_container_executable.sh
 RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
      #grep pathJoin modulefiles/ufs_common.lua | awk -F "\"" '{print "module load "$2}' > mods && \
      #source ./mods && module list && \
-     module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio %% \
-     module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch && \ 
-     echo ENV FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.envs && \
-     echo ENV PATH=$PATH >> ufswm.envs && \
-     echo ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.envs && \
-     echo ENV LIBRARY_PATH=$LIBRARY_PATH >> ufswm.envs && \
-     echo ENV CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufswm.envs && \
-     echo ENV MODULEPATH=$MODULEPATH >> ufswm.envs && \
-     echo ENV CC=`which mpiicc` >> ufswm.envs && \
-     echo ENV FC=`which mpiifort` >> ufswm.envs && \
-     echo ENV CXX=`which mpiicpc` >> ufswm.envs
+     module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
+     module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \ 
+     export PATH=/opt/intel/oneapi/compiler/2024.0/bin:SINGULARITY_WORKING_DIR/ufs-weather-model/tests-dev:$PATH && \
+     echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.envs && \
+     echo PATH=$PATH >> ufswm.envs && \
+     echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.envs && \
+     echo LIBRARY_PATH=$LIBRARY_PATH >> ufswm.envs && \
+     echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufswm.envs && \
+     echo MODULEPATH=$MODULEPATH >> ufswm.envs && \
+     echo CC=`which icc` >> ufswm.envs && \
+     echo FC=`which ifort` >> ufswm.envs && \
+     echo CXX=`which icpc` >> ufswm.envs && \
+     echo I_MPI_ROOT=$I_MPI_ROOT >> ufswm.envs && \
+     echo ESMFMKFILE=$ESMFMKFILE >> ufswm.envs && \
+     echo PYTHONPATH=$PYTHONPATH >> ufswm.envs
 

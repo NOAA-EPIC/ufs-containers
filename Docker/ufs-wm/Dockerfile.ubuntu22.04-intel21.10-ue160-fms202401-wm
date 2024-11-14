@@ -32,8 +32,8 @@ COPY build_container_executable.sh /opt/ufs-weather-model/container-scripts
 WORKDIR /opt/ufs-weather-model/bin
 #RUN rm -f * && ln -s ../build_container_executable.sh make && ln -s ../build_container_executable.sh cmake
 COPY stage-rt.sh /opt
-WORKDIR /opt/ufs-weather-model
-RUN chmod a+rx /opt/stage-rt.sh container-scripts/run_container_executable.sh container-scripts/build_container_executable.sh
+WORKDIR /opt/ufs-weather-model/container-scripts
+RUN chmod a+rx /opt/stage-rt.sh run_container_executable.sh build_container_executable.sh
 RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
      #grep pathJoin modulefiles/ufs_common.lua | awk -F "\"" '{print "module load "$2}' > mods && \
      #source ./mods && module list && \

@@ -14,5 +14,5 @@ else
     arg="$@"
 fi
 echo running: PATH_TO_SINGULARITY exec --env-file SINGULARITY_WORKING_DIR/ufs-weather-model/container-scripts/ufswm.env -B /LOCDIR:/LOCDIR "${img}" $cmd $arg
-PATH_TO_SINGULARITY exec --env-file SINGULARITY_WORKING_DIR/ufs-weather-model/container-scripts/ufswm.env -B /LOCDIR:/LOCDIR -B /DATADIR "${img}" $cmd $arg
+PATH_TO_SINGULARITY exec --env-file SINGULARITY_WORKING_DIR/ufs-weather-model/container-scripts/ufswm.env -B /LOCDIR:/LOCDIR "${img}" $cmd $arg
 

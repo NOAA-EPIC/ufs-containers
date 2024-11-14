@@ -37,7 +37,7 @@ fi
 
 ##singularity exec -H $PWD $IMAGE cp /opt/ufs-weather-model/container-scripts/run_container_executable.sh .
 echo "Copying out ufs-weather-model repo from the container"
-#singularity exec -H $PWD $image cp -r /opt/ufs-weather-model .
+singularity exec -H $PWD $image cp -r /opt/ufs-weather-model .
 ##mkdir -p bin
 cd ufs-weather-model/bin
 ln -s ../container-scripts/build_container_executable.sh make

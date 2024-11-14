@@ -34,7 +34,7 @@ COPY compile_slurm.IN_singularity test_cases/exp_conf
 COPY machine_singularity.config machine_config
 COPY baseline_setup.yaml .
 RUN chmod a+rx test_cases/exp_conf/fv3_slurm.IN_singularity test_cases/exp_conf/compile_slurm.IN_singularity && \
-    machine_config/machine_singularity.config baseline_setup.yaml
+    chmod a+rx machine_config/machine_singularity.config baseline_setup.yaml
 #WORKDIR /opt/ufs-weather-model/bin
 #RUN rm -f * && ln -s ../build_container_executable.sh make && ln -s ../build_container_executable.sh cmake
 WORKDIR /opt/ufs-weather-model/container-scripts

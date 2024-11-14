@@ -27,12 +27,19 @@ RUN mkdir -p /work && \
     mkdir -p /ncrc && \
     mkdir -p /opt/ufs-weather-model/container-scripts  && \
     mkdir -p /opt/ufs-weather-model/bin
-COPY run_container_executable.sh /opt/ufs-weather-model/container-scripts
-COPY build_container_executable.sh /opt/ufs-weather-model/container-scripts
+COPY stage-rt.sh /opt
+WORKDIR /opt/ufs-weather-model/tests-dev
+COPY fv3_slurm.IN_singularity test_cases/exp_conf
+COPY compile_slurm.IN_singularity test_cases/exp_conf
+COPY machine_singularity.config machine_config
+COPY baseline_setup.yaml .
+RUN chmod a+rx test_cases/exp_conf/fv3_slurm.IN_singularity test_cases/exp_conf/compile_slurm.IN_singularity && \
+    machine_config/machine_singularity.config baseline_setup.yaml
 WORKDIR /opt/ufs-weather-model/bin
 #RUN rm -f * && ln -s ../build_container_executable.sh make && ln -s ../build_container_executable.sh cmake
-COPY stage-rt.sh /opt
 WORKDIR /opt/ufs-weather-model/container-scripts
+COPY run_container_executable.sh .
+COPY build_container_executable.sh .
 RUN chmod a+rx /opt/stage-rt.sh run_container_executable.sh build_container_executable.sh
 RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
      #grep pathJoin modulefiles/ufs_common.lua | awk -F "\"" '{print "module load "$2}' > mods && \

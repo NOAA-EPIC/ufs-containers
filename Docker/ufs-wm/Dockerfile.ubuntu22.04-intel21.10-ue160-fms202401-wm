@@ -47,15 +47,15 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
      module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
      module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \ 
      export PATH=/opt/intel/oneapi/compiler/2024.0/bin:SINGULARITY_WORKING_DIR/ufs-weather-model/tests-dev:$PATH && \
-     echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.envs && \
-     echo PATH=$PATH >> ufswm.envs && \
-     echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.envs && \
-     echo LIBRARY_PATH=$LIBRARY_PATH >> ufswm.envs && \
-     echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufswm.envs && \
-     echo MODULEPATH=$MODULEPATH >> ufswm.envs && \
-     echo CC=`which icc` >> ufswm.envs && \
-     echo FC=`which ifort` >> ufswm.envs && \
-     echo CXX=`which icpc` >> ufswm.envs && \
-     echo I_MPI_ROOT=$I_MPI_ROOT >> ufswm.envs && \
-     echo ESMFMKFILE=$ESMFMKFILE >> ufswm.envs && \
-     echo PYTHONPATH=$PYTHONPATH >> ufswm.envs
+     echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.env && \
+     echo PATH=$PATH >> ufswm.env && \
+     echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.env && \
+     echo LIBRARY_PATH=$LIBRARY_PATH >> ufswm.env && \
+     echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufswm.env && \
+     echo MODULEPATH=$MODULEPATH >> ufswm.env && \
+     echo CC=`which icc` >> ufswm.env && \
+     echo FC=`which ifort` >> ufswm.env && \
+     echo CXX=`which icpc` >> ufswm.env && \
+     echo I_MPI_ROOT=$I_MPI_ROOT >> ufswm.env && \
+     echo ESMFMKFILE=$ESMFMKFILE >> ufswm.env && \
+     echo PYTHONPATH=$PYTHONPATH >> ufswm.env

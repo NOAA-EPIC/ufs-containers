@@ -28,13 +28,14 @@ RUN mkdir -p /work && \
     mkdir -p /opt/ufs-weather-model/container-scripts  && \
     mkdir -p /opt/ufs-weather-model/bin
 COPY stage-rt.sh /opt
+COPY default_vars.sh /opt/ufs-weather-model/tests
 WORKDIR /opt/ufs-weather-model/tests-dev
 COPY fv3_slurm.IN_singularity test_cases/exp_conf
 COPY compile_slurm.IN_singularity test_cases/exp_conf
 COPY machine_singularity.config machine_config
 COPY baseline_setup.yaml .
 RUN chmod a+rx test_cases/exp_conf/fv3_slurm.IN_singularity test_cases/exp_conf/compile_slurm.IN_singularity && \
-    chmod a+rx machine_config/machine_singularity.config baseline_setup.yaml
+    chmod a+rx machine_config/machine_singularity.config baseline_setup.yaml /opt/ufs-weather-model/tests/default_vars.sh
 #WORKDIR /opt/ufs-weather-model/bin
 #RUN rm -f * && ln -s ../build_container_executable.sh make && ln -s ../build_container_executable.sh cmake
 WORKDIR /opt/ufs-weather-model/container-scripts

@@ -1,0 +1,63 @@
+#FROM noaaepic/ubuntu20.04-intel-spack:TAGNAME
+#LABEL AUTHOR EPIC-AUS
+FROM noaaepic/ubuntu22.04-intel-unified:v1.6.0-fms202401
+LABEL AUTHOR EPIC-SI
+
+# install srw
+WORKDIR /opt
+RUN git clone https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
+    ./manage_externals/checkout_externals && mkdir build 
+WORKDIR /opt/ufs-srweather-app/build
+COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles
+RUN chmod a+rx /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
+RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
+    #grep load ../modulefiles/srw_common.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
+    #cmake -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
+    module use /opt/ufs-srweather-app/modulefiles && \
+    module load build_singularity_intel && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR=container-bin .. && make -j 8
+WORKDIR /opt/ufs-srweather-app/
+RUN mkdir conda && cd conda && \
+    export os=$(uname) && \
+    export hardware=$(uname -m) && \
+    export installer=Miniforge3-${os}-${hardware}.sh && \
+    curl -L -O "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/${installer}" && \
+    bash ./${installer} -bfp conda && \ 
+    rm ${installer} && \
+    source conda/etc/profile.d/conda.sh && \ 
+    conda activate && mamba env create -n srw_app --file /opt/ufs-srweather-app/environment.yml && \
+    conda activate && mamba env create -n srw_graphics --file /opt/ufs-srweather-app/graphics_environment.yml && \
+    conda activate && mamba env create -n srw_aqm --file /opt/ufs-srweather-app/aqm_environment.yml && \
+    cd .. && \
+    mkdir -p /work && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /gpfs && \
+    mkdir -p /scratch1 && \
+    mkdir -p /scratch2 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir exec && \
+    #mkdir /opt/ufs-srweather-app/container-bin && \
+    #mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
+    mkdir -p /opt/ufs-srweather-app/container-scripts     
+COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
+RUN echo "test"
+#COPY stage-srw-develop.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
+#COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
+#COPY wflow_singularity.lua /opt/ufs-srweather-app/modulefiles/wflow_singularity.lua
+#WORKDIR /opt/ufs-srweather-app
+#RUN git remote update && git pull epic feature/AMS-v2.1.0
+#RUN rm -rf /opt/ufs /opt/build /opt/dist /opt/intel
+#RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
+#RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
+

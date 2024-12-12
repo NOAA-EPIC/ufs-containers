@@ -5,13 +5,13 @@ a singularity container
 
 whatis([===[Loads libraries needed for building the UFS SRW App in singularity container ]===])
 
---prepend_path("MODULEPATH","/opt/hpc-modules/modulefiles/stack")
+load("srw_common")
 
-load("COMPILERMOD")
-load("MPIMOD")
+setenv("CFLAGS","-diag-disable=10448")
+setenv("FFLAGS","-diag-disable=10448")
 
-setenv("CMAKE_C_COMPILER","mpiicc")
-setenv("CMAKE_CXX_COMPILER","mpicxx")
-setenv("CMAKE_Fortran_COMPILER","mpif90")
-setenv("CMAKE_Platform","singularity.gnu")
+prepend_path("PATH","/opt/intel/oneapi/compiler/2024.0/bin:/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64")
 
+setenv("CC", "mpiicc")
+setenv("CXX", "mpiicpc")
+setenv("FC", "mpiifort")

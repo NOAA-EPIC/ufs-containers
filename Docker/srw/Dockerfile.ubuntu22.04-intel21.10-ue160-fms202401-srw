@@ -51,9 +51,10 @@ RUN mkdir -p /work && \
     #mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
     mkdir -p /opt/ufs-srweather-app/container-scripts && \
     chmod -R a+rx /opt/ufs-srweather-app/container-scripts && \
-    chmod -R a+rx /opt/ufs-srweather-app/tarballs && \
-    ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh && \
-    ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
+    chmod -R a+rx /opt/ufs-srweather-app/tarballs 
+    #&& \
+    #ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh && \
+    #ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
 # Copy files over
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
 COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh

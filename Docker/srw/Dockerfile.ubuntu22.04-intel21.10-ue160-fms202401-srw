@@ -1,12 +1,10 @@
-#FROM noaaepic/ubuntu20.04-intel-spack:TAGNAME
-#LABEL AUTHOR EPIC-AUS
 FROM noaaepic/ubuntu22.04-intel-unified:v1.6.0-fms202401
 LABEL AUTHOR EPIC-SI
 
-# install srw
+# Clone and build SRW App
 WORKDIR /opt
 RUN git clone https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
-    ./manage_externals/checkout_externals && mkdir build 
+    ./manage_externals/checkout_externals && mkdir build && mkdir conda
 WORKDIR /opt/ufs-srweather-app/build
 COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles
 RUN chmod a+rx /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
@@ -16,9 +14,9 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
     module use /opt/ufs-srweather-app/modulefiles && \
     module load build_singularity_intel && \
     cmake .. -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR=container-bin .. && make -j 8
-WORKDIR /opt/ufs-srweather-app/
-RUN mkdir conda && cd conda && \
-    export os=$(uname) && \
+# Build conda environments
+WORKDIR /opt/ufs-srweather-app/conda
+RUN export os=$(uname) && \
     export hardware=$(uname -m) && \
     export installer=Miniforge3-${os}-${hardware}.sh && \
     curl -L -O "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/${installer}" && \
@@ -27,9 +25,10 @@ RUN mkdir conda && cd conda && \
     source conda/etc/profile.d/conda.sh && \ 
     conda activate && mamba env create -n srw_app --file /opt/ufs-srweather-app/environment.yml && \
     conda activate && mamba env create -n srw_graphics --file /opt/ufs-srweather-app/graphics_environment.yml && \
-    conda activate && mamba env create -n srw_aqm --file /opt/ufs-srweather-app/aqm_environment.yml && \
-    cd .. && \
-    mkdir -p /work && \
+    conda activate && mamba env create -n srw_aqm --file /opt/ufs-srweather-app/aqm_environment.yml
+# Set up container
+WORKDIR /opt/ufs-srweather-app/
+RUN mkdir -p /work && \
     mkdir -p /contrib && \
     mkdir -p /lustre  && \
     mkdir -p /gpfs && \
@@ -46,12 +45,18 @@ RUN mkdir conda && cd conda && \
     mkdir -p /lfs2 && \
     mkdir -p /lfs3 && \
     mkdir -p /lfs4 && \
-    mkdir exec && \
+    mkdir -p /opt/ufs-srweather-app/exec && \
+    mkdir -p /opt/ufs-srweather-app/tarballs && \
     #mkdir /opt/ufs-srweather-app/container-bin && \
     #mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
-    mkdir -p /opt/ufs-srweather-app/container-scripts     
+    mkdir -p /opt/ufs-srweather-app/container-scripts && \
+    chmod -R a+rx /opt/ufs-srweather-app/container-scripts && \
+    chmod -R a+rx /opt/ufs-srweather-app/tarballs && \
+    ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh && \
+    ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
+# Copy files over
 COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
-RUN echo "test"
+COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
 #COPY stage-srw-develop.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
 #COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
 #COPY wflow_singularity.lua /opt/ufs-srweather-app/modulefiles/wflow_singularity.lua
@@ -60,4 +65,11 @@ RUN echo "test"
 #RUN rm -rf /opt/ufs /opt/build /opt/dist /opt/intel
 #RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
 #RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
-
+#RUN mkdir /opt/ufs-srweather-app/tarballs
+COPY test_python.sh /opt/ufs-srweather-app/container-scripts
+COPY f90nml.tar.gz /opt/ufs-srweather-app/tarballs
+COPY Jinja2-3.1.2.tar.gz /opt/ufs-srweather-app/tarballs 
+COPY MarkupSafe-2.1.2.tar.gz /opt/ufs-srweather-app/tarballs
+COPY PyYAML-6.0.tar.gz /opt/ufs-srweather-app/tarballs
+#RUN chmod -R a+rx /opt/ufs-srweather-app/container-scripts
+#RUN chmod -R a+rx /opt/ufs-srweather-app/tarballs

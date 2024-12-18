@@ -59,6 +59,7 @@ sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
 sed -i "s|LOCDIR|$LOCDIR|g" srw.sh
 sed -i "s|ROCOTODIR|$ROCOTODIR|g" srw.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" srw.sh
 
 #sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/scripts/exregional_* 
 #test python install for required packages and install them if they are missing

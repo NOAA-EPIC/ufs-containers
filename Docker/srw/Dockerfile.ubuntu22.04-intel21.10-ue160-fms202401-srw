@@ -15,7 +15,7 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
     module load build_singularity_intel && \
     cmake .. -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR=container-bin .. && make -j 8
 # Build conda environments
-WORKDIR /opt/ufs-srweather-app/conda
+WORKDIR /opt/ufs-srweather-app
 RUN export os=$(uname) && \
     export hardware=$(uname -m) && \
     export installer=Miniforge3-${os}-${hardware}.sh && \
@@ -27,7 +27,6 @@ RUN export os=$(uname) && \
     conda activate && mamba env create -n srw_graphics --file /opt/ufs-srweather-app/graphics_environment.yml && \
     conda activate && mamba env create -n srw_aqm --file /opt/ufs-srweather-app/aqm_environment.yml
 # Set up container
-WORKDIR /opt/ufs-srweather-app/
 RUN mkdir -p /work && \
     mkdir -p /contrib && \
     mkdir -p /lustre  && \

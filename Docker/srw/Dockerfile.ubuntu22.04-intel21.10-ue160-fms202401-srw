@@ -4,7 +4,7 @@ LABEL AUTHOR EPIC-SI
 # Clone and build SRW App
 WORKDIR /opt
 RUN git clone https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
-    ./manage_externals/checkout_externals && mkdir build && mkdir conda
+    ./manage_externals/checkout_externals && mkdir build
 WORKDIR /opt/ufs-srweather-app/build
 COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles
 RUN chmod a+rx /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
@@ -46,12 +46,10 @@ RUN mkdir -p /work && \
     mkdir -p /lfs3 && \
     mkdir -p /lfs4 && \
     mkdir -p /opt/ufs-srweather-app/exec && \
-    mkdir -p /opt/ufs-srweather-app/tarballs && \
+    #mkdir -p /opt/ufs-srweather-app/tarballs && \
     #mkdir /opt/ufs-srweather-app/container-bin && \
     #mv /opt/ufs-srweather-app/bin/* /opt/ufs-srweather-app/container-bin && \
-    mkdir -p /opt/ufs-srweather-app/container-scripts && \
-    chmod -R a+rx /opt/ufs-srweather-app/container-scripts && \
-    chmod -R a+rx /opt/ufs-srweather-app/tarballs 
+    mkdir -p /opt/ufs-srweather-app/container-scripts
     #&& \
     #ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh && \
     #ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
@@ -67,10 +65,29 @@ COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
 #RUN ln -s /usr/share/lmod/lmod/init/profile /etc/profile.d/modules.sh
 #RUN ln -s /usr/share/lmod/lmod/init/cshrc /etc/profile.d/modules.csh
 #RUN mkdir /opt/ufs-srweather-app/tarballs
-COPY test_python.sh /opt/ufs-srweather-app/container-scripts
-COPY f90nml.tar.gz /opt/ufs-srweather-app/tarballs
-COPY Jinja2-3.1.2.tar.gz /opt/ufs-srweather-app/tarballs 
-COPY MarkupSafe-2.1.2.tar.gz /opt/ufs-srweather-app/tarballs
-COPY PyYAML-6.0.tar.gz /opt/ufs-srweather-app/tarballs
-#RUN chmod -R a+rx /opt/ufs-srweather-app/container-scripts
-#RUN chmod -R a+rx /opt/ufs-srweather-app/tarballs
+#COPY test_python.sh /opt/ufs-srweather-app/container-scripts
+#COPY f90nml.tar.gz /opt/ufs-srweather-app/tarballs
+#COPY Jinja2-3.1.2.tar.gz /opt/ufs-srweather-app/tarballs 
+#COPY MarkupSafe-2.1.2.tar.gz /opt/ufs-srweather-app/tarballs
+#COPY PyYAML-6.0.tar.gz /opt/ufs-srweather-app/tarballs
+WORKDIR /opt/ufs-srweather-app/container-scripts
+RUN export PATH=/opt/intel/oneapi/compiler/2024.0/bin:SINGULARITY_WORKING_DIR/ufs-srweather-app/conda/envs/srw_app/bin:/opt/ufs-srweather-app/container-bin:$PATH && \
+    #source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
+     #grep pathJoin modulefiles/ufs_common.lua | awk -F "\"" '{print "module load "$2}' > mods && \
+     #source ./mods && module list && \
+    #module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
+    #module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \
+    #export PATH=/opt/intel/oneapi/compiler/2024.0/bin:SINGULARITY_WORKING_DIR/ufs-srweather-app/conda/envs/srw_app/bin:/opt/ufs-srweather-app/container-bin:$PATH && \
+    echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > srw.env && \
+    echo PATH=$PATH >> srw.env && \
+    echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> srw.env && \
+    echo LIBRARY_PATH=$LIBRARY_PATH >> srw.env && \
+    echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> srw.env && \
+    echo MODULEPATH=$MODULEPATH >> srw.env && \
+    echo CC=`which icc` >> srw.env && \
+    echo FC=`which ifort` >> srw.env && \
+    echo CXX=`which icpc` >> srw.env && \
+    echo I_MPI_ROOT=$I_MPI_ROOT >> srw.env && \
+    echo ESMFMKFILE=$ESMFMKFILE >> srw.env && \
+    echo PYTHONPATH=$PYTHONPATH >> srw.env && \
+    chmod -R a+rx /opt/ufs-srweather-app/container-scripts

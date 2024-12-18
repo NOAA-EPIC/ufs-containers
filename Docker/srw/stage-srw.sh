@@ -1,60 +1,100 @@
 #!/bin/bash
 #set -x
 
-for i in "$@"
-do
-case $i in
-    -c=*|--compiler=*)
-    COMPILER="${i#*=}"
-    ;;
-    -m=*|--mpi=*)
-    MPI="${i#*=}"
-    ;;
-    -i=*|--container=*)
-    IMAGE="${i#*=}"
-    ;;
-    -p=*|--machine=*)
-    MACHINE="${i#*=}"
-    ;;
-#   --default)
-#   DEFAULT=YES
-#   ;;
-    *)
-            # unknown option
-    ;;
-esac
-done
-singularity exec -H $PWD ${IMAGE} cp -r /opt/ufs-srweather-app .
+Help()
+{
+    # Display Help
+    echo "This script sets up the SRW App to run on supported systems."
+    echo
+    echo "Syntax: ./setup_container.sh [-h|-c=<compiler>|-m=<mpi>|-i=<container>|-p=<platform>]"
+    echo "options:"
+    echo "-h     Prints out help function."
+    echo "-c     Compiler and version that is to be used outside of the container in <compiler>/<version> format. Example intel/2022.1.2"
+    echo "-i     Full path to the SRW container."
+    echo "-m     MPI and version that is to be used outside of the container in <MPI>/<version> format. Example impi/2022.1.2"
+    echo "-p     Name of platform you are running on. "
+}
 
-#get the name of the root directory where data is staged
-BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${MACHINE}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
-#get the path to python, rocoto and singularity on the host
-PYTHONPATH=`which python3 | head -n 1 | xargs dirname`
+while getopts "h:c:i:m:p:" flag;
+do 
+    case "${flag}" in 
+    	h) Help
+           exit ;;
+        c) compiler="${OPTARG#=}" ;;
+        i) image="${OPTARG#=}" ;;
+        m) mpi="${OPTARG#=}";;
+  	p) platform="${OPTARG#=}" ;;
+       \?) echo "Invalid option. Exiting!"
+           exit 1 ;;
+    esac
+done
+
+# Check for required arguments
+if [ -z "$compiler" ] || [ -z "$image" ] || [ -z "$mpi" ] || [ -z "$platform" ] ; then 
+    echo "Missing -c <compiler> or -i <image> or -m <mpi> or -p <platform> argument(s)! Please add missing argument(s)."
+    exit 1
+fi
+
+# Copy out SRW App repo
+echo "Copying out SRW App repo from container"
+singularity exec -H $PWD ${image} cp -r /opt/ufs-srweather-app .
+
+# Move and modify build yaml
+echo "Move and modify build yaml"
+cp $PWD/ufs-srweather-app/build/build_settings.yaml $PWD/ufs-srweather-app/exec
+sed -i "s|Machine:|Machine:         ${platform}|g" $PWD/ufs-srweather-app/exec/build_settings.yaml
+
+# Get the name of the root directory where data is staged, and host rocoto and singularity
+echo "Setup srw.sh script"
+BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${platform}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
+#PYTHONPATH=`which python3 | head -n 1 | xargs dirname`
 SINGULARITY=`which singularity`
 ROCOTODIR=`which rocotorun | awk -F '/' '{print "/"$2}'`
 
-#copy the template to use as the srw script
+# Create srw script and sub paths
 cp ufs-srweather-app/container-scripts/srw.sh-template srw.sh
-#replace the paths in the script
 LOCDIR=`echo $PWD | awk -F "/" '{print $2}'`
-sed -i "s|IMAGE|$IMAGE|g" srw.sh
+sed -i "s|IMAGE|$image|g" srw.sh
 sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
 sed -i "s|LOCDIR|$LOCDIR|g" srw.sh
 sed -i "s|ROCOTODIR|$ROCOTODIR|g" srw.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
-sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/scripts/exregional_* 
 
+#sed -i "2 i export PATH=$PYTHONPATH:\$PATH" ufs-srweather-app/scripts/exregional_* 
 #test python install for required packages and install them if they are missing
-$PWD/ufs-srweather-app/container-scripts/test_python.sh
+#$PWD/ufs-srweather-app/container-scripts/test_python.sh
 
-#create a new module file to use that has only the compiler and mpi loaded
-cp $PWD/ufs-srweather-app/container-scripts/build_singularity_intel.lua $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
-sed -i "s|COMPILERMOD|$COMPILER|g" $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
-sed -i "s|MPIMOD|$MPI|g" $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
+# Create a new module file that only uses the compiler, mpi, and sets paths
+echo "Create modulefile for container"
+rm -rf $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+echo "load(\"$compiler\")" > $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+echo "load(\"$mpi\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_app/bin\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/exec\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+
+# Configure python
+echo "Configure python"
+rm -rf $PWD/ufs-srweather-app/modulefiles/python_srw.lua
+echo "" > $PWD/ufs-srweather-app/modulefiles/python_srw.lua
+rm ufs-srweather-app/modulefiles/tasks/${platform}/*
+
+# Update conda paths and create conda loc file
+echo "Configure conda"
+sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/envs/srw_app/bin/uw
+sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/etc/profile.d/conda.sh
+sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/bin/conda
+echo "$PWD/ufs-srweather-app/conda" > $PWD/ufs-srweather-app/conda_loc
+
+# Update srw.env file
+echo "Update srw env file"
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-srweather-app/container-scripts/srw.env
+#cp $PWD/ufs-srweather-app/container-scripts/build_singularity_intel.lua $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
+#sed -i "s|COMPILERMOD|$COMPILER|g" $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
+#sed -i "s|MPIMOD|$MPI|g" $PWD/ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua
 #use the same module for all tasks
-cp ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
+#cp ufs-srweather-app/modulefiles/wflow_${MACHINE}.lua ufs-srweather-app/modulefiles/build_${MACHINE}_intel.lua
 #remove any extra modules
-rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
+#rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
 
 #change the RUN cmds to mpirun needed for using singularity 
 #sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
@@ -62,8 +102,9 @@ rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/*
 #sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
 
 
-#create links to the srw.sh script in ufs-srweather-app/bin dir
-cd ufs-srweather-app/bin
+# Create links to the srw.sh script in ufs-srweather-app/exec dir
+echo "Create links to srw.sh script"
+cd ufs-srweather-app/exec
 ln -s ../../srw.sh chgres_cube
 ln -s ../../srw.sh cpld_gridgen
 ln -s ../../srw.sh emcsfc_ice_blend
@@ -88,11 +129,9 @@ ln -s ../../srw.sh ufs_model
 ln -s ../../srw.sh upp.x
 ln -s ../../srw.sh vcoord_gen
 
-cd ..
-cp -r bin exec
-cd ..
+#cd ..
 
 #make sure we have the path to our executable scripts at the head of our PATH variable
-sed -i "2 i export PATH=${PYTHONPATH}:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
+#sed -i "2 i export PATH=${PYTHONPATH}:/${PWD}/ufs-srweather-app/exec:\$PATH" $PWD/ufs-srweather-app/ush/load_modules_run_task.sh
 #Remove the --cpus-per-task section of the submit script, since it breaks with singularity for some reason
-sed -i 's/--cpus-per-task {fcst_threads}//g' $PWD/ufs-srweather-app/ush/generate_FV3LAM_wflow.py
+#sed -i 's/--cpus-per-task {fcst_threads}//g' $PWD/ufs-srweather-app/ush/generate_FV3LAM_wflow.py

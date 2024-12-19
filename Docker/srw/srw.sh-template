@@ -5,6 +5,6 @@ export SINGULARITY_SHELL=/bin/bash
 img="IMAGE"
 cmd=$(basename "$0")
 arg="$@"
-echo running: PATH_TO_SINGULARITY exec --env-file SINGULARITY_WORKING_DIR/ufs-srweather-app/container-scripts/srw.env -B /BINDDIR -B /LOCDIR -B /ROCOTODIR "${img}" $cmd $arg
-PATH_TO_SINGULARITY exec --env-file SINGULARITY_WORKING_DIR/ufs-srweather-app/container-scripts/srw.env -B /BINDDIR -B /LOCDIR -B /ROCOTODIR "${img}" $cmd $arg
+echo running: PATH_TO_SINGULARITY exec --env-file SINGULARITY_WORKING_DIR/ufs-srweather-app/container-scripts/srw.env -B /BINDDIR -B /LOCDIR "${img}" $cmd $arg
+PATH_TO_SINGULARITY exec --env-file SINGULARITY_WORKING_DIR/ufs-srweather-app/container-scripts/srw.env -B /BINDDIR -B /LOCDIR "${img}" $cmd $arg
 

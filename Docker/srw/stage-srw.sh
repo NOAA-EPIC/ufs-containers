@@ -49,7 +49,7 @@ echo "Setup srw.sh script"
 BINDDIR=`grep -Ri TEST_EXTRN_MDL_SOURCE_BASEDIR ufs-srweather-app/ush/machine/${platform}.yaml | awk -F ": " '{print $2}' | awk -F '/' '{print $2}'`
 #PYTHONPATH=`which python3 | head -n 1 | xargs dirname`
 SINGULARITY=`which singularity`
-ROCOTODIR=`which rocotorun | awk -F '/' '{print "/"$2}'`
+#ROCOTODIR=`which rocotorun | awk -F '/' '{print "/"$2}'`
 
 # Create srw script and sub paths
 cp ufs-srweather-app/container-scripts/srw.sh-template srw.sh
@@ -57,7 +57,7 @@ LOCDIR=`echo $PWD | awk -F "/" '{print $2}'`
 sed -i "s|IMAGE|$image|g" srw.sh
 sed -i "s|BINDDIR|$BINDDIR|g" srw.sh
 sed -i "s|LOCDIR|$LOCDIR|g" srw.sh
-sed -i "s|ROCOTODIR|$ROCOTODIR|g" srw.sh
+#sed -i "s|ROCOTODIR|$ROCOTODIR|g" srw.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" srw.sh
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" srw.sh
 
@@ -70,8 +70,9 @@ echo "Create build modulefile for container"
 mv $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua-original
 echo "load(\"$compiler\")" > $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
 echo "load(\"$mpi\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
-#echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_app/bin\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
-#echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/exec\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+# These paths are being removed on Gaea, so add them in build modulefile
+echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_app/bin\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/exec\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
 
 # Set python to the python built by the SRW App
 echo "Create python modulefile"
@@ -98,11 +99,15 @@ sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-srweather-app/container-scrip
 #remove any extra modules
 #rm ufs-srweather-app/modulefiles/tasks/${MACHINE}/* 
 
-#change the RUN cmds to mpirun needed for using singularity 
-#sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-#sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpirun -n \$\{PE_MEMBER01\}" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-#sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpirun -n \$nprocs" ufs-srweather-app/ush/machine/${MACHINE}.yaml
-
+# Update RUN cmds to mpiexec
+echo "Update run cmds" 
+if [ $platform == "gaea" ] ; then
+    sed -i 's|srun|srun --mpi=pmi2|g' $PWD/ufs-srweather-app/ush/machine/${platform}.yaml
+else
+    sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpiexec -np \$nprocs" $PWD/ufs-srweather-app/ush/machine/${platform}.yaml
+    sed -i "/RUN_CMD_FCST/c\  RUN_CMD_FCST:  mpiexec -np \$\{PE_MEMBER01\}" $PWD/ufs-srweather-app/ush/machine/${platform}.yaml
+    sed -i "/RUN_CMD_POST/c\  RUN_CMD_POST:  mpiexec -np \$nprocs" $PWD/ufs-srweather-app/ush/machine/${platform}.yaml
+fi
 
 # Create links to the srw.sh script in ufs-srweather-app/exec dir
 echo "Create links to srw.sh script"

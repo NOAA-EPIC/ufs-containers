@@ -65,18 +65,19 @@ sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" srw.sh
 #test python install for required packages and install them if they are missing
 #$PWD/ufs-srweather-app/container-scripts/test_python.sh
 
-# Create a new module file that only uses the compiler, mpi, and sets paths
-echo "Create modulefile for container"
-rm -rf $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+# Create a new module file that only uses the user's compiler and mpi
+echo "Create build modulefile for container"
+mv $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua-original
 echo "load(\"$compiler\")" > $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
 echo "load(\"$mpi\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
-echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_app/bin\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
-echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/exec\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+#echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_app/bin\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
+#echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/exec\")" >> $PWD/ufs-srweather-app/modulefiles/build_${platform}_intel.lua
 
-# Configure python
-echo "Configure python"
-rm -rf $PWD/ufs-srweather-app/modulefiles/python_srw.lua
-echo "" > $PWD/ufs-srweather-app/modulefiles/python_srw.lua
+# Set python to the python built by the SRW App
+echo "Create python modulefile"
+mv $PWD/ufs-srweather-app/modulefiles/python_srw.lua $PWD/ufs-srweather-app/modulefiles/python_srw.lua-original
+echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_app/bin\")" > $PWD/ufs-srweather-app/modulefiles/python_srw.lua
+echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/exec\")" >> $PWD/ufs-srweather-app/modulefiles/python_srw.lua
 rm ufs-srweather-app/modulefiles/tasks/${platform}/*
 
 # Update conda paths and create conda loc file

@@ -88,6 +88,13 @@ sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/etc/profile.d/conda.sh
 sed -i "s|/opt|$PWD|g" $PWD/ufs-srweather-app/conda/bin/conda
 echo "$PWD/ufs-srweather-app/conda" > $PWD/ufs-srweather-app/conda_loc
 
+# Update host wflow modulefile
+echo "Update $platform wflow modulefile"
+cp $PWD/ufs-srweather-app/modulefiles/wflow_${platform}.lua $PWD/ufs-srweather-app/modulefiles/wflow_${platform}.lua-original
+sed -i 's|Please.*||g' $PWD/ufs-srweather-app/modulefiles/wflow_${platform}.lua
+sed -i 's|> conda.*||g' $PWD/ufs-srweather-app/modulefiles/wflow_${platform}.lua
+sed -i 's|"conda"|"python_srw"|g' $PWD/ufs-srweather-app/modulefiles/wflow_${platform}.lua
+
 # Update srw.env file
 echo "Update srw env file"
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-srweather-app/container-scripts/srw.env

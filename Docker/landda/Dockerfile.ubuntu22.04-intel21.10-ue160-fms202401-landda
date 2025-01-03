@@ -55,6 +55,7 @@ RUN mkdir -p singularity/bin && \
     mkdir -p /work2 && \
     mkdir -p /contrib && \
     mkdir -p /lustre  && \
+    mkdir -p /gpfs && \
     mkdir -p /scratch1 && \
     mkdir -p /scratch2 && \
     mkdir -p /glade && \

@@ -23,8 +23,8 @@ RUN . ./setup.sh && \
     spack add ip %intel && \
     spack add nco@5.0.6 %intel && \
     spack add proj@9.2.1 %intel && \
-    spack add met@12.0.1 %intel && \
-    spack add metplus@6.0.0 %intel && \
+    spack add met@12.0.1 %intel ^proj@9.2.1 && \
+    spack add metplus@6.0.0 %intel ^met@12.0.1 && \
     spack add fms@2024.01 %intel && \
     spack add prod-util@2.1.1 %intel && \
     spack add wgrib2@2.0.8 %intel && \

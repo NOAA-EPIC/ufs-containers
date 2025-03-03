@@ -31,7 +31,7 @@ RUN . ./setup.sh && \
     spack add ufs-weather-model-env %intel ^g2tmpl@1.13.0 ^g2@3.5.1 && \
     spack add proj@9.2.1 && \
     spack add met@12.0.1 %intel ^proj@9.2.1 && \
-    spack add metplus@6.0.0 %intel ^met@12.0.1 && \
+    spack add metplus@6.0.0 %intel ^met@12.0.1 ^proj@9.2.1 && \
 #
 # Concretize
     spack concretize 2>&1 | tee log.concretize-fms202401 && \

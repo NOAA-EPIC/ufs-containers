@@ -3,7 +3,7 @@ LABEL AUTHOR EPIC-SI
 
 # Clone and build SRW App
 WORKDIR /opt
-RUN git clone https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
+RUN git clone -b release/public-v3.0.0 https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
     ./manage_externals/checkout_externals && mkdir build
 WORKDIR /opt/ufs-srweather-app/build
 COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles

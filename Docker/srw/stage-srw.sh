@@ -108,7 +108,7 @@ sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-srweather-app/container-scrip
 
 # Update RUN cmds to mpiexec
 echo "Update run cmds" 
-if [ $platform == "gaea" ] ; then
+if [[ "${platform}" =~ "gaea" ]] ; then
     sed -i 's|srun|srun --mpi=pmi2|g' $PWD/ufs-srweather-app/ush/machine/${platform}.yaml
 else
     sed -i "/RUN_CMD_UTILS/c\  RUN_CMD_UTILS:  mpiexec -np \$nprocs" $PWD/ufs-srweather-app/ush/machine/${platform}.yaml

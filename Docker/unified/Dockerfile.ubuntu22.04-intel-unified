@@ -1,11 +1,9 @@
-From intel/ubuntu22.04-hpckit:2023.1.0
+From intel/hpckit:2024.2.0-1-devel-ubuntu22.04
 ARG branch_name
 
 ENV branch=$branch_name
 RUN mkdir -p /opt/build
 RUN apt-get update &&   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends     ca-certificates curl &&   rm -rf /var/lib/apt/lists/*
-# install cmake
-#RUN cd /opt/build &&     curl -LO https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-x86_64.sh && /bin/bash cmake-3.23.1-linux-x86_64.sh --prefix=/usr/local --skip-license
 #
 # update apt
 RUN apt-get update -yq --allow-unauthenticated
@@ -54,7 +52,7 @@ apt install -y --no-install-recommends  libncurses-dev libxaw7-dev && \
 apt install -y --no-install-recommends  gcc libgssapi-krb5-2 libkrb5-dev libsasl2-modules-gssapi-mit && \
 rm -rf /var/lib/apt/lists/* 
 #
-ENV PATH="${PATH}:/usr/local:/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64"
+ENV PATH="${PATH}:/usr/local:/opt/intel/oneapi/mpi/2021.14/bin"
 #
 RUN echo "dash dash/sh boolean false" | debconf-set-selections && \
 # the dash shell breaks everything. Replace it with bash as default /bin/sh
@@ -67,14 +65,9 @@ RUN echo "dash dash/sh boolean false" | debconf-set-selections && \
     cd lua-5.1.4.9 && ./configure --prefix=/usr && make -j 4 && make install && git clone --recursive https://github.com/TACC/Lmod.git && \
     cd Lmod && ./configure --prefix=/usr && make -j 4 && make install && \  
 # spack scipy install is broken, so install on the system
-    pip install scipy && pip install cython && \
-## install boost from source
-#    cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz && \
-#    tar xvfz boost_1_78_0.tar.gz && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ --with-python=/usr/bin/python3 && ./b2 install ; \
-# without an actual python executable, env python fails, so link python3 to python
+#   pip install scipy && pip install cython && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # remove build artifacts to reduce size
-#    cd .. && rm -rf boost* && \
     rm -rf /opt/build /opt/spack-stack/spack-stack-$branch/cache/* && \
     rm -rf /opt/lua* Lmod
 #
@@ -83,8 +76,7 @@ RUN mkdir -p /opt/spack-stack
 WORKDIR /opt/spack-stack
 #
 #Copy in the ubuntu-intel configuration files
-ADD ubuntu-intel-21.3.tar.gz /opt/spack-stack 
-#ADD spack-mirror.1.9.0.tar.gz /opt/spack-stack
+ADD ubuntu-intel-2021.14.tar.gz /opt/spack-stack 
 ## Either copy in the spack-mirror or pull it from s3
 #ADD spack-mirror.tar.gz /opt
 ##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
@@ -92,22 +84,22 @@ ADD ubuntu-intel-21.3.tar.gz /opt/spack-stack
 
 
 # This clone version will change for each successive release
-RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
+RUN git clone -b $branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
   cd /opt/spack-stack/spack-stack-$branch && \
 # set the spack directories to be safe for use by git even though they are in /opt
     git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch && \
     git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch/spack && \
 #
 # Get any recent updates to the release
-    git remote update && git checkout release/$branch && git pull origin release/$branch && \
-    git submodule sync && git submodule update  && \
+#   git remote update && git checkout $branch && git pull origin $branch && \
+#   git submodule sync && git submodule update  && \
     mv /opt/spack-stack/ubuntu-intel configs/sites/tier1 && \ 
 #
 # Create the environment
     . ./setup.sh && spack compiler rm gcc@11.4.0 && \
-    export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler intel && \
+    export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler oneapi && \
     spack compiler add oneapi && spack compiler list && sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
-    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
+#    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
 #
 # Concretize 
     . ./setup.sh && spack env activate envs/unified-env && \ 
@@ -118,68 +110,50 @@ RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stac
     echo "DONE"
 
 ##ADD envs.tar.gz /opt/spack-stack/spack-stack-$branch
-ADD spack-mirror.1.9.0.tar.gz /opt
-RUN echo "hello"
-COPY site-packages.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/site/packages.yaml
-COPY common-packages.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/common/packages.yaml
-COPY site-compilers.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/site/compilers.yaml
-COPY root-compilers.yaml /root/.spack/linux/compilers.yaml
-
-RUN cd /opt/spack-stack/spack-stack-$branch && \
-##   sed -i '/py-numpy/,+2d' envs/unified-env/site/packages.yaml && \
-#    sed -i '/py-numpy/,+3d' envs/unified-env/common/packages.yaml && \
+ADD spack-mirror.1.9.1.tar.gz /opt
+#RUN echo "hello"
+#COPY site-packages.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/site/packages.yaml
+#COPY common-packages.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/common/packages.yaml
+#COPY site-compilers.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/site/compilers.yaml
+#COPY root-compilers.yaml /root/.spack/linux/compilers.yaml
+#
+RUN cd /opt && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && ./aws/install && rm -rf aws* && \
+    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.9.1/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \
+    cd /opt/spack-stack/spack-stack-$branch && \
     . ./setup.sh && spack env activate envs/unified-env && \ 
-    spack external find grep && spack concretize  && mkdir /usr/bin/info && \
-#   spack external find --all && spack concretize  && mkdir /usr/bin/info && \
-    git pull && git submodule update && \
-    spack mirror add unified file:/opt/mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
-    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/mirror && \
-    echo "DONE"
+    spack external find --all && spack concretize  && mkdir /usr/bin/info && \
+#   git pull && git submodule update && \
+    spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
+    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
+    echo "DONE2"
 WORKDIR /opt/spack-stack/spack-stack-$branch
-RUN . ./setup.sh && spack env activate envs/unified-env && sed -i '/intel-oneapi-mpi/d' envs/unified-env/common/modules.yaml && \
+RUN . ./setup.sh && spack env activate envs/unified-env && \
      source /usr/lmod/lmod/init/bash && \
 ## remove extra stuff that got built
-      yes | spack uninstall --force  jedi-base-env/27kyczi && \
-      yes | spack uninstall --force  py-cftime/6dz4f5x && \
-      yes | spack uninstall --force  py-eccodes/pnjsqfr && \
-      yes | spack uninstall --force  py-h5py/7mi2br5 && \
-      yes | spack uninstall --force  py-netcdf4/umvcxdj && \
-      yes | spack uninstall --force  py-pandas/c5x55co && \
-      yes | spack uninstall --force  py-pyhdf/z3zmto5 && \
-      yes | spack uninstall --force  py-pythran/mdcxlja && \
-      yes | spack uninstall --force  py-scipy/u6bzdyc && \
-      yes | spack uninstall --force  py-xarray/jfqx2w4 && \
-      yes | spack uninstall --force  esmf/iukf5jb && \
-      yes | spack uninstall --force  mapl/jluxpkl && \
-      yes | spack uninstall --force bufr/v5cjx2e && \
-      yes | spack uninstall --force bufr-query/depnv7f && \
-     sed -i 's/wgrib.a/wgrib.so/g' /opt/spack-stack/spack-stack-1.9.0/envs/unified-env/common/modules.yaml && \
-     spack module lmod refresh -y && rm -rf ~/.spack && \
-     spack stack setup-meta-modules && \
-     module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
-     module load stack-intel stack-intel-oneapi-mpi && module list && \
-     echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
-     echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
-     echo "module load stack-intel intel-oneapi-mpi" >> /root/.bashenv && \
-     echo "module load stack-intel-oneapi-mpi" >> /root/.bashenv && \
-     echo "module load jedi-ufs-env" >> /root/.bashenv && \
-     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
-     echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
-     cp ~/.bashenv /opt/spack-stack/spack-stack-$branch && \
-     sed -i '/MODULEPATH/a prepend_path\(\"PATH\",\"\/opt\/intel\/oneapi\/compiler\/2024.0\/bin\"\)' /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core/stack-intel/2021.10.0.lua && \
-     sed -i '/I_MPI_/d' /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/intel/2021.10.0/stack-intel-oneapi-mpi/2021.11.lua && \
-     module load patchelf && patchelf --add-needed libc.so.6 /opt/intel/oneapi/compiler/2024.0/lib/libirc.so && \
-     ln -s $PWD/envs/unified-env/install/modulefiles/gcc/11.4.0/boost $PWD/envs/unified-env/install/modulefiles/intel/2021.10.0/ && \
-     sed -i 's/load/--load/g' /opt/spack-stack/spack-stack-1.9.0/envs/unified-env/install/modulefiles/intel/2021.10.0/stack-intel-oneapi-mpi/2021.11.lua && \
-     sed -i 's/prereq/--prereq/g' /opt/spack-stack/spack-stack-1.9.0/envs/unified-env/install/modulefiles/intel/2021.10.0/stack-intel-oneapi-mpi/2021.11.lua && \
-     echo "DONE2" 
-ENV FI_PROVIDER_PATH=/opt/intel/oneapi/mpi/2021.11/opt/mpi/libfabric/lib/prov:/usr/lib/x86_64-linux-gnu/libfabric:/usr/lib64/libfabric
-ENV CC=/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64/icc
-ENV CXX=/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64/icpc
-ENV FC=/opt/intel/oneapi/compiler/2024.0/bin/ifort
+      yes | spack uninstall --force  ecbuild/tao7iba  && \
+      yes | spack uninstall --force  jedi-base-env/h34sh5o && \
+      yes | spack uninstall --force  base-env/63j7oyl && \
+      spack module lmod refresh -y && \
+      spack stack setup-meta-modules && \
+      module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
+      module load stack-oneapi stack-intel-oneapi-mpi && module list && \
+      sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/modulefiles/oneapi/2024.2.0/ecbuild/3.7.2.lua && \
+      sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/modulefiles/oneapi/2024.2.0/wgrib2/3.6.0.lua && \
+      echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
+      echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
+      echo "module load stack-oneapi" >> /root/.bashenv && \
+      echo "module load stack-intel-oneapi-mpi" >> /root/.bashenv && \
+      echo "module load jedi-ufs-env sp crtm" >> /root/.bashenv && \
+      echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
+      echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
+      cp ~/.bashenv /opt/spack-stack/spack-stack-$branch && \
+      echo "DONE2" 
+ENV FI_PROVIDER_PATH=/opt/intel/oneapi/mpi/2021.13/opt/mpi/libfabric/lib/prov:/usr/lib/x86_64-linux-gnu/libfabric
+ENV CC=/opt/intel/oneapi/compiler/2024.2/bin/icx
+ENV CXX=/opt/intel/oneapi/compiler/2024.2/bin/icpx
+ENV FC=/opt/intel/oneapi/compiler/2024.2/bin/ifort
 ENV SHELL=/bin/bash
-#RUN ln -s /opt/intel/oneapi/mpi/2021.11 /opt/intel/oneapi/mpi/2021.9.0
-RUN sed -i 's/1.26.4/2.1.2/g' /opt/spack-stack/spack-stack-1.9.0/envs/unified-env/install/modulefiles/intel/2021.10.0/py-eccodes/1.5.0.lua
 ADD container-scripts.tar.gz /opt
 RUN echo "source /usr/lmod/lmod/init/bash" > /etc/bash.bashrc && \
     echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /etc/bash.bashrc && \
@@ -187,4 +161,5 @@ RUN echo "source /usr/lmod/lmod/init/bash" > /etc/bash.bashrc && \
     echo "bind '\"\\e[B\": history-search-forward'" >> /etc/bash.bashrc && \
     echo "/bin/bash --init-file /etc/bash.bashrc" >> /bin/mybash && \
     chmod +x /bin/mybash && chmod -R a+rX /root && chmod a+x /opt/container-scripts/*
-RUN ln -s /opt/intel/oneapi/mpi/2021.11 /opt/intel/oneapi/mpi/2021.9.0
+#fix for broken build of w3emc--need to fix this corrctly later
+ADD w3emc.zck.tar.gz /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/oneapi/2024.2.0

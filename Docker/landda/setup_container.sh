@@ -48,40 +48,32 @@ if [ -d $LANDDA_INPUTS/NaturalEarth ]; then
     cp -r $LANDDA_INPUTS/* $PWD/land-DA_workflow/fix/
 fi
 
-# Update jobs and scripts files to work with container
-echo "Updating jobs and scripts files"
-sed -i 's|setpdy.sh|${EXEClandda}/setpdy.sh|g' $PWD/land-DA_workflow/jobs/*
-sed -i 's|err_chk|${EXEClandda}/err_chk|g' $PWD/land-DA_workflow/jobs/*
-sed -i '2 i export NDATE=${HOMElandda}/exec/ndate' $PWD/land-DA_workflow/jobs/*
-
+# Update scripts and module files to work with container
+echo "Updating scripts files"
 sed -i 's|. prep_step|${EXEClandda}/prep_step|g' $PWD/land-DA_workflow/scripts/*
-sed -i 's|err_chk|${EXEClandda}/err_chk|g' $PWD/land-DA_workflow/scripts/*
-sed -i 's|JEDI_EXECDIR=${JEDI_INSTALL}/build/bin|JEDI_EXECDIR=${EXEClandda}|g' $PWD/land-DA_workflow/scripts/exlandda_analysis.sh
+sed -i 's|JEDI_EXECDIR=${JEDI_PATH}/build/bin|JEDI_EXECDIR=${EXEClandda}|g' $PWD/land-DA_workflow/scripts/exlandda_analysis.sh
+# Call python wrapper for prep and plot scripts
+sed -i 's|${USHlandda}|python ${USHlandda}|g' $PWD/land-DA_workflow/scripts/exlandda_prep_data.sh
+sed -i 's|${USHlandda}|python ${USHlandda}|g' $PWD/land-DA_workflow/scripts/exlandda_plot_stats.sh
 
+echo "Updating singularity modulefiles"
 sed -i "s|COMPILER|$compiler|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
 sed -i "s|MPI|$mpi|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/modulefiles/wflow_singularity.lua
 
-sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/ush/hofx_analysis_stats.py
-sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/ush/plot_forecast_restart.py
-
-# Setup run scripts
-echo "Updating run scripts"
-sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/parm_xml_singularity.yaml
-cp $PWD/land-DA_workflow/parm/parm_xml_singularity.yaml $PWD/land-DA_workflow/parm/parm_xml.yaml
-
+# Setup run related scripts
+echo "Updating run related scripts"
 sed -i "s|IMAGE|$image|g" $PWD/land-DA_workflow/parm/run_container_executable.sh
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/setup_wflow_env.py
+sed -i "s|conda list|#conda list|g" $PWD/land-DA_workflow/parm/task_load_modules_run_jjob.sh
 
 # Sync conda with platform
 echo "Setup conda"
 sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/etc/profile.d/conda.sh
 sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/bin/conda
 sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/envs/land_da/bin/uw
-
 echo "$PWD/land-DA_workflow/sorc/conda" > $PWD/land-DA_workflow/parm/conda_loc
-
-# Append Python path to analysis and plot scripts
-sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:\$PATH" $PWD/land-DA_workflow/scripts/exlandda_analysis.sh 
-sed -i "2 i export PATH=$PWD/land-DA_workflow/sorc/conda/envs/land_da/bin:\$PATH" $PWD/land-DA_workflow/scripts/exlandda_plot_stats.sh
 
 # Get JEDI Data
 echo "Getting the jedi test data from container"
@@ -101,8 +93,11 @@ fi
 echo "Creating links for exe"
 cd land-DA_workflow/exec
 ln -s ../parm/run_container_executable.sh apply_incr.exe
+ln -s ../parm/run_container_executable.sh calcfIMS.exe
+#ln -s ../parm/run_container_executable.sh conda 
 ln -s ../parm/run_container_executable.sh err_chk
 ln -s ../parm/run_container_executable.sh fv3jedi_letkf.x
+ln -s ../parm/run_container_executable.sh fv3jedi_var.x
 ln -s ../parm/run_container_executable.sh ndate
 ln -s ../parm/run_container_executable.sh prep_step
 ln -s ../parm/run_container_executable.sh python

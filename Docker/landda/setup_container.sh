@@ -55,6 +55,7 @@ sed -i 's|JEDI_EXECDIR=${JEDI_PATH}/build/bin|JEDI_EXECDIR=${EXEClandda}|g' $PWD
 # Call python wrapper for prep and plot scripts
 sed -i 's|${USHlandda}|python ${USHlandda}|g' $PWD/land-DA_workflow/scripts/exlandda_prep_data.sh
 sed -i 's|${USHlandda}|python ${USHlandda}|g' $PWD/land-DA_workflow/scripts/exlandda_plot_stats.sh
+sed -i 's|${USHlandda}/plot_comp_sfc_data.py|${HOMElandda}/exec/python ${USHlandda}/plot_comp_sfc_data.py|g' $PWD/land-DA_workflow/scripts/exlandda_analysis.sh
 
 echo "Updating singularity modulefiles"
 sed -i "s|COMPILER|$compiler|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
@@ -67,6 +68,7 @@ echo "Updating run related scripts"
 sed -i "s|IMAGE|$image|g" $PWD/land-DA_workflow/parm/run_container_executable.sh
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/setup_wflow_env.py
 sed -i "s|conda list|#conda list|g" $PWD/land-DA_workflow/parm/task_load_modules_run_jjob.sh
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/run_container_executable.sh
 
 # Sync conda with platform
 echo "Setup conda"
@@ -94,7 +96,7 @@ echo "Creating links for exe"
 cd land-DA_workflow/exec
 ln -s ../parm/run_container_executable.sh apply_incr.exe
 ln -s ../parm/run_container_executable.sh calcfIMS.exe
-#ln -s ../parm/run_container_executable.sh conda 
+ln -s ../parm/run_container_executable.sh chgres_cube
 ln -s ../parm/run_container_executable.sh err_chk
 ln -s ../parm/run_container_executable.sh fv3jedi_letkf.x
 ln -s ../parm/run_container_executable.sh fv3jedi_var.x

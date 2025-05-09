@@ -43,7 +43,7 @@ RUN  source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms  &&
      ecbuild -DCMAKE_INSTALL_PREFIX=../install ../sorc -DAPP=LND -DCCPP_SUITES="" && make VERBOSE=1 -j 8 && \
      cp ufs_model.fd/src/ufs_model.fd-build/ufs_model ../install/bin/ && \
      #cd .. && rm -rf build && mkdir -p sorc/build/bin && mkdir exec
-     cd ../sorc && mkdir build && cd build && \
+     cd ../sorc && mkdir build-atml && cd build-atml && \
      ecbuild -DCMAKE_INSTALL_PREFIX=. ../ -DAPP=ATML && make VERBOSE=1 -j 8 && \
      cd ../../ && mkdir exec
 COPY run_container_executable.sh /opt/land-DA_workflow/parm
@@ -83,3 +83,4 @@ ENV CC=/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64/icc
 ENV FC=/opt/intel/oneapi/compiler/2024.0/bin/ifort
 ENV CXX=/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64/icpc
 ENV ESMFMKFILE=/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/esmf-8.6.0-p4rin2p/lib/esmf.mk
+ENV HDF5_PLUGIN_PATH=/opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install/intel/2021.10.0/netcdf-c-4.9.2-bszu7f6/plugins

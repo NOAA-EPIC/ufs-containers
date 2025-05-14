@@ -42,10 +42,10 @@ echo "Copying out land-DA_workflow from container"
 singularity exec -H $PWD $image cp -r /opt/land-DA_workflow .
 
 # Get Land DA data
-echo "Checking if LANDDA_INPUTS variable exists and copying to land-DA_workflow"
+echo "Checking if LANDDA_INPUTS variable exists and linking to land-DA_workflow"
 if [ -d $LANDDA_INPUTS/NaturalEarth ]; then
-    echo "Land DA data exists copying it over"
-    cp -r $LANDDA_INPUTS/* $PWD/land-DA_workflow/fix/
+    echo "Land DA data exists, creating links"
+    ln -nsf $LANDDA_INPUTS/* $PWD/land-DA_workflow/fix
 fi
 
 # Update scripts and module files to work with container

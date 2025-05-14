@@ -95,7 +95,9 @@ singularity exec -H $PWD $image cp -r /opt/jedi-bundle/fv3-jedi/test/Data $PWD/j
 # Update experiment variables (fcst length and max procs)
 echo "Update experiment variables"
 sed -i "477s|00:30:00|01:00:00|g" $PWD/land-DA_workflow/parm/templates/template.land_analysis.yaml
-sed -i "324s|40|64|g" $PWD/land-DA_workflow/parm/setup_wflow_env.py 
+sed -i "324s|40|64|g" $PWD/land-DA_workflow/parm/setup_wflow_env.py
+sed -i "s|LND_LAYOUT_X: 1|LND_LAYOUT_X: 2|g" $PWD/land-DA_workflow/parm/config_samples/samples_cadre/cadre*
+sed -i "s|LND_LAYOUT_Y: 2|LND_LAYOUT_Y: 3|g" $PWD/land-DA_workflow/parm/config_samples/samples_cadre/cadre*
 
 # Create links
 echo "Creating links for exe"

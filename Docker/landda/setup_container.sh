@@ -62,6 +62,7 @@ sed -i "s|COMPILER|$compiler|g" $PWD/land-DA_workflow/modulefiles/tasks/singular
 sed -i "s|MPI|$mpi|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/modulefiles/tasks/singularity/*
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/modulefiles/wflow_singularity.lua
+sed -i "s|load|--load|g" $PWD/land-DA_workflow/modulefiles/wflow_singularity.lua
 
 # Setup run related scripts
 echo "Updating run related scripts"

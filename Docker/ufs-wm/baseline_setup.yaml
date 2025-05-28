@@ -93,12 +93,12 @@ singularity:
   QUEUE: batch
   COMPILE_QUEUE: batch
   PARTITION:
-  dprefix: /scratch2/NAGAPE/epic/Edward.Snyder/hsd-test
-  DISKNM: /scratch2/NAGAPE/epic/Edward.Snyder/hsd-test/HSD_cases_data
-  STMP: /scratch2/NAGAPE/epic/Edward.Snyder/hsd-test
-  PTMP: /scratch2/NAGAPE/epic/Edward.Snyder/hsd-test
+  dprefix: SINGULARITY_WORKING_DIR
+  DISKNM: SINGULARITY_WORKING_DIR/HSD_cases_data
+  STMP: SINGULARITY_WORKING_DIR
+  PTMP: SINGULARITY_WORKING_DIR
   RUNDIR_ROOT:
   SCHEDULER: slurm
-  INPUTDATA_ROOT: /scratch2/NAGAPE/epic/Edward.Snyder/hsd-test/HSD_cases_data/NEMSfv3gfs/input-data-20240501
-  INPUTDATA_ROOT_WW3: /scratch2/NAGAPE/epic/Edward.Snyder/hsd-test
-  INPUTDATA_ROOT_BMIC: /scratch2/NAGAPE/epic/Edward.Snyder/hsd-test
+  INPUTDATA_ROOT: SINGULARITY_WORKING_DIR/HSD_cases_data/NEMSfv3gfs/input-data-20240501
+  INPUTDATA_ROOT_WW3: SINGULARITY_WORKING_DIR
+  INPUTDATA_ROOT_BMIC: SINGULARITY_WORKING_DIR

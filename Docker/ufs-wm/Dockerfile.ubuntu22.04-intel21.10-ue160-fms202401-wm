@@ -53,6 +53,7 @@ RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
      echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.env && \
      echo LIBRARY_PATH=$LIBRARY_PATH >> ufswm.env && \
      echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufswm.env && \
+     echo CPATH=$CPATH >> ufswm.env && \
      echo MODULEPATH=$MODULEPATH >> ufswm.env && \
      echo CC=`which icc` >> ufswm.env && \
      echo FC=`which ifort` >> ufswm.env && \

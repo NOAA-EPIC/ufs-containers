@@ -88,20 +88,21 @@ if [ "$platform" == "jet" ] ; then
     echo "Updating files to work on Jet"
     sed -i "s|PARTITION:.*|PARTITION: xjet|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
     sed -i "5 i #SBATCH --partition=@[PARTITION]" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
-elif [ "$platform" == "gaea" ] ; then
+elif [[ "$platform" =~ "gaea" ]] ; then
     echo "Updating files to work on Gaea"
-    sed -i "s|gaea|singularity|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
-    sed -i "s|--clusters=es|--clusters=c5|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
-    sed -i "s|eslogin_c5|batch|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
+    sed -i "s|gaeac6|singularity|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
+    sed -i "s|--clusters=es|--clusters=c6|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
+    sed -i "s|eslogin_c6|batch|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
     sed -i "/queue/d" $PWD/ufs-weather-model/tests-dev/create_xml.py
     sed -i "s|mpiexec|#mpiexec|g" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
     sed -i "55 i srun --mpi=pmi2 -n @[TASKS] ./fv3_\$\{COMPILE_ID\}.exe" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
     sed -i "7 i module reset" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
-    sed -i "8 i module use /ncrc/proj/epic/rocoto/modulefiles/" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
-    sed -i "s|gaea|singularity|g" $PWD/ufs-weather-model/tests/rt_utils.sh
+    sed -i "8 i module use /ncrc/proj/epic/c6/modulefiles/" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
+    sed -i "s|load rocoto|load rocoto/1.3.7-fix|g" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
+    sed -i "s|gaeac6|singularity|g" $PWD/ufs-weather-model/tests/rt_utils.sh
     sed -i "s|<native>--partition=batch</native>|<partition>batch</partition>|g" $PWD/ufs-weather-model/tests/rt_utils.sh
-    sed -i "s|PARTITION:.*|PARTITION: c5|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
-elif [ "$platform" == "hercules" ] ; then
+    sed -i "s|PARTITION:.*|PARTITION: c6|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
+elif [ "$platform" == "hercules" ] || [ "$platform" == "orion" ] ; then
     echo "Updating files to work on Hercules"
     sed -i "7 i module load singularity contrib" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
 fi

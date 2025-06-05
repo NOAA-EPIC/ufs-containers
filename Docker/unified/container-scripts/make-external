@@ -1,0 +1,18 @@
+#!/bin/bash
+#set -x
+#export img=/scratch1/NCEPDEV/nems/Mark.Potts/container-stage/ubuntu22.04-intel-ufs-env-v1.6.0.img
+export SINGULARITY_SHELL=/bin/bash
+arg="$@"
+if [[ -z $img ]]; then
+  echo "export img to point to the container image you are using"
+  exit 1
+fi
+bindir=`pwd | awk -F"/" '{print $2}'`
+for efile in $arg; 
+   do binfile=$(file -L $efile | grep ELF)
+      if [[ $binfile =~ "ELF" ]]; then 
+         echo $efile; 
+         singularity exec -e -B /$bindir "${img}" /opt/container-scripts/dot-externalize.sh $efile
+      fi; 
+done
+

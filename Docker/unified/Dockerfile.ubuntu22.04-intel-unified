@@ -154,7 +154,7 @@ ENV CC=/opt/intel/oneapi/compiler/2024.2/bin/icx
 ENV CXX=/opt/intel/oneapi/compiler/2024.2/bin/icpx
 ENV FC=/opt/intel/oneapi/compiler/2024.2/bin/ifort
 ENV SHELL=/bin/bash
-ADD container-scripts.tar.gz /opt
+RUN cd /opt && git clone https://github.com/noaa-epic/container-scripts
 RUN echo "source /usr/lmod/lmod/init/bash" > /etc/bash.bashrc && \
     echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /etc/bash.bashrc && \
     echo "bind '\"\\e[A\": history-search-backward'" >> /etc/bash.bashrc && \

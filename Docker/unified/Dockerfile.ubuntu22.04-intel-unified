@@ -1,4 +1,4 @@
-From intel/hpckit:2024.2.0-1-devel-ubuntu22.04
+From intel/hpckit:2024.2.0-1-devel-ubuntu22.04 as builder
 ARG branch_name
 
 ENV branch=$branch_name
@@ -163,3 +163,19 @@ RUN echo "source /usr/lmod/lmod/init/bash" > /etc/bash.bashrc && \
     chmod +x /bin/mybash && chmod -R a+rX /root && chmod a+x /opt/container-scripts/*
 #fix for broken build of w3emc--need to fix this corrctly later
 ADD w3emc.zck.tar.gz /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/oneapi/2024.2.0
+
+# --- runtime container ---
+FROM intel/oneapi-runtime:2024.2.0-devel-ubuntu22.04 as final
+
+# Copy only the necessary built software and environment from builder
+COPY --from=builder /usr /usr
+COPY --from=builder /opt/spack-stack /opt/spack-stack
+COPY --from=builder /opt/container-scripts /opt/container-scripts
+COPY --from=builder /root /root
+
+# Set up environment variables for runtime
+ENV PATH="/usr/local:/opt/intel/oneapi/mpi/2021.14/bin:$PATH"
+ENV SHELL=/bin/bash
+
+# Optionally set entrypoint or CMD if needed
+# CMD ["/bin/bash"]

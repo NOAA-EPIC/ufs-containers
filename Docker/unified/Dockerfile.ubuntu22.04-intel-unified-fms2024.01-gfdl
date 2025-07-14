@@ -238,7 +238,7 @@ RUN mkdir -p /work && \
     mkdir -p /opt/ufs-srweather-app/container-scripts
 # Copy files over
 COPY /home/rocky/workspace/sandbox/build-docker-spack-stack/ufs-containers/Docker/srw/srw.sh-template /opt/ufs-srweather-app/container-scripts
-COPY /home/rocky/workspace/sandbox/build-docker-spack-stack/ufs-containers/Docker/srw/stage-srw.sh /opt/ufs-srweather-app/container-scripts/stage-srw.sh
+COPY /home/rocky/workspace/sandbox/build-docker-spack-stack/ufs-containers/Docker/srw/stage-srw.sh /opt/ufs-srweather-app/container-scripts
 
 # Get container-scripts
 RUN cd /opt && rm -rf container-scripts &&  git clone https://github.com/noaa-epic/container-scripts

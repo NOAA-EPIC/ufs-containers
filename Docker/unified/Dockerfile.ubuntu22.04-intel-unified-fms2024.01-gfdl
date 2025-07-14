@@ -1,4 +1,5 @@
-FROM intel/ubuntu22.04-hpckit:2023.1.0 as builder
+#FROM intel/ubuntu22.04-hpckit:2023.1.0 as builder
+FROM intel/oneapi-hpckit:2023.2.1-devel-ubuntu22.04 as builder
 ARG branch_name
 
 ENV branch=$branch_name
@@ -49,7 +50,7 @@ apt install -y --no-install-recommends  file && \
 apt install -y --no-install-recommends  python3-dev python3-pip && \
 rm -rf /var/lib/apt/lists/* 
 #
-ENV PATH="${PATH}:/usr/local:/opt/intel/oneapi/compiler/2023.2.3/linux/bin/intel64"
+ENV PATH="${PATH}:/usr/local:/opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64"
 #
 RUN echo "dash dash/sh boolean false" | debconf-set-selections && \
 # the dash shell breaks everything. Replace it with bash as default /bin/sh

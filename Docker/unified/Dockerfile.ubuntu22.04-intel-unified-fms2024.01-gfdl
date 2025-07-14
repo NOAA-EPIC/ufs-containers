@@ -64,7 +64,7 @@ WORKDIR /opt
 RUN git clone -b release/public-v3.0.0 https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
     ./manage_externals/checkout_externals && mkdir build
 WORKDIR /opt/ufs-srweather-app/build
-COPY ../srw/build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles
+COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles
 RUN chmod a+rx /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
 RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
     #grep load ../modulefiles/srw_common.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
@@ -106,7 +106,8 @@ RUN mkdir -p /work && \
     mkdir -p /opt/ufs-srweather-app/exec && \
     mkdir -p /opt/ufs-srweather-app/container-scripts
 # Copy files over
-COPY ../srw/srw.sh-template /opt/ufs-srweather-app/container-scripts && ../srw/stage-srw.sh /opt/ufs-srweather-app/container-scripts
+COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
+COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts
 
 # Get container-scripts
 RUN cd /opt && rm -rf container-scripts &&  git clone https://github.com/noaa-epic/container-scripts

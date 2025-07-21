@@ -2,10 +2,17 @@ From intel/oneapi-hpckit:2023.2.1-devel-ubuntu22.04
 ARG branch_name
 
 ENV branch=$branch_name
-RUN mkdir -p /opt/build
-RUN apt-get update &&   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends     ca-certificates curl &&   rm -rf /var/lib/apt/lists/*
+#RUN mkdir -p /opt/build
+# update Intel gpg key
+RUN gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BAC6F0C353D04109 && \
+    gpg --export BAC6F0C353D04109 | tee -a /usr/share/keyrings/intel-oneapi-archive-keyring.gpg >/dev/null && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends     ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/*
 # install cmake
-RUN cd /opt/build &&     curl -LO https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-x86_64.sh && /bin/bash cmake-3.23.1-linux-x86_64.sh --prefix=/usr/local --skip-license
+RUN mkdir -p /opt/build && cd /opt/build && \
+    curl -LO https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-x86_64.sh && \
+    /bin/bash cmake-3.23.1-linux-x86_64.sh --prefix=/usr/local --skip-license
 #
 # update apt
 RUN apt-get update -yq --allow-unauthenticated
@@ -64,8 +71,8 @@ RUN echo "dash dash/sh boolean false" | debconf-set-selections && \
 # spack scipy install is broken, so install on the system
     pip install scipy && pip install cython && \
 # install boost from source
-    cd /opt && wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz && \
-    tar xvfz boost_1_78_0.tar.gz && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ --with-python=/usr/bin/python3 && ./b2 install && \
+    cd /opt && wget https://archives.boost.io/release/1.78.0/source/boost_1_78_0.tar.bz2 && \
+    tar xvjf boost_1_78_0.tar.bz2 && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ --with-python=/usr/bin/python3 && ./b2 install && \
 # without an actual python executable, env python fails, so link python3 to python
     ln -s /usr/bin/python3 /usr/bin/python && \
 # remove build artifacts to reduce size

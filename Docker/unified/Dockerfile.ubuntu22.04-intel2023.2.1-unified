@@ -121,7 +121,7 @@ RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stac
     sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.6.0/spack/var/spack/repos/jcsda-emc-bundles/packages/ewok-env/package.py && \
     spack concretize  && mkdir /usr/bin/info && \
     #spack mirror add unified file:/opt/spackmirror160 && spack install --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
-    spack install --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
+    spack install --no-check-signature --no-checksum |& tee install.log && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spackmirror160 && \
 # refresh the modulefiles and create meta-modules
     source /usr/lmod/lmod/init/bash && \

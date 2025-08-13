@@ -1,4 +1,4 @@
-FROM noaaepic/ubuntu22.04-intel-unified:v1.6.0-fms202401-intel2023.2.1 as builder
+FROM noaaepic/ubuntu22.04-intel2023.2.1-unified:v1.6.0-fms202401 as builder
 
 # Build SRW App
 WORKDIR /opt

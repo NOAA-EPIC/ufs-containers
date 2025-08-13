@@ -1,7 +1,5 @@
-#change the FROM line to build using a different version of spack-stack
-#note that every instance of spack-stack-1.6.0 will need to be changed below as well
 #FROM noaaepic/ubuntu22.04-intel-unified:v1.6.0-fms202401
-FROM noaaepic/ubuntu22.04-intel-unified:v1.6.0-fms202401-intel2023.2.1 as builder
+FROM noaaepic/ubuntu22.04-intel2023.2.1-unified:v1.6.0-fms202401 as builder
 
 WORKDIR /opt
 #clone the jedi bundle and checkout the appropriate release
@@ -9,7 +7,7 @@ RUN git clone -b sync_gdas https://github.com/NOAA-EPIC/jedi-bundle.git && mkdir
 RUN cd /opt/spack-stack && rm -rf spack/var/spack/cache
 WORKDIR /opt/jedi-bundle
 #delete a few unnecessary packages
-RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && module load ecbuild && \
+RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv && \
     cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
     make -j 4 && make install 
 RUN rm -rf /opt/jedi-bundle/build

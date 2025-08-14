@@ -12,7 +12,7 @@ compilers:
     modules: []
     environment:
       prepend_path:
-        LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/compiler/lib
-        LD_LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/compiler/lib
+        LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/lib
+        LD_LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/lib
     extra_rpaths: []
 

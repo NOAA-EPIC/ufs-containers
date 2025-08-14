@@ -124,10 +124,10 @@ RUN cd /opt && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -
     sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.9.2/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \
     cd /opt/spack-stack/spack-stack-$branch && \
     . ./setup.sh && spack env activate envs/unified-env && \ 
-    spack external find --all && spack concretize |& tee concretize.out && mkdir /usr/bin/info && \
+    spack external find --all && spack concretize |& tee log.concretize && mkdir /usr/bin/info && \
 #   git pull && git submodule update && \
     #spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
-    spack install --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
+    spack install --no-check-signature --no-checksum |& tee install.log && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
     echo "DONE1"
 WORKDIR /opt/spack-stack/spack-stack-$branch
@@ -142,8 +142,8 @@ RUN . ./setup.sh && spack env activate envs/unified-env && \
       spack stack setup-meta-modules && \
       module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
       module load stack-oneapi stack-intel-oneapi-mpi && module list && \
-      #sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.4/ecbuild/3.7.2.lua && \
-      #sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.4/wgrib2/3.6.0.lua && \
+      sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/ecbuild/3.7.2.lua && \
+      sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/wgrib2/3.6.0.lua && \
       echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
       echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
       echo "module load stack-oneapi" >> /root/.bashenv && \

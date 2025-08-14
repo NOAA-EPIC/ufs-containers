@@ -1,0 +1,21 @@
+packages:
+    all:
+    # To support hecflow01
+      compiler:: [oneapi@2024.2, gcc@11.4.0]
+      providers:
+        mpi:: [intel-oneapi-mpi@2021.13]
+      target: [haswell]
+    mpi:
+      buildable: false
+    intel-oneapi-mpi:
+      externals:
+      - spec: intel-oneapi-mpi@2021.13%oneapi@2024.2
+        prefix: /opt/intel/oneapi
+    intel-oneapi-mkl:
+      externals:
+      - spec: intel-oneapi-mkl@2024.2%oneapi@2024.2
+        prefix: /opt/intel/oneapi
+    intel-oneapi-runtime:
+      externals:
+      - spec: intel-oneapi-runtime@2024.24%oneapi@2024.2
+        prefix: /opt/intel/oneapi

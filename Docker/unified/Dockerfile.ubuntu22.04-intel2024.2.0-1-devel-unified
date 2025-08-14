@@ -1,4 +1,5 @@
-From intel/hpckit:2024.2.0-1-devel-ubuntu22.04
+#FROM intel/oneapi-hpckit:2024.0.1-devel-ubuntu22.04
+FROM intel/hpckit:2024.2.0-1-devel-ubuntu22.04
 ARG branch_name
 
 ENV branch=$branch_name
@@ -52,7 +53,7 @@ apt install -y --no-install-recommends  libncurses-dev libxaw7-dev && \
 apt install -y --no-install-recommends  gcc libgssapi-krb5-2 libkrb5-dev libsasl2-modules-gssapi-mit && \
 rm -rf /var/lib/apt/lists/* 
 #
-ENV PATH="${PATH}:/usr/local:/opt/intel/oneapi/mpi/2021.14/bin"
+ENV PATH="${PATH}:/usr/local:/opt/intel/oneapi/mpi/2021.13/bin"
 #
 RUN echo "dash dash/sh boolean false" | debconf-set-selections && \
 # the dash shell breaks everything. Replace it with bash as default /bin/sh
@@ -76,7 +77,8 @@ RUN mkdir -p /opt/spack-stack
 WORKDIR /opt/spack-stack
 #
 #Copy in the ubuntu-intel configuration files
-ADD ubuntu-intel-2021.14.tar.gz /opt/spack-stack 
+#ADD ubuntu-intel-2021.14.tar.gz /opt/spack-stack 
+ADD ubuntu-intel-24.2-1.9.2.tar.gz /opt/spack-stack
 ## Either copy in the spack-mirror or pull it from s3
 #ADD spack-mirror.tar.gz /opt
 ##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
@@ -84,7 +86,7 @@ ADD ubuntu-intel-2021.14.tar.gz /opt/spack-stack
 
 
 # This clone version will change for each successive release
-RUN git clone -b $branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
+RUN git clone -b release/1.9.0 --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
   cd /opt/spack-stack/spack-stack-$branch && \
 # set the spack directories to be safe for use by git even though they are in /opt
     git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch && \
@@ -110,7 +112,7 @@ RUN git clone -b $branch --recursive https://github.com/jcsda/spack-stack.git sp
     echo "DONE"
 
 ##ADD envs.tar.gz /opt/spack-stack/spack-stack-$branch
-ADD spack-mirror.1.9.1.tar.gz /opt
+#ADD spack-mirror.1.9.1.tar.gz /opt
 #RUN echo "hello"
 #COPY site-packages.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/site/packages.yaml
 #COPY common-packages.yaml /opt/spack-stack/spack-stack-$branch/envs/unified-env/common/packages.yaml
@@ -119,27 +121,29 @@ ADD spack-mirror.1.9.1.tar.gz /opt
 #
 RUN cd /opt && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && ./aws/install && rm -rf aws* && \
-    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.9.1/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \
+    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.9.2/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \
     cd /opt/spack-stack/spack-stack-$branch && \
     . ./setup.sh && spack env activate envs/unified-env && \ 
-    spack external find --all && spack concretize  && mkdir /usr/bin/info && \
+    spack external find --all && spack concretize |& tee concretize.out && mkdir /usr/bin/info && \
 #   git pull && git submodule update && \
-    spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
+    #spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
+    spack install --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
-    echo "DONE2"
+    echo "DONE1"
 WORKDIR /opt/spack-stack/spack-stack-$branch
 RUN . ./setup.sh && spack env activate envs/unified-env && \
      source /usr/lmod/lmod/init/bash && \
 ## remove extra stuff that got built
       yes | spack uninstall --force  ecbuild/tao7iba  && \
-      yes | spack uninstall --force  jedi-base-env/h34sh5o && \
+      #yes | spack uninstall --force  jedi-base-env/h34sh5o && \
+      yes | spack uninstall --force  jedi-base-env/onic2f5 && \
       yes | spack uninstall --force  base-env/63j7oyl && \
       spack module lmod refresh -y && \
       spack stack setup-meta-modules && \
       module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
       module load stack-oneapi stack-intel-oneapi-mpi && module list && \
-      sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/modulefiles/oneapi/2024.2.0/ecbuild/3.7.2.lua && \
-      sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/modulefiles/oneapi/2024.2.0/wgrib2/3.6.0.lua && \
+      #sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.4/ecbuild/3.7.2.lua && \
+      #sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.4/wgrib2/3.6.0.lua && \
       echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
       echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
       echo "module load stack-oneapi" >> /root/.bashenv && \
@@ -162,4 +166,4 @@ RUN echo "source /usr/lmod/lmod/init/bash" > /etc/bash.bashrc && \
     echo "/bin/bash --init-file /etc/bash.bashrc" >> /bin/mybash && \
     chmod +x /bin/mybash && chmod -R a+rX /root && chmod a+x /opt/container-scripts/*
 #fix for broken build of w3emc--need to fix this corrctly later
-ADD w3emc.zck.tar.gz /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/oneapi/2024.2.0
+#ADD w3emc.zck.tar.gz /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/oneapi/2024.2.0

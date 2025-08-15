@@ -1,0 +1,65 @@
+spack:
+  concretizer:
+    unify: when_possible
+
+  view: false
+  include: []
+
+  definitions:
+  - compilers: ['%aocc', '%apple-clang', '%gcc', '%intel', '%oneapi']
+  - packages:
+    - ewok-env +ecflow ~cylc
+    - ai-env
+    - geos-gcm-env          ^esmf@=8.6.1
+    - global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0
+    - gmao-swell-env
+    - gsi-env ^crtm@=3.1.1-build1
+    - jedi-fv3-env
+    - jedi-geos-env         ^esmf@=8.6.1
+    - jedi-mpas-env
+    - jedi-neptune-env      ^esmf@=8.8.0
+    - jedi-tools-env
+    - jedi-ufs-env          ^esmf@=8.6.1
+    - jedi-um-env
+    - neptune-env           ^esmf@=8.8.0
+    - neptune-python-env    ^esmf@=8.8.0
+    - soca-env
+    - ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0
+    - ufs-weather-model-env ^esmf@=8.8.0 ^crtm@=3.1.1-build1
+
+    # Various crtm tags (list all to avoid duplicate packages)
+    - crtm@2.4.0.1
+    - crtm@v2.4.1-jedi
+    - crtm@3.1.1-build1
+
+    # Mapl with various esmf tags
+    - mapl@2.53.0 ^esmf@8.6.1
+    - mapl@2.53.4 ^esmf@8.8.0
+
+    # Various esmf tags (list all to avoid duplicate packages)
+    - esmf@=8.6.1 snapshot=none
+    - esmf@=8.8.0 snapshot=none
+
+    # MADIS for WCOSS2 decoders.
+    - madis@4.5
+
+    # wgrib2 bug 
+    - wgrib2@3.6.0 +ipolates +netcdf ^netcdf-c@=4.9.2 ^netcdf-fortran@=4.6.1
+    
+    # correct met and metplus versions
+    - met@12.0.1 %oneapi
+    - metplus@6.0.0 %oneapi ^met@12.0.1
+
+  specs:
+  - matrix:
+    - [$packages]
+    - [$compilers]
+    exclude:
+    # Don't build ai-env and jedi-tools-env with Intel or oneAPI,
+    # some packages don't build (e.g., py-torch in ai-env doesn't
+    # build with Intel, and there are constant problems concretizing
+    # the environment
+    - ai-env%intel
+    - ai-env%oneapi
+    - jedi-tools-env%intel
+    - jedi-tools-env%oneapi

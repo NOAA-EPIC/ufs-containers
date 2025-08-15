@@ -95,6 +95,7 @@ RUN git clone -b release/1.9.0 --recursive https://github.com/jcsda/spack-stack.
 # Get any recent updates to the release
 #   git remote update && git checkout $branch && git pull origin $branch && \
 #   git submodule sync && git submodule update  && \
+    #mv /opt/spack-stack/ubuntu-intel/unified-dev-spack.yaml configs/templates/unified-dev/spack.yaml && \
     mv /opt/spack-stack/ubuntu-intel configs/sites/tier1 && \ 
 #
 # Create the environment

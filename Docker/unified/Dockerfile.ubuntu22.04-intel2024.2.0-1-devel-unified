@@ -103,7 +103,12 @@ RUN git clone -b release/1.9.0 --recursive https://github.com/jcsda/spack-stack.
     export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler oneapi && \
     spack compiler add oneapi && spack compiler list && sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
 #    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
-#
+# Update wgrib2 and met and metplus files
+    sed -i 's|@3.6.0|@3.6.0 +ipolates +netcdf|g' envs/unified-env/common/packages.yaml && \
+    sed -i 's|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
+    sed -i 's|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
+    sed -i '42 i \    - met@12.0.1 %oneapi' envs/unified-env/spack.yaml && \
+    sed -i '43 i \    - metplus@6.0.0 %oneapi ^met@12.0.1' envs/unified-env/spack.yaml && \
 # Concretize 
     . ./setup.sh && spack env activate envs/unified-env && \ 
     unset SPACK_SYSTEM_CONFIG_PATH && \ 

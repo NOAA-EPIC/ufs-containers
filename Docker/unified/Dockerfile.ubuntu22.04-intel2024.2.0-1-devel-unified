@@ -105,6 +105,8 @@ RUN git clone -b release/1.9.0 --recursive https://github.com/jcsda/spack-stack.
 #    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
 # Update wgrib2 and met and metplus files
     sed -i 's|@3.6.0|@3.6.0 +ipolates +netcdf|g' envs/unified-env/common/packages.yaml && \
+    sed -i 's|@11.1.1|@12.0.1|g' envs/unified-env/common/packages.yaml && \
+    sed -i "s|'@5.1.0'|'@6.0.0'|g" envs/unified-env/common/packages.yaml && \
     sed -i 's|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
     sed -i 's|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
     sed -i '42 i \    - met@12.0.1 %oneapi' envs/unified-env/spack.yaml && \
@@ -142,14 +144,14 @@ RUN . ./setup.sh && spack env activate envs/unified-env && \
 ## remove extra stuff that got built
       yes | spack uninstall --force  ecbuild/tao7iba  && \
       #yes | spack uninstall --force  jedi-base-env/h34sh5o && \
-      yes | spack uninstall --force  jedi-base-env/onic2f5 && \
+      yes | spack uninstall --force  jedi-base-env/v77vzib && \
       yes | spack uninstall --force  base-env/63j7oyl && \
       spack module lmod refresh -y && \
       spack stack setup-meta-modules && \
       module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
       module load stack-oneapi stack-intel-oneapi-mpi && module list && \
       sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/ecbuild/3.7.2.lua && \
-      sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/wgrib2/3.6.0.lua && \
+      #sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/wgrib2/3.6.0.lua && \
       echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
       echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
       echo "module load stack-oneapi" >> /root/.bashenv && \

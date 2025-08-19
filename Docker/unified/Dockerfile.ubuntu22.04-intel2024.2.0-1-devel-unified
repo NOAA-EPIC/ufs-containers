@@ -103,10 +103,24 @@ RUN git clone -b release/1.9.0 --recursive https://github.com/jcsda/spack-stack.
     export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler oneapi && \
     spack compiler add oneapi && spack compiler list && sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
 #    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
-# Update wgrib2 and met and metplus files
+# Update wgrib2, met, and metplus spack package files
+    sed -i '23 i \    version("12.0.1", sha256="ef396a99ca6c2248855848cd194f9ceaf3b051fb5e8c01a0b0b2a00110b1fcfb")' spack/var/spack/repos/builtin/packages/met/package.py && \ 
+    sed -i '43 i \    depends_on("proj", when="@12")' spack/var/spack/repos/builtin/packages/met/package.py && \
+    sed -i '22 i \    version("6.0.0", sha256="e9358aede2fd2abecd81806227de7b165d68fdf2fc9defcbba24df229461b155")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '38 i \    depends_on("python@3.10.4:", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '39 i \    depends_on("met@12:+python", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '41 i \    depends_on("netcdf-c@1.5.4:", when="@6:")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '42 i \    depends_on("netcdf-c")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '43 i \    depends_on("py-python-dateutil@2.8:", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '46 i \    depends_on("py-cartopy@0.20.3:", when="@6: +makeplots", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '48 i \    depends_on("py-matplotlib@3.5.2", when="@6: +cycloneplotter", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i 's|when="@3.2: +netcdf4"|when="@3.2: +netcdf"|g' spack/var/spack/repos/builtin/packages/wgrib2/package.py && \
+    # switch to new wgrib build option
     sed -i 's|@3.6.0|@3.6.0 +ipolates +netcdf|g' envs/unified-env/common/packages.yaml && \
+    # update met and metplus verison
     sed -i 's|@11.1.1|@12.0.1|g' envs/unified-env/common/packages.yaml && \
     sed -i "s|'@5.1.0'|'@6.0.0'|g" envs/unified-env/common/packages.yaml && \
+    # update unified-env spack.yaml
     sed -i 's|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
     sed -i 's|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
     sed -i '42 i \    - met@12.0.1 %oneapi' envs/unified-env/spack.yaml && \

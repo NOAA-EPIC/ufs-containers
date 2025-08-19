@@ -25,6 +25,3 @@ packages:
     require::
     - '@:1.25 ^openblas'
   # *DH
-  zlib-ng:
-    require:
-      - '~shared'

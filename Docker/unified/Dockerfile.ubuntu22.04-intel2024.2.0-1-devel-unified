@@ -156,10 +156,10 @@ WORKDIR /opt/spack-stack/spack-stack-$branch
 RUN . ./setup.sh && spack env activate envs/unified-env && \
      source /usr/lmod/lmod/init/bash && \
 ## remove extra stuff that got built
-      yes | spack uninstall --force  ecbuild/tao7iba  && \
+      yes | spack uninstall --force  ecbuild/heodedo  && \
       #yes | spack uninstall --force  jedi-base-env/h34sh5o && \
-      yes | spack uninstall --force  jedi-base-env/v77vzib && \
-      yes | spack uninstall --force  base-env/63j7oyl && \
+      yes | spack uninstall --force  jedi-base-env/mzspqco && \
+      yes | spack uninstall --force  base-env/ryhpzeo && \
       spack module lmod refresh -y && \
       spack stack setup-meta-modules && \
       module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \

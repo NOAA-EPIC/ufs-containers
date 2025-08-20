@@ -1,0 +1,83 @@
+Building spack-stack 1.9.2 container instructions
+--------------------------------------------------
+
+## Notable Changes ##
+
+ # Base layer
+ The base layer is using a deprecated intel docker repo. Stuck with it because spack-stack-1.9.1 was built with it.
+ Recommend switching to the currently active intel docker repo when we upgrade to a completely new spack-stack version.
+ The comparable active docker image for the deprecated docker image is found in the dockerfile (Dockerfile.ubuntu22.04-intel2024.2.0-1-devel-unified) commented out.
+
+ # Mirrors
+ I didn’t use the spack-stack mirror tar that Mark has used in the past. I do however include the mirrors yaml, which seems to slightly speed up the build process.
+
+ # spack naming convention
+ Spack-stack-1.9.2 is branch name release/1.9.0, so I had to hardcode it in the dockerfile and let the env name variable be 1.9.2.
+
+ # ubuntu-intel spack yaml files
+ Added the mirrors and packages variants yamls to the ubuntu-intel directory and renamed the tar file that is loaded via the dockerfile. 
+ The ubuntu-intel yamls will be added to the spack-stack repo once I know they are in working order.
+
+ # spack add-on envs
+ There are two spack add-on environments (met and metplus, and wgrib2). These changes were incorporated into the spack initially since we didn’t have a working spack-stack-1.9.2 container.
+
+ # scotch, gcc, and ufs-weather-model env bug
+ A bug was reported that scotch wasn’t working with the oneAPI compilers (https://github.com/spack/spack-packages/issues/161), but it can work if scotch is built with gcc.
+ The current configuration in the repo can get the ufs-weather-model-env to load by default after I added the following line:
+   prepend_path("MODULEPATH", "/opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.13-argr3sd/gcc/11.4.0")
+ to the ufs-weather-model lua file:
+   /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.13-argr3sd/oneapi/2024.2.0/ufs-weather-model-env/1.0.0.lua 
+
+ It should be noted that it is possible to build scotch with gcc properly by making the following changes to these current files:
+   root@656df61e442e:/opt/spack-stack/spack-stack-1.9.2/configs/sites/tier1/ubuntu-intel# diff packages_oneapi.yaml ufs-containers/Docker/unified/ubuntu-intel/packages_oneapi.yaml
+   4c4
+   <       compiler:: [oneapi@2024.2, gcc@11.4.0]
+   ---
+   >       compiler:: [oneapi@2024.2]
+   root@656df61e442e:/opt/spack-stack/spack-stack-1.9.2/configs/sites/tier1/ubuntu-intel# diff packages_gcc.yaml ufs-containers/Docker/unified/ubuntu-intel/packages_gcc.yaml
+   3c3
+   <     compiler:: [gcc@11.4.0]
+   ---
+   >     compiler:: [gcc@9.2.0]
+   12c12
+   <       - gnu/11.4.0
+   ---
+   >       - gnu/9.2.0
+   root@656df61e442e:/opt/spack-stack/spack-stack-1.9.2/configs/sites/tier1/ubuntu-intel# diff compilers.yaml ufs-containers/Docker/unified/ubuntu-intel/compilers.yaml
+   18,36c18
+   < - compiler:
+   <     spec: gcc@=11.4.0
+   <     paths:
+   <       cc: /usr/bin/gcc
+   <       cxx: /usr/bin/g++
+   <       f77: /usr/bin/gfortran-11
+   <       fc: /usr/bin/gfortran-11
+   <     flags: {}
+   <     operating_system: ubuntu22.04
+   <     target: x86_64
+   <     modules:
+   <     - gnu/11.4.0
+   <     environment: {}
+   <     extra_rpaths: []
+   ---
+
+ Once the changes are made above then these changes are needed in the dockerfile:
+   Remove: spack compiler rm gcc@11.4.0
+   Add(?): spack compiler add gcc
+   Remove: sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml
+
+## Instructions ##
+
+ - Used a PW AWS instance (r6i.4xlarge) which is the same Jenkins uses to build docker images
+     - Note: have to use sudo to initiate the docker daemon and for all docker commands
+ - Clone the ufs-container repo; must use noaaepic username and password to get access since it is a private repo
+ - Build the docker file here, iterating on this machine until you are able to build the container without any errors; see example command:
+     - sudo docker build -f Dockerfile.ubuntu22.04-intel2024.2.0-1-devel-unified --build-arg="branch_name=1.9.2" -t local/ss-192:test-cmake .
+ - Run and exec the docker image so you can see if everything is working properly
+ - If you make any changes to it locally in a running docker image, you can save that image using “docker commit”, 
+   which will save the current snapshot of the docker container as a docker image rather than rebuilding the entire docker image again.
+ - You can push a local docker image to noaaepic docker hub by using the “docker push” command. 
+ - If the goal is to create a singularity container, then that can occur on the same instance the image was built. Ideally saving some time.
+   See example command:
+     - singularity build --force ubuntu22.04-intel-ufs-env-v1.9.2.img docker://noaaepic/ubuntu22.04-intel2024.2.0-1-devel-unified:v1.9.2 
+

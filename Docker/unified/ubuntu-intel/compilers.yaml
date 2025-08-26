@@ -12,7 +12,21 @@ compilers:
     modules: []
     environment:
       prepend_path:
-        LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/lib
-        LD_LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/lib
+        LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/compiler/lib
+        LD_LIBRARY_PATH: /opt/intel/oneapi/compiler/2024.2/compiler/lib
+    extra_rpaths: []
+- compiler:
+    spec: gcc@=11.4.0
+    paths:
+      cc: /usr/bin/gcc
+      cxx: /usr/bin/g++
+      f77: /usr/bin/gfortran-11
+      fc: /usr/bin/gfortran-11
+    flags: {}
+    operating_system: ubuntu22.04
+    target: x86_64
+    modules:
+     - gnu/11.4.0
+    environment: {}
     extra_rpaths: []
 

@@ -1,6 +1,6 @@
 compilers:
 - compiler:
-    spec: intel@=2024.2.4
+    spec: oneapi@=2024.2.0
     paths:
       cc: /opt/intel/oneapi/compiler/2024.2/bin/icx
       cxx: /opt/intel/oneapi/compiler/2024.2/bin/icpx

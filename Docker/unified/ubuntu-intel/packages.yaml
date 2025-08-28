@@ -76,7 +76,7 @@ packages:
       prefix: /usr
   gmake:
     externals:
-    - spec: gmake@3.82
+    - spec: gmake@4.4.1
       prefix: /usr
   groff:
     externals:

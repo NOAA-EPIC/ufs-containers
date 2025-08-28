@@ -99,38 +99,21 @@ RUN git clone -b release/1.9.0 --recursive https://github.com/jcsda/spack-stack.
     mv /opt/spack-stack/ubuntu-intel configs/sites/tier1 && \ 
 #
 # Create the environment
-    . ./setup.sh && spack compiler rm gcc@11.4.0 && \
-    export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler oneapi && \
-    spack compiler add oneapi && spack compiler list && sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
+    . ./setup.sh && \ 
+    #spack compiler rm gcc@11.4.0 && \
+    export SPACK_SYSTEM_CONFIG_PATH="$PWD/envs/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler oneapi && \
+    spack compiler add oneapi && spack compiler add gcc && spack compiler list && \ 
+    #sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
 #    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
-# Update wgrib2, met, and metplus spack package files
-    sed -i '23 i \    version("12.0.1", sha256="ef396a99ca6c2248855848cd194f9ceaf3b051fb5e8c01a0b0b2a00110b1fcfb")' spack/var/spack/repos/builtin/packages/met/package.py && \ 
-    sed -i '43 i \    depends_on("proj", when="@12")' spack/var/spack/repos/builtin/packages/met/package.py && \
-    sed -i '22 i \    version("6.0.0", sha256="e9358aede2fd2abecd81806227de7b165d68fdf2fc9defcbba24df229461b155")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i '38 i \    depends_on("python@3.10.4:", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i '39 i \    depends_on("met@12:+python", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i '41 i \    depends_on("netcdf-c@1.5.4:", when="@6:")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i '42 i \    depends_on("netcdf-c")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i '43 i \    depends_on("py-python-dateutil@2.8:", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i '46 i \    depends_on("py-cartopy@0.20.3:", when="@6: +makeplots", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i '48 i \    depends_on("py-matplotlib@3.5.2", when="@6: +cycloneplotter", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
-    sed -i 's|when="@3.2: +netcdf4"|when="@3.2: +netcdf"|g' spack/var/spack/repos/builtin/packages/wgrib2/package.py && \
-    # switch to new wgrib build option
-    sed -i 's|@3.6.0|@3.6.0 +ipolates +netcdf|g' envs/unified-env/common/packages.yaml && \
-    # update met and metplus verison
-    sed -i 's|@11.1.1|@12.0.1|g' envs/unified-env/common/packages.yaml && \
-    sed -i "s|'@5.1.0'|'@6.0.0'|g" envs/unified-env/common/packages.yaml && \
-    # update unified-env spack.yaml
-    sed -i 's|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1|global-workflow-env   ^esmf@=8.6.1 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
-    sed -i 's|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1|ufs-srw-app-env       ^esmf@=8.8.0 ^crtm@=3.1.1-build1 ^met@=12.0.1 ^metplus@=6.0.0|g' envs/unified-env/spack.yaml && \
-    sed -i '42 i \    - met@12.0.1 %oneapi' envs/unified-env/spack.yaml && \
-    sed -i '43 i \    - metplus@6.0.0 %oneapi ^met@12.0.1' envs/unified-env/spack.yaml && \
 # Concretize 
     . ./setup.sh && spack env activate envs/unified-env && \ 
     unset SPACK_SYSTEM_CONFIG_PATH && \ 
-    spack config add "packages:fontconfig:variants:+pic" && \
-    spack config add "packages:pixman:variants:+pic" && \
-    spack config add "packages:cairo:variants:+pic" && \ 
+    #spack config add "packages:fontconfig:variants:+pic" && \
+    #spack config add "packages:pixman:variants:+pic" && \
+    #spack config add "packages:cairo:variants:+pic" && \ 
+    spack config add "packages:all:providers:mpi:[intel-oneapi-mpi@2021.13]" && \
+    spack config add "packages:all:compiler:[oneapi@2024.2, gcc@11.4.0]" && \
+    spack config add "packages:gmake:buildable:False" && \
     echo "DONE"
 
 ##ADD envs.tar.gz /opt/spack-stack/spack-stack-$branch
@@ -146,8 +129,11 @@ RUN cd /opt && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -
     sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.9.2/spack-ext/repos/spack-stack/packages/ewok-env/package.py && \
     cd /opt/spack-stack/spack-stack-$branch && \
     . ./setup.sh && spack env activate envs/unified-env && \ 
-    spack external find --all && spack concretize |& tee log.concretize && mkdir /usr/bin/info && \
-#   git pull && git submodule update && \
+    #spack external find --all 
+    spack external find --scope system --exclude cmake --exclude bison && \
+    spack concretize |& tee log.concretize && mkdir /usr/bin/info && \
+    util/show_duplicate_packages.py -d log.concretize |& tee log.duplicate_packages && \
+ #   git pull && git submodule update && \
     #spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
     spack install --no-check-signature --no-checksum |& tee install.log && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
@@ -155,16 +141,17 @@ RUN cd /opt && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -
 WORKDIR /opt/spack-stack/spack-stack-$branch
 RUN . ./setup.sh && spack env activate envs/unified-env && \
      source /usr/lmod/lmod/init/bash && \
-## remove extra stuff that got built
-      yes | spack uninstall --force  ecbuild/heodedo  && \
-      #yes | spack uninstall --force  jedi-base-env/h34sh5o && \
-      yes | spack uninstall --force  jedi-base-env/mzspqco && \
-      yes | spack uninstall --force  base-env/ryhpzeo && \
+# remove extra stuff that got built
+     # yes | spack uninstall --force  ecbuild/ltbqgoo  && \
+     # yes | spack uninstall --force  cmake/kmkpegh && \
+     # yes | spack uninstall --force  jedi-base-env/vrobf2o && \
+     # yes | spack uninstall --force  base-env/jsxjsoj && \
+     # yes | spack uninstall --force nlohmann-json-schema-validator/26vnarw && \
       spack module lmod refresh -y && \
       spack stack setup-meta-modules && \
       module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
       module load stack-oneapi stack-intel-oneapi-mpi && module list && \
-      sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/ecbuild/3.7.2.lua && \
+     # sed -i '/cmake/d' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/ecbuild/3.7.2.lua && \
       #sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/wgrib2/3.6.0.lua && \
       echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
       echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \

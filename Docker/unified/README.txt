@@ -66,6 +66,14 @@ Building spack-stack 1.9.2 container instructions
    Add(?): spack compiler add gcc
    Remove: sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml
 
+Second iteration
+  - fixed a typo in the SPACK_SYTEM_CONFIG_PATH
+  - added some spack config commands to include the mpi and compilers while turning off system gmake
+  - added spack external find for system packages but ignores system bison and cmake
+  - show_duplicate_packages.py is helpful to find duplicates and spack diff shows the comparsion between two hashes to find the underlying differences
+  - removed duplicate package removals and other customization that needed to be done
+  - look at other build README file is helpful: https://github.com/JCSDA/spack-stack/blob/release/1.9.0/configs/sites/tier2/aws-ubuntu2404/README.md?plain=1
+
 ## Instructions ##
 
  - Used a PW AWS instance (r6i.4xlarge) which is the same Jenkins uses to build docker images

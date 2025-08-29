@@ -155,6 +155,7 @@ RUN . ./setup.sh && spack env activate envs/unified-env && \
       #sed -i 's/lib64/lib/g' /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/oneapi/2024.2.0/wgrib2/3.6.0.lua && \
       echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
       echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
+      echo "module use /opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/modulefiles/intel-oneapi-mpi/2021.13-argr3sd/gcc/11.4.0" >> /root/.bashenv && \
       echo "module load stack-oneapi" >> /root/.bashenv && \
       echo "module load stack-intel-oneapi-mpi" >> /root/.bashenv && \
       echo "module load jedi-ufs-env sp crtm" >> /root/.bashenv && \

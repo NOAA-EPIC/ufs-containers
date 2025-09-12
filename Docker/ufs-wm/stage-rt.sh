@@ -58,10 +58,12 @@ echo "Updating compiler and mpi in fv3_slurm.IN_singularity"
 sed -i "s|USER_COMPILER|$compiler|g" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
 sed -i "s|USER_MPI|$mpi|g" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
 
-# Create ufs_singularity.intel lua file
+# Create ufs_singularity.intel lua file and copy it over to the tests-dev dir
 echo "Creating ufs_singularity.intel.lua"
 echo "load(\"$compiler\")" > $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua
 echo "load(\"$mpi\")" >> $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua
+cp $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua $PWD/ufs-weather-model/tests-dev/modules.fv3_atm_dyn32_intel.lua
+cp $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua $PWD/ufs-weather-model/tests-dev/modules.fv3_hafsw_intel.lua
 
 # Trick ufs_test.sh file
 echo "Tricking ufs_test.sh file"
@@ -82,6 +84,11 @@ sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/container-scrip
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
+
+# Remove compile task
+sed -i '/dependency/d' $PWD/ufs-weather-model/tests-dev/rt_utils.sh
+sed -i s'|rocoto_create_compile_task |#rocoto_create_compile_task |g' $PWD/ufs-weather-model/tests-dev/create_xml.py
+sed -i 's| (MACHINE_ID| #(MACHINE_ID|g' $PWD/ufs-weather-model/tests-dev/create_xml.py
 
 # Make platform specific changes
 if [ "$platform" == "jet" ] ; then

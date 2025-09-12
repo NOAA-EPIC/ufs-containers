@@ -1,0 +1,94 @@
+FROM noaaepic/ubuntu22.04-intel2023.2.1-unified:v1.6.0-fms202401 as builder
+
+# Get older UFS WM hash
+WORKDIR /opt
+RUN git clone https://github.com/ufs-community/ufs-weather-model.git && \
+    cd ufs-weather-model && \
+    git checkout aebf9781358e46c93ebd043e71f01446ce2fe64c && \
+    git submodule update --init --recursive && \
+    # load packages
+    source /usr/lmod/lmod/init/bash && \
+    module purge && \
+    source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
+    module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
+    module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \
+    # build atm executable
+    mkdir -p build/cape && cd build/cape && \
+    cmake .. -DAPP=ATM -DCCPP_SUITES=FV3_GFS_v16,FV3_GFS_v16_flake,FV3_GFS_v17_p8,FV3_GFS_v17_p8_rrtmgp,FV3_GFS_v15_thompson_mynn_lam3km,FV3_WoFS_v0,FV3_GFS_v17_p8_mynn,FV3_GFS_v17_p8_ugwpv1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
+    make -j 8 VERBOSE=1 && \
+    mv ufs_model ../../tests-dev/fv3_atm_dyn32_intel.exe && \
+    # build hafs exectuable
+    cd ../ && mkdir hafs && cd hafs && \
+    cmake .. -DAPP=HAFSW -DMOVING_NEST=ON -DCCPP_SUITES=FV3_HAFS_v1_thompson_nonsst,FV3_HAFS_v1_gfdlmp_tedmf,FV3_HAFS_v1_gfdlmp_tedmf_nonsst,FV3_HAFS_v1_thompson_tedmf_gfdlsf,FV3_global_nest_v1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
+    make -j 8 VERBOSE=1 && \
+    mv ufs_model ../../tests-dev/fv3_hafsw_intel.exe
+RUN mkdir -p /work && \
+    mkdir -p /work2 && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /scratch1 && \
+    mkdir -p /scratch2 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir -p /export && \
+    mkdir -p /Users && \
+    mkdir -p /ncrc && \
+    mkdir -p /opt/ufs-weather-model/container-scripts  && \
+    mkdir -p /opt/ufs-weather-model/bin
+# Copy files over
+COPY default_vars.sh /opt/ufs-weather-model/tests
+WORKDIR /opt/ufs-weather-model/tests-dev
+COPY fv3_slurm.IN_singularity test_cases/exp_conf
+COPY compile_slurm.IN_singularity test_cases/exp_conf
+COPY machine_singularity.config machine_config
+COPY baseline_setup.yaml .
+RUN chmod a+rx test_cases/exp_conf/fv3_slurm.IN_singularity test_cases/exp_conf/compile_slurm.IN_singularity && \
+    chmod a+rx machine_config/machine_singularity.config baseline_setup.yaml /opt/ufs-weather-model/tests/default_vars.sh
+WORKDIR /opt/ufs-weather-model/container-scripts
+COPY run_container_executable.sh .
+COPY build_container_executable.sh .
+COPY stage-rt.sh .
+RUN chmod a+rx stage-rt.sh run_container_executable.sh build_container_executable.sh
+
+# Set up runtime container
+#FROM intel/oneapi-runtime:2023.2-devel-ubuntu22.04 as final
+FROM intel/oneapi-runtime:2023.1.0-devel-ubuntu22.04 as final
+
+COPY --from=builder /usr /usr
+COPY --from=builder /opt/spack-stack /opt/spack-stack
+COPY --from=builder /opt/ufs-weather-model /opt/ufs-weather-model
+COPY --from=builder /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/libcilkrts.so.5 /opt/intel/oneapi/lib 
+COPY --from=builder /root /root
+
+# Set up environment variables for runtime
+WORKDIR /opt/ufs-weather-model/container-scripts
+RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
+    module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
+    module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \
+    export PATH=/usr/local:/opt/intel/oneapi/lib/intel64/bin:SINGULARITY_WORKING_DIR/ufs-weather-model/tests-dev:$PATH && \
+    export LIBRARY_PATH=/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LIBRARY_PATH && \
+    export LD_LIBRARY_PATH=/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LD_LIBRARY_PATH && \
+    echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.env && \
+    echo PATH=$PATH >> ufswm.env && \
+    echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufswm.env && \
+    echo LIBRARY_PATH=$LIBRARY_PATH >> ufswm.env && \
+    echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufswm.env && \
+    echo CPATH=$CPATH >> ufswm.env && \
+    echo MODULEPATH=$MODULEPATH >> ufswm.env && \
+    echo I_MPI_ROOT=$I_MPI_ROOT >> ufswm.env && \
+    echo ESMFMKFILE=$ESMFMKFILE >> ufswm.env && \
+    echo PYTHONPATH=$PYTHONPATH >> ufswm.env && \
+    chmod -R a+rx /opt/ufs-weather-model/container-scripts
+
+# Optionally set entrypoint or CMD if needed
+# CMD ["/bin/bash"]
+ENV SHELL=/bin/bash

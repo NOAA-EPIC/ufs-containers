@@ -69,12 +69,16 @@ COPY --from=builder /opt/ufs-weather-model /opt/ufs-weather-model
 COPY --from=builder /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/libcilkrts.so.5 /opt/intel/oneapi/lib 
 COPY --from=builder /root /root
 
+# Reconfigure vim
+WORKDIR /etc/alternatives
+RUN ln -s /usr/bin/vim.basic vi && ln -s /usr/bin/vim.basic vim && ln -s /usr/bin/vim.basic view && ln -s /usr/bin/vim.basic vimdiff
+
 # Set up environment variables for runtime
 WORKDIR /opt/ufs-weather-model/container-scripts
 RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
     module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
     module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \
-    export PATH=/usr/local:/opt/intel/oneapi/lib/intel64/bin:SINGULARITY_WORKING_DIR/ufs-weather-model/tests-dev:$PATH && \
+    export PATH=/usr/local:/opt/intel/oneapi/lib/intel64/bin:/opt/ufs-weather-model/tests-dev:$PATH && \
     export LIBRARY_PATH=/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LIBRARY_PATH && \
     export LD_LIBRARY_PATH=/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LD_LIBRARY_PATH && \
     echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.env && \

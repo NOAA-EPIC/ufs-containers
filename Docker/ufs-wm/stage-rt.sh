@@ -86,7 +86,7 @@ sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/machi
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
 
 # Remove compile task
-sed -i '/dependency/d' $PWD/ufs-weather-model/tests-dev/rt_utils.sh
+sed -i '/dependency/d' $PWD/ufs-weather-model/tests/rt_utils.sh
 sed -i s'|rocoto_create_compile_task |#rocoto_create_compile_task |g' $PWD/ufs-weather-model/tests-dev/create_xml.py
 sed -i 's| (MACHINE_ID| #(MACHINE_ID|g' $PWD/ufs-weather-model/tests-dev/create_xml.py
 

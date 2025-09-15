@@ -80,7 +80,7 @@ sed -i "s|LOCDIR|$LOCDIR|g" $PWD/ufs-weather-model/container-scripts/*_executabl
 sed -i "s|DATADIR|$DATADIR|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
 #sed -i "s|UFSPATH|$PWD/tests|g" *_executable.sh
 sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
-sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/container-scripts/ufswm.env
+#sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/container-scripts/ufswm.env
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
 sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml

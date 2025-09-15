@@ -13,15 +13,15 @@ RUN git clone https://github.com/ufs-community/ufs-weather-model.git && \
     module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
     module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \
     # build atm executable
-    mkdir -p build/cape && cd build/cape && \
+    mkdir -p build/atm && cd build/atm && \
     cmake .. -DAPP=ATM -DCCPP_SUITES=FV3_GFS_v16,FV3_GFS_v16_flake,FV3_GFS_v17_p8,FV3_GFS_v17_p8_rrtmgp,FV3_GFS_v15_thompson_mynn_lam3km,FV3_WoFS_v0,FV3_GFS_v17_p8_mynn,FV3_GFS_v17_p8_ugwpv1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
     make -j 8 VERBOSE=1 && \
-    mv ufs_model ../../tests-dev/fv3_atm_dyn32_intel.exe && \
+    cp ufs_model ../../tests-dev/fv3_atm_dyn32_intel.exe && \
     # build hafs exectuable
     cd ../ && mkdir hafs && cd hafs && \
     cmake .. -DAPP=HAFSW -DMOVING_NEST=ON -DCCPP_SUITES=FV3_HAFS_v1_thompson_nonsst,FV3_HAFS_v1_gfdlmp_tedmf,FV3_HAFS_v1_gfdlmp_tedmf_nonsst,FV3_HAFS_v1_thompson_tedmf_gfdlsf,FV3_global_nest_v1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
     make -j 8 VERBOSE=1 && \
-    mv ufs_model ../../tests-dev/fv3_hafsw_intel.exe
+    cp ufs_model ../../tests-dev/fv3_hafsw_intel.exe
 RUN mkdir -p /work && \
     mkdir -p /work2 && \
     mkdir -p /contrib && \

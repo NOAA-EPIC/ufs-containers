@@ -1,0 +1,82 @@
+FROM rockylinux:9
+
+# Build Rocky 9 env  
+RUN dnf -y update && \
+    dnf -y install epel-release && \
+    dnf -y groupinstall "Development Tools" 
+RUN dnf -y install https://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm
+RUN dnf install -y  ohpc-base && \
+    dnf install -y Lmod && \
+    dnf install -y vim && \
+    dnf install -y gcc-toolset-13
+RUN scl enable gcc-toolset-13 bash
+
+
+RUN dnf -y install --allowerasing wget curl libcurl-devel git which cmake make m4 autoconf automake libtool pkgconfig bzip2 unzip xterm   openssl-devel ncurses-devel zlib-devel hwloc hwloc-devel numactl numactl-devel rdma-core rdma-core-devel
+RUN dnf -y install python3 python3-pip
+RUN dnf clean all && rm -rf /var/cache/dnf
+
+# Set up some dirs
+RUN mkdir /opt/modulefiles/gnu && \
+    mkdir /opt/modulefiles/openmpi && \
+    mkdir /opt/src && \
+    mkdir /opt/spack-stack
+ 
+# Copy over gnu lua file
+COPY 13.3.1.lua /opt/modulefiles/gnu
+# load gnu?
+
+# Install slurm and pmi2 plugin for host machine's with slurm installed
+WORKDIR /opt/src
+RUN dnf install -y libevent libevent-devel && \
+    wget https://github.com/SchedMD/slurm/archive/refs/tags/slurm-24-05-4-1.tar.gz && \
+    tar -xzf slurm-24-05-4-1.tar.gz && \
+    cd slurm-slurm-24-05-4-1 && \
+    ./configure --prefix=/opt/slurm --enable-shared --disable-static --without-munge CFLAGS=”-fPIC” && \
+    make -j4 && \
+    make install && \
+    # Install pmi2 and pmi libraries
+    cd /opt/src/slurm-slurm-24-05-4-1/contribs/pmi2 && \
+    make && make install && \
+    cd /opt/src/slurm-slurm-24-05-4-1/contribs/pmi && \
+    make && make install
+
+# Install openmpi 4.1.6
+ENV OMPI_VERSION=4.1.6
+ENV OMPI_MAJOR="${OMPI_VERSION%.*}"
+#4
+WORKDIR /opt/src
+RUN wget https://download.open-mpi.org/release/open-mpi/v${OMPI_MAJOR}/openmpi-${OMPI_VERSION}.tar.gz && \
+    tar -xzf openmpi-${OMPI_VERSION}.tar.gz && cd openmpi-${OMPI_VERSION} && \
+    mkdir build && cd build && \
+    mkdir -p /opt/openmpi/4.1.6 && \
+    ../configure --prefix=/opt/openmpi/4.1.6 --enable-mpi-fortran=all  --with-slurm=/opt/slurm --with-pmi=/opt/slurm --with-pmi-libdir=/opt/slurm/lib  --with-pmix   --with-libevent=internal --with-hwloc=internal --enable-mpi-thread-multiple  --enable-shared --enable-static --with-gnu-ld --enable-mpirun-prefix-by-default CC=/opt/rh/gcc-toolset-13/root/usr/bin/gcc CFLAGS=" -fPIC" CXX=/opt/rh/gcc-toolset-13/root/usr/bin/g++  CXXFLAGS="  -fPIC" FC=/opt/rh/gcc-toolset-13/root/usr/bin/gfortran  FCFLAGS="-fallow-argument-mismatch -fallow-invalid-boz -fPIC" | tee log.configure.001
+    make -j4 all  && make install
+
+# Copy over openmpi lua file
+COPY 4.1.6.lua /opt/modulefiles/openmpi
+
+# Clean up space
+dnf clean all && rm -rf /var/cache/dnf
+
+
+# Install spack-stack 1.9.2
+WORKDIR /opt/spack-stack
+RUN git clone --recurse-submodules -b release/1.9.0 https://github.com/jcsda/spack-stack.git spack-stack-1.9.2 && \
+    cd spack-stack-1.9.2 && \
+    source setup.sh && \
+    spack stack create env --site linux.default --template ufs-weather-model --compiler=gcc --name ufs-wm-env && \
+    spack env activate -p envs/ufs-wm-env/ && \
+    cd ./envs/ufs-wm-env && \
+    export SPACK_SYSTEM_CONFIG_PATH="$PWD/site" && \
+    spack external find --scope system  --exclude bison --exclude openssl --exclude python --exclude gettext   --exclude m4 --exclude cmake && \
+    spack external find --scope system wget && \
+    spack external find --scope system curl && \
+    spack external find --scope system openssl && \
+    spack external find --scope system libiconv && \
+    spack external find --scope system qt && \
+    spack external find --scope system m4 && \
+    spack config --scope system add packages:pkg-config:buildable:false && \
+    spack compiler find --scope system && \
+    unset SPACK_SYSTEM_CONFIG_PATH && \
+

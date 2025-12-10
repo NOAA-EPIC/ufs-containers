@@ -1,5 +1,4 @@
-#FROM intel/oneapi-hpckit:2024.0.1-devel-ubuntu22.04
-FROM noaaepic/intel-hpckit:2024.2.0-1-devel-ubuntu22.04 as builder
+FROM intel/hpckit:2024.2.0-1-devel-ubuntu22.04 as builder
 ARG branch_name
 
 ENV branch=$branch_name

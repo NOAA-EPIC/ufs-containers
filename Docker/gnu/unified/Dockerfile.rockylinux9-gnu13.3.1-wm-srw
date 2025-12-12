@@ -1,0 +1,125 @@
+FROM rockylinux:9
+
+# Build Rocky 9 env  
+RUN dnf -y update && \
+    dnf -y install epel-release && \
+    dnf -y groupinstall "Development Tools" 
+RUN dnf -y install https://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm
+RUN dnf install -y  ohpc-base && \
+    dnf install -y Lmod && \
+    dnf install -y vim && \
+    dnf install -y gcc-toolset-13
+RUN scl enable gcc-toolset-13 bash
+
+RUN dnf -y install --allowerasing wget curl libcurl-devel git which cmake make m4 autoconf automake libtool pkgconfig bzip2 unzip xterm   openssl-devel ncurses-devel zlib-devel hwloc hwloc-devel numactl numactl-devel rdma-core rdma-core-devel
+RUN dnf list installed | grep zlib
+RUN dnf -y install python3 python3-pip
+RUN dnf clean all && rm -rf /var/cache/dnf
+
+# Set up some dirs
+RUN mkdir /opt/src && \
+    mkdir /opt/spack-stack
+ 
+# Copy over gnu lua file
+ADD modulefiles.tgz /opt/
+ADD rocky-gnu.tgz /opt/
+
+# Install slurm and pmi2 plugin for host machine's with slurm installed
+WORKDIR /opt/src
+RUN scl enable gcc-toolset-13 bash && dnf install -y libevent libevent-devel && \
+    wget https://github.com/SchedMD/slurm/archive/refs/tags/slurm-24-05-4-1.tar.gz && \
+    tar -xzf slurm-24-05-4-1.tar.gz && \
+    cd slurm-slurm-24-05-4-1 && \
+    ./configure --prefix=/opt/slurm --enable-shared --disable-static --without-munge CFLAGS="-fPIC" && \
+    make -j4 && \
+    make install && \
+    # Install pmi2 and pmi libraries
+    cd /opt/src/slurm-slurm-24-05-4-1/contribs/pmi2 && \
+    make && make install && \
+    cd /opt/src/slurm-slurm-24-05-4-1/contribs/pmi && \
+    make && make install
+
+# Install openmpi 4.1.6
+ENV OMPI_VERSION=4.1.6
+ENV OMPI_MAJOR="${OMPI_VERSION%.*}"
+WORKDIR /opt/src
+RUN wget https://download.open-mpi.org/release/open-mpi/v${OMPI_MAJOR}/openmpi-${OMPI_VERSION}.tar.gz && \
+    tar -xzf openmpi-${OMPI_VERSION}.tar.gz && cd openmpi-${OMPI_VERSION} && \
+    mkdir build && cd build && \
+    mkdir -p /opt/openmpi/4.1.6 && \
+    ../configure --prefix=/opt/openmpi/4.1.6 --enable-mpi-fortran=all  --with-slurm=/opt/slurm --with-pmi=/opt/slurm --with-pmi-libdir=/opt/slurm/lib  --with-pmix   --with-libevent=internal --with-hwloc=internal --enable-mpi-thread-multiple  --enable-shared --enable-static --with-gnu-ld --enable-mpirun-prefix-by-default CC=/opt/rh/gcc-toolset-13/root/usr/bin/gcc CFLAGS=" -fPIC" CXX=/opt/rh/gcc-toolset-13/root/usr/bin/g++  CXXFLAGS="  -fPIC" FC=/opt/rh/gcc-toolset-13/root/usr/bin/gfortran  FCFLAGS="-fallow-argument-mismatch -fallow-invalid-boz -fPIC" | tee log.configure.001 && \
+    make -j4 all  && make install
+
+# Clean up space
+RUN dnf clean all && rm -rf /var/cache/dnf
+
+# Install spack-stack 1.9.2
+WORKDIR /opt/spack-stack
+RUN git clone --recurse-submodules -b release/1.9.0 https://github.com/jcsda/spack-stack.git spack-stack-1.9.2 && \
+    cd spack-stack-1.9.2 && \
+    mv /opt/rocky-gnu configs/sites/tier1 && \
+    sed -i '/tcl/d' configs/templates/ufs-weather-model/spack.yaml && \
+    # Create the environment
+    . ./setup.sh && \
+    spack stack create env --site rocky-gnu --template ufs-weather-model --compiler=gcc --name ufs-wm-env && \
+    spack env activate -p envs/ufs-wm-env/ && \
+    cd ./envs/ufs-wm-env && \
+    export SPACK_SYSTEM_CONFIG_PATH="$PWD/site" && \
+    # Update the environment
+    spack external find --scope system  --exclude bison --exclude openssl --exclude python --exclude gettext   --exclude m4 --exclude cmake && \
+    spack external find --scope system wget && \
+    spack external find --scope system curl && \
+    spack external find --scope system openssl && \
+    spack external find --scope system libiconv && \
+    spack external find --scope system qt && \
+    spack external find --scope system m4 && \
+    spack config --scope system add packages:pkg-config:buildable:false && \
+    spack compiler find --scope system && \
+    unset SPACK_SYSTEM_CONFIG_PATH && \
+    spack add ufs-srw-app-env ^esmf@=8.8.0 && \
+    spack remove ufs-weather-model-env~debug && \
+    spack add ufs-weather-model-env ^esmf@=8.8.0 && \
+    spack add crtm@2.4.0.1 && \
+    spack add mapl@2.53.4 ^esmf@8.8.0 && \
+    spack add esmf@=8.8.0 snapshot=none && \
+    spack add madis@4.5 && \
+    spack add sp@2.5.0 && \
+    spack add scotch@7.0.4 && \
+    # Concretize
+    spack concretize 2>&1 | tee log.concretize.001 && \
+    # Build the stack
+    spack install --verbose --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install.ufs-wm-env.001 && \
+    spack module lmod refresh -y && \
+    spack stack setup-meta-modules &&\
+    # Clean up 
+    spack clean --stage && \
+    spack clean --downloads && \
+    spack env deactivate 
+
+# Setting the spack-stack envs
+WORKDIR /opt/spack-stack/spack-stack-1.9.2
+RUN echo "source /usr/share/lmod/lmod/init/bash" > .bashenv && \
+    echo "module use /opt/modulefiles" >> .bashenv && \
+    echo "module use /opt/spack-stack/spack-stack-1.9.2/envs/ufs-wm-env/install/modulefiles/Core/" >> .bashenv && \
+    echo "module load stack-gcc" >> .bashenv && \ 
+    echo "module load stack-openmpi" >> .bashenv && \
+    echo "module load jasper libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio crtm g2 g2tmpl" >> .bashenv && \
+    echo "module load ip sp w3emc gftl-shared mapl nemsio sfcio sigio w3nco wrf-io wgrib2 scotch" >> .bashenv && \
+    # Create srw.env file
+    source /opt/spack-stack/spack-stack-1.9.2/.bashenv && \
+    #export PATH=/opt/openmpi/4.1.6/bin:/opt/rh/gcc-toolset-13/root/usr/bin:$PATH && \
+    #export LD_LIBRARY_PATH=/opt/slurm/lib:/opt/openmpi/4.1.6/lib:/opt/rh/gcc-toolset-13/root/usr/lib64:/opt/rh/gcc-toolset-13/root/usr/lib:$LD_LIBRARY_PATH && \
+    #export CPATH=/opt/slurm/include:/opt/openmpi/4.1.6/include:/opt/rh/gcc-toolset-13/root/usr/include:$CPATH && \
+    echo PATH=/path/to/ufs-srweather-app/bin:$PATH >> srw.env && \
+    echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> srw.env && \
+    echo CPATH=$CPATH >> srw.env && \
+    # Create ufs-wm.env file
+    module unload nemsio sfcio sigio w3nco wrf-io wgrib2 && \
+    echo PATH=/usr/bin:SINGULARITY_WORKING_DIR/ufs-weather-model/tests:$PATH > ufs-wm.env && \
+    echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> ufs-wm.env && \
+    echo CPATH=$CPATH >> ufs-wm.env && \
+    echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> ufs-wm.env && \ 
+    echo ESMF_ROOT=$esmf_ROOT >> ufs-wm.env && \
+    chmod -R a+rx srw.env ufs-wm.env
+
+ENV SHELL=/bin/bash

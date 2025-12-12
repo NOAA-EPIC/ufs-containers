@@ -1,0 +1,42 @@
+FROM noaaepic/rocky9-gcc13.3.1-wm:v1.9.2-srw-test   
+
+# Clone ufs-weather-model repo
+WORKDIR /opt
+RUN git clone --recursive https://github.com/ufs-community/ufs-weather-model.git && cd ufs-weather-model 
+# Make dirs
+RUN mkdir -p /work && \
+    mkdir -p /work2 && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /scratch1 && \
+    mkdir -p /scratch2 && \
+    mkdir -p /scratch3 && \
+    mkdir -p /scratch4 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir -p /export && \
+    mkdir -p /Users && \
+    mkdir -p /ncrc && \
+    mkdir -p /gpfs && \
+    mkdir -p /opt/ufs-weather-model/bin && \
+    mkdir -p /opt/ufs-weather-model/container-scripts
+# Copy over files
+COPY stage-rt.sh /opt/ufs-weather-model/container-scripts
+COPY run_container_executable.sh /opt/ufs-weather-model/container-scripts
+COPY build_container_executable.sh /opt/ufs-weather-model/container-scripts
+COPY default_vars.sh /opt/ufs-weather-model/tests
+COPY rt.sh /opt/ufs-weather-model/tests
+COPY fv3_slurm.IN_singularity /opt/ufs-weather-model/tests/fv3_conf/
+COPY compile_slurm.IN_singularity /opt/ufs-weather-model/tests/fv3_conf/
+RUN cp /opt/spack-stack/spack-stack-1.9.2/ufs-wm.env /opt/ufs-weather-model/container-scripts && \
+    chmod a+rx /opt/ufs-weather-model/container-scripts/* /opt/ufs-weather-model/tests/default_vars.sh && \
+    chmod a+rx /opt/ufs-weather-model/tests/rt.sh /opt/ufs-weather-model/tests/fv3_conf/*.IN_singularity

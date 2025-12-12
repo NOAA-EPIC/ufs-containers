@@ -1,16 +1,101 @@
 packages:
   all:
-    compiler:: [gcc@13.3.1]
-    providers:
-      mpi:: [openmpi@4.1.6]
-  mpi:
-    buildable: false
-  openmpi:
-    buildable: false
+      providers:
+        blas: [openblas]
+        fftw-api: [fftw]
+        lapack: [openblas]
+        gl: [opengl]
+        glu: [openglu]
+        jpeg: [libjpeg-turbo]
+        pkgconfig: [pkg-config]
+        yacc: [bison]
+  m4:
     externals:
-    - spec: openmpi@4.1.6~cuda~cxx~cxx_exceptions~java~lustre~memchecker~static~wrapper-rpath
-      prefix: /opt/openmpi/4.1.6
-      modules:
-      - gnu/13.3.1
-      - openmpi/4.1.6
-
+    - spec: m4@1.4.19
+      prefix: /usr
+  openssl:
+    externals:
+    - spec: openssl@3.2.2
+      prefix: /usr
+  curl:
+    externals:
+    - spec: curl@7.76.1+gssapi+nghttp2
+      prefix: /usr
+  wget:
+    externals:
+    - spec: wget@1.21.1
+      prefix: /usr
+  perl:
+    externals:
+    - spec: perl@5.32.1~cpanm~opcode~open+shared+threads
+      prefix: /usr
+  binutils:
+    externals:
+    - spec: binutils@2.35.2~gold+headers
+      prefix: /usr
+  coreutils:
+    externals:
+    - spec: coreutils@8.32
+      prefix: /usr
+  groff:
+    externals:
+    - spec: groff@1.22.4
+      prefix: /usr
+  pkgconf:
+    externals:
+    - spec: pkgconf@1.7.3
+      prefix: /usr
+  tar:
+    externals:
+    - spec: tar@1.34
+      prefix: /usr
+  openssh:
+    externals:
+    - spec: openssh@8.7p1
+      prefix: /usr
+  findutils:
+    externals:
+    - spec: findutils@4.8.0
+      prefix: /usr
+  gmake:
+    externals:
+    - spec: gmake@4.3
+      prefix: /usr
+  zlib:
+    externals:
+    - spec: zlib@1.2.11
+      prefix: /usr
+  libtool:
+    externals:
+    - spec: libtool@2.4.6
+      prefix: /usr
+  gawk:
+    externals:
+    - spec: gawk@5.1.0
+      prefix: /usr
+  diffutils:
+    externals:
+    - spec: diffutils@3.7
+      prefix: /usr
+  flex:
+    externals:
+    - spec: flex@2.6.4+lex
+      prefix: /usr
+  automake:
+    externals:
+    - spec: automake@1.16.2
+      prefix: /usr
+  autoconf:
+    externals:
+    - spec: autoconf@2.69
+      prefix: /usr
+  git:
+    externals:
+    - spec: git@2.47.3~tcltk
+      prefix: /usr
+  sed:
+    externals:
+    - spec: sed@4.8
+      prefix: /usr
+  pkg-config:
+    buildable: false

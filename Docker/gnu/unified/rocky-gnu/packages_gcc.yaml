@@ -1,0 +1,15 @@
+packages:
+  all:
+    compiler:: [gcc@13.3.1]
+    providers:
+      mpi:: [openmpi@4.1.6]
+  mpi:
+    buildable: false
+  openmpi:
+    buildable: false
+    externals:
+    - spec: openmpi@4.1.6~cuda~cxx~cxx_exceptions~java~lustre~memchecker~static~wrapper-rpath
+      prefix: /opt/openmpi/4.1.6
+      modules:
+      - gnu/13.3.1
+      - openmpi/4.1.6

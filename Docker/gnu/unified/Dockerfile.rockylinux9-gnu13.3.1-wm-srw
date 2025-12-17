@@ -23,6 +23,7 @@ RUN mkdir /opt/src && \
 # Copy over gnu lua file
 ADD modulefiles.tgz /opt/
 ADD rocky-gnu.tgz /opt/
+ADD profile.d.tgz /opt
 
 # Install slurm and pmi2 plugin for host machine's with slurm installed
 WORKDIR /opt/src
@@ -122,4 +123,18 @@ RUN echo "source /usr/share/lmod/lmod/init/bash" > .bashenv && \
     echo ESMF_ROOT=$esmf_ROOT >> ufs-wm.env && \
     chmod -R a+rx srw.env ufs-wm.env
 
+# Update profile.d files
+WORKDIR /etc/profile.d
+RUN mv 00-modulepath.sh 00-modulepath.sh.orig && \ 
+    mv lmod.sh lmod.sh.orig && \
+    cp /opt/profile.d/* . && \
+    rm -rf /opt/profile.d && \
+    # Load env and update some files
+    source /opt/spack-stack/spack-stack-1.9.2/.bashenv && \
+    sed -i "s|IMPORT_PATH|$PATH|g" 20-spack-stack.sh && \
+    sed -i "s|IMPORT_LD_LIBRARY_PATH|$LD_LIBRARY_PATH|g" 20-spack-stack.sh && \
+    sed -i "s|IMPORT_LIBRARY_PATH|$LIBRARY_PATH|g" 20-spack-stack.sh && \
+    sed -i "s|IMPORT_CPATH|$CPATH|g" 20-spack-stack.sh && \
+    sed -i "s|. /etc/profile.d|#. /etc/profile.d|g" /etc/alternatives/modules.sh && \
+    sed -i "3 i . /etc/profile.d/01-modulepath.sh" /etc/alternatives/modules.sh
 ENV SHELL=/bin/bash

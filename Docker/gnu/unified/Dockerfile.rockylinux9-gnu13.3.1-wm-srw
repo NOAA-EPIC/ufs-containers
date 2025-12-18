@@ -136,5 +136,9 @@ RUN mv 00-modulepath.sh 00-modulepath.sh.orig && \
     sed -i "s|IMPORT_LIBRARY_PATH|$LIBRARY_PATH|g" 20-spack-stack.sh && \
     sed -i "s|IMPORT_CPATH|$CPATH|g" 20-spack-stack.sh && \
     sed -i "s|. /etc/profile.d|#. /etc/profile.d|g" /etc/alternatives/modules.sh && \
-    sed -i "3 i . /etc/profile.d/01-modulepath.sh" /etc/alternatives/modules.sh
+    sed -i "3 i . /etc/profile.d/01-modulepath.sh" /etc/alternatives/modules.sh && \
+    sed -i "s|. /etc/profile.d|#. /etc/profile.d|g" /usr/share/lmod/8.7.65/init/profile && \
+    sed -i "3 i . /etc/profile.d/01-modulepath.sh" /usr/share/lmod/8.7.65/init/profile
+
+WORKDIR /opt/spack-stack/spack-stack-1.9.2
 ENV SHELL=/bin/bash

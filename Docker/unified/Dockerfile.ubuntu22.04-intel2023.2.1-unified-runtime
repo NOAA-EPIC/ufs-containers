@@ -1,0 +1,224 @@
+FROM intel/oneapi-hpckit:2023.2.1-devel-ubuntu22.04 as builder
+ARG branch_name
+
+ENV branch=$branch_name
+#RUN mkdir -p /opt/build
+# Update Intel gpg key
+RUN gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys BAC6F0C353D04109 && \
+    gpg --export BAC6F0C353D04109 | tee -a /usr/share/keyrings/intel-oneapi-archive-keyring.gpg >/dev/null && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends     ca-certificates curl && \
+    rm -rf /var/lib/apt/lists/*
+# Install cmake
+RUN mkdir -p /opt/build && cd /opt/build && \
+    curl -LO https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-x86_64.sh && \
+    /bin/bash cmake-3.23.1-linux-x86_64.sh --prefix=/usr/local --skip-license
+#
+# Update apt
+RUN apt-get update -yq --allow-unauthenticated
+#
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+# Install some basics that will be needed by all apps
+RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+apt install -y --no-install-recommends  vim && \ 
+apt install -y --no-install-recommends  wget && \
+apt install -y --no-install-recommends  libexpat1-dev&& \
+apt install -y --no-install-recommends  bc && \
+apt install -y --no-install-recommends  time && \
+apt install -y --no-install-recommends  libtiff-dev && \
+apt install -y --no-install-recommends  bison && \
+apt install -y --no-install-recommends  flex && \
+apt install -y --no-install-recommends  libbz2-dev && \
+apt install -y --no-install-recommends  apt-utils && \
+apt install -y --no-install-recommends  tcl-dev && \
+apt install -y --no-install-recommends  rsync && \
+apt install -y --no-install-recommends  texinfo && \
+apt install -y --no-install-recommends  libbz2-dev && \
+apt install -y --no-install-recommends  awscli && \
+#
+#RUN apt install -y --no-install-recommends  environment-modules && \
+apt install -y --no-install-recommends  build-essential && \
+apt install -y --no-install-recommends  m4 && \
+apt install -y --no-install-recommends  git && \
+apt install -y --no-install-recommends  git-lfs && \
+apt install -y --no-install-recommends  bzip2 && \
+apt install -y --no-install-recommends  unzip && \
+apt install -y --no-install-recommends  automake && \
+apt install -y --no-install-recommends  autoconf && \
+apt install -y --no-install-recommends  xterm && \
+apt install -y --no-install-recommends  libcurl4-openssl-dev && \
+apt install -y --no-install-recommends  libssl-dev && \
+apt install -y --no-install-recommends  meson && \
+apt install -y --no-install-recommends  mysql-server && \
+apt install -y --no-install-recommends  libmysqlclient-dev && \
+apt install -y --no-install-recommends  file && \
+apt install -y --no-install-recommends  python3-dev python3-pip && \
+rm -rf /var/lib/apt/lists/* 
+#
+ENV PATH="${PATH}:/usr/local:/opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64"
+#
+RUN echo "dash dash/sh boolean false" | debconf-set-selections && \
+# the dash shell breaks everything. Replace it with bash as default /bin/sh
+    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure dash && \
+# some packages can't find libpython in x86_64, so link them in /usr/lib
+    ln -s /usr/lib/x86_64-linux-gnu/libpython3.10.a /usr/lib && ln -s /usr/lib/x86_64-linux-gnu/libpython3.10.so /usr/lib && \
+    cd opt && \
+# Install lua and lmod from source
+    wget https://sourceforge.net/projects/lmod/files/lua-5.1.4.9.tar.bz2 && tar xvfj lua-5.1.4.9.tar.bz2 && \
+    cd lua-5.1.4.9 && ./configure --prefix=/usr && make -j 4 && make install && git clone --recursive https://github.com/TACC/Lmod.git && \
+    cd Lmod && ./configure --prefix=/usr && make -j 4 && make install && \  
+# spack scipy install is broken, so install on the system
+    pip install scipy && pip install cython && \
+# install boost from source
+    cd /opt && wget https://archives.boost.io/release/1.78.0/source/boost_1_78_0.tar.bz2 && \
+    tar xvjf boost_1_78_0.tar.bz2 && git clone https://github.com/boostorg/python.git && cd python && \
+    git fetch origin pull/432/head:pr-432 && git checkout pr-432 && cp src/numpy/dtype.cpp /opt/boost_1_78_0/libs/python/src/numpy/dtype.cpp && \
+    cd ../ && rm -rf python && \
+    cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr/ --with-python=/usr/bin/python3 && ./b2 install && \
+# without an actual python executable, env python fails, so link python3 to python
+    ln -s /usr/bin/python3 /usr/bin/python && \
+# remove build artifacts to reduce size
+    cd .. && rm -rf boost* && \
+    rm -rf /opt/build /opt/spack-stack/spack-stack-$branch/cache/* && \
+    rm -rf /opt/lua* Lmod
+#
+# Prepare spack-stack just like it is built on RDHPCS platforms under the spack-stack umbrella
+RUN mkdir -p /opt/spack-stack
+WORKDIR /opt/spack-stack
+#
+#Copy in the ubuntu-intel configuration files
+ADD ubuntu-intel-2023.2.1.tar.gz /opt/spack-stack 
+## Either copy in the spack-mirror or pull it from s3
+#ADD spackmirror160.tgz /opt
+##RUN wget https://epic-sandbox-srw.s3.amazonaws.com/spack-mirror.tar.gz && tar xvfz spack-mirror.tar.gz && rm spack-mirror.tar.gz
+#
+# This clone version will change for each successive release
+RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
+  cd /opt/spack-stack/spack-stack-$branch && \
+# set the spack directories to be safe for use by git even though they are in /opt
+    git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch && \
+    git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch/spack && \
+#
+# Get any recent updates to the release
+    git remote update && git checkout release/$branch && git pull origin release/$branch && \
+    git submodule sync && git submodule update  && \
+    mv /opt/spack-stack/ubuntu-intel configs/sites && \
+    sed -i 's|- ewok|#- ewok|g' configs/templates/unified-dev/spack.yaml && \ 
+#
+# Create the environment
+    . ./setup.sh && spack compiler rm gcc@11.4.0 && \
+    export SPACK_SYSTEM_CONFIG_PATH="$PWD/env/unified-env/site" && spack stack create env --site ubuntu-intel --template unified-dev --name unified-env && \
+    spack compiler add oneapi && spack compiler list && sed -i "s/'%aocc', '%apple-clang', '%gcc', //g" /opt/spack-stack/spack-stack-$branch/envs/unified-env/spack.yaml && \
+    sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
+#
+# Concretize 
+    . ./setup.sh && spack env activate envs/unified-env && \ 
+    unset SPACK_SYSTEM_CONFIG_PATH && \ 
+    spack config add "packages:fontconfig:variants:+pic" && \
+    spack config add "packages:pixman:variants:+pic" && \
+    spack config add "packages:cairo:variants:+pic" && \
+    sed -i '/awscli/d' /opt/spack-stack/spack-stack-1.6.0/spack/var/spack/repos/jcsda-emc-bundles/packages/ewok-env/package.py && \
+    spack concretize  && mkdir /usr/bin/info && \
+    #spack mirror add unified file:/opt/spackmirror160 && spack install --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
+    spack install --no-check-signature --no-checksum |& tee install.log ; exit 0 && \
+    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spackmirror160 && \
+# refresh the modulefiles and create meta-modules
+    source /usr/lmod/lmod/init/bash && \
+    sed -i '/intel-oneapi-mpi/d' envs/unified-env/common/modules.yaml && \
+    spack module lmod refresh -y && rm -rf ~/.spack && \
+    spack stack setup-meta-modules && \
+    module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core && \
+    module avail && \
+    echo "source /usr/lmod/lmod/init/bash" >> /root/.bashenv && \
+    echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/install/modulefiles/Core" >> /root/.bashenv && \
+    echo "module load stack-intel intel-oneapi-mpi" >> /root/.bashenv && \
+    echo "module load stack-intel-oneapi-mpi" >> /root/.bashenv && \
+    echo "module load jedi-ufs-env" >> /root/.bashenv && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bash_profile && \
+    echo "[[ -s ~/.bashenv ]] && source ~/.bashenv" >> /root/.bashrc && \
+    cp ~/.bashenv /opt/spack-stack/spack-stack-$branch && \
+    echo "DONE1" 
+#
+# Create the fms-2024.01 env
+WORKDIR /opt/spack-stack/spack-stack-1.6.0
+RUN . ./setup.sh && \ 
+    #spack compiler rm gcc@11.4.0 && \
+    export SPACK_SYSTEM_CONFIG_PATH="/opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/site" && \
+    spack stack create env --name fms-2024.01 --template empty --site ubuntu-intel --upstream /opt/spack-stack/spack-stack-1.6.0/envs/unified-env/install && \
+   # spack compiler add oneapi && spack compiler list && \
+   # sed -i 's/\=2021/2021/g' /root/.spack/linux/compilers.yaml && \
+    sed -i '20 i \    version("2024.01", sha256="29ac23a5a2a4765ae66d218bb261cb04f7ad44618205ab0924c4e66c9ef8fa38")' spack/var/spack/repos/builtin/packages/fms/package.py && \
+    sed -i '28 i \    version("3.5.1", sha256="a9acdb5d23eca532838f21c4a917727ac85851fc9e1f100d65a6f27c1a563998")' spack/var/spack/repos/builtin/packages/g2/package.py && \
+    sed -i '24 i \    version("1.13.0", sha256="7e52cccc91277bcedbd9e13ee3478480e744eb22d13c5b636bd0ad91bf43d38e")' spack/var/spack/repos/builtin/packages/g2tmpl/package.py && \
+    sed -i '34 i \    depends_on("g2c@1.7:", when="^g2@3.5:")' spack/var/spack/repos/builtin/packages/grib-util/package.py && \
+    sed -i '23 i \    version("12.0.1", sha256="ef396a99ca6c2248855848cd194f9ceaf3b051fb5e8c01a0b0b2a00110b1fcfb")' spack/var/spack/repos/builtin/packages/met/package.py && \ 
+    sed -i '43 i \    depends_on("proj", when="@12")' spack/var/spack/repos/builtin/packages/met/package.py && \
+    sed -i '22 i \    version("6.0.0", sha256="e9358aede2fd2abecd81806227de7b165d68fdf2fc9defcbba24df229461b155")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '38 i \    depends_on("python@3.10.4:", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '39 i \    depends_on("met@12:+python", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '41 i \    depends_on("netcdf-c@1.5.4:", when="@6:")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '42 i \    depends_on("netcdf-c")' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '43 i \    depends_on("py-python-dateutil@2.8:", when="@6:", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '46 i \    depends_on("py-cartopy@0.20.3:", when="@6: +makeplots", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \
+    sed -i '48 i \    depends_on("py-matplotlib@3.5.2", when="@6: +cycloneplotter", type=("run"))' spack/var/spack/repos/builtin/packages/metplus/package.py && \ 
+    cd /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01 && \
+    # Update proj verision
+    #sed -i 's|8.1.0|9.2.1|g' common/packages.yaml && \
+    spack env activate . && \
+    spack add upp-env %intel ^g2tmpl@1.13.0 ^g2@3.5.1 && \
+    spack add ip %intel && \
+    spack add nco@5.0.6 %intel && \
+    spack add met@11.1.0 %intel && \
+    spack add metplus@5.1.0 %intel && \
+    spack add fms@2024.01 %intel && \
+    spack add prod-util@2.1.1 %intel && \
+    spack add wgrib2@2.0.8 %intel && \
+    spack add grib-util@1.3.0 %intel ^g2@3.5.1 && \
+    spack add ufs-weather-model-env %intel ^g2tmpl@1.13.0 ^g2@3.5.1 && \
+    spack add met@12.0.1 %intel && \
+    spack add metplus@6.0.0 %intel ^met@12.0.1 && \
+#
+# Concretize
+    spack concretize 2>&1 | tee log.concretize-fms202401 && \
+    spack install 2>&1 | tee log.install-fms202401 && \
+#
+# Refresh modulefiles and create meta-modules
+    source /usr/lmod/lmod/init/bash && \
+    sed -i '/intel-oneapi-mpi/d' /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/common/modules.yaml && \ 
+    spack module lmod refresh -y --upstream-modules && \
+    spack stack setup-meta-modules && \
+    module use /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/install/modulefiles/Core && \
+    module avail && \
+    echo "source /usr/lmod/lmod/init/bash" >> .bashenv-fms && \
+    echo "module use /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/install/modulefiles/Core" >> .bashenv-fms && \
+    echo "module load stack-intel intel-oneapi-mpi" >> .bashenv-fms && \
+    echo "module load stack-intel-oneapi-mpi" >> .bashenv-fms && \
+    echo "DONE2" 
+
+# Get container-scripts
+RUN cd /opt && rm -rf container-scripts &&  git clone https://github.com/noaa-epic/container-scripts
+#RUN cd /opt/container-scripts && git remote update && git pull
+
+# runtime container
+#FROM intel/oneapi-runtime:2023.2-devel-ubuntu22.04 as final
+FROM intel/oneapi-runtime:2023.1.0-devel-ubuntu22.04 as final
+
+COPY --from=builder /usr /usr
+COPY --from=builder /opt/spack-stack /opt/spack-stack
+COPY --from=builder /opt/container-scripts /opt/container-scripts
+COPY --from=builder /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/libcilkrts.so.5 /opt/intel/oneapi/lib 
+COPY --from=builder /root /root
+
+# Reconfigure vim
+WORKDIR /etc/alternatives
+RUN ln -s /usr/bin/vim.basic vi && ln -s /usr/bin/vim.basic vim && ln -s /usr/bin/vim.basic view && ln -s /usr/bin/vim.basic vimdiff
+
+# Set up environment variables for runtime
+ENV PATH="/usr/local:/opt/intel/oneapi/lib/intel64/bin:$PATH"
+ENV LD_LIBRARY_PATH="/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH="/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64::$LIBRARY_PATH"
+ENV SHELL=/bin/bash
+WORKDIR /opt
+
+ENV SHELL=/bin/bash

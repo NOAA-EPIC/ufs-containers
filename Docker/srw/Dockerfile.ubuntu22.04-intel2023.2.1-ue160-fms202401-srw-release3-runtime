@@ -1,0 +1,94 @@
+FROM noaaepic/ubuntu22.04-intel2023.2.1-unified:v1.6.0-fms202401 as builder
+
+# Build SRW App
+WORKDIR /opt
+RUN git clone -b release/public-v3.0.0 https://github.com/ufs-community/ufs-srweather-app.git && cd ufs-srweather-app && \
+    ./manage_externals/checkout_externals && mkdir build
+WORKDIR /opt/ufs-srweather-app/build
+COPY build_singularity_intel.lua /opt/ufs-srweather-app/modulefiles
+RUN chmod a+rx /opt/ufs-srweather-app/modulefiles/build_singularity_intel.lua
+RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
+    #grep load ../modulefiles/srw_common.lua | awk -F "\"" '{print $2}' | awk -F "/" '{print "module load " $1}' > load_mods && \
+    #cmake -DCMAKE_CXX_COMPILER=mpiicpc -DCMAKE_C_COMPILER=mpiicc -DCMAKE_FC_COMPILER=mpiifort -DCMAKE_INSTALL_PREFIX=.. .. && make -j 8
+    module use /opt/ufs-srweather-app/modulefiles && \
+    module load build_singularity_intel && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_INSTALL_BINDIR=container-bin .. && make -j 8
+# Build conda environments
+WORKDIR /opt/ufs-srweather-app
+RUN export PYTHONPATH= && \
+    export os=$(uname) && \
+    export hardware=$(uname -m) && \
+    export installer=Miniforge3-${os}-${hardware}.sh && \
+    curl -L -O "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/${installer}" && \
+    bash ./${installer} -bfp conda && \ 
+    rm ${installer} && \
+    source conda/etc/profile.d/conda.sh && \ 
+    conda activate && mamba env create -n srw_app --file /opt/ufs-srweather-app/environment.yml && \
+    conda activate && mamba env create -n srw_graphics --file /opt/ufs-srweather-app/graphics_environment.yml && \
+    conda activate && mamba env create -n srw_aqm --file /opt/ufs-srweather-app/aqm_environment.yml
+# Set up container
+RUN mkdir -p /work && \
+    mkdir -p /work2 && \
+    mkdir -p /contrib && \
+    mkdir -p /lustre  && \
+    mkdir -p /gpfs && \
+    mkdir -p /scratch3 && \
+    mkdir -p /scratch4 && \
+    mkdir -p /glade && \
+    mkdir -p /data && \
+    mkdir -p /scratch && \
+    mkdir -p /lfs && \
+    mkdir -p /u && \
+    mkdir -p /discover && \
+    mkdir -p /mnt && \
+    mkdir -p /lfs1 && \
+    mkdir -p /lfs2 && \
+    mkdir -p /lfs3 && \
+    mkdir -p /lfs4 && \
+    mkdir -p /opt/ufs-srweather-app/exec && \
+    mkdir -p /opt/ufs-srweather-app/container-scripts
+# Copy files over
+COPY srw.sh-template /opt/ufs-srweather-app/container-scripts
+COPY stage-srw.sh /opt/ufs-srweather-app/container-scripts
+
+# Get container-scripts
+RUN cd /opt && rm -rf container-scripts &&  git clone https://github.com/noaa-epic/container-scripts
+#RUN cd /opt/container-scripts && git remote update && git pull
+
+# runtime container
+#FROM intel/oneapi-runtime:2023.2-devel-ubuntu22.04 as final
+FROM intel/oneapi-runtime:2023.1.0-devel-ubuntu22.04 as final
+
+COPY --from=builder /usr /usr
+COPY --from=builder /opt/spack-stack /opt/spack-stack
+COPY --from=builder /opt/container-scripts /opt/container-scripts
+COPY --from=builder /opt/ufs-srweather-app /opt/ufs-srweather-app
+COPY --from=builder /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/libcilkrts.so.5 /opt/intel/oneapi/lib 
+COPY --from=builder /root /root
+
+# Set up environment variables for runtime
+#ENV PATH="/usr/local:/opt/intel/oneapi/lib/intel64/bin:$PATH"
+#ENV LD_LIBRARY_PATH="/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LD_LIBRARY_PATH"
+#ENV LIBRARY_PATH="/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64::$LIBRARY_PATH"
+#ENV SHELL=/bin/bash
+WORKDIR /opt/ufs-srweather-app/container-scripts
+RUN source /opt/spack-stack/spack-stack-1.6.0/envs/fms-2024.01/.bashenv-fms && \
+    module use /opt/ufs-srweather-app/modulefiles && \
+    module load build_singularity_intel && \
+    export PATH=/usr/local:/opt/intel/oneapi/lib/intel64/bin:SINGULARITY_WORKING_DIR/ufs-srweather-app/conda/envs/srw_app/bin:/opt/ufs-srweather-app/container-bin:$PATH && \
+    export LIBRARY_PATH=/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LIBRARY_PATH && \
+    export LD_LIBRARY_PATH=/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LD_LIBRARY_PATH && \
+    echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > srw.env && \
+    echo PATH=$PATH >> srw.env && \
+    echo LD_LIBRARY_PATH=$LD_LIBRARY_PATH >> srw.env && \
+    echo LIBRARY_PATH=$LIBRARY_PATH >> srw.env && \
+    echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> srw.env && \
+    echo MODULEPATH=$MODULEPATH >> srw.env && \
+    echo I_MPI_ROOT=$I_MPI_ROOT >> srw.env && \
+    echo ESMFMKFILE=$ESMFMKFILE >> srw.env && \
+    echo PYTHONPATH=$PYTHONPATH >> srw.env && \
+    chmod -R a+rx /opt/ufs-srweather-app/container-scripts
+
+# Optionally set entrypoint or CMD if needed
+# CMD ["/bin/bash"]
+ENV SHELL=/bin/bash

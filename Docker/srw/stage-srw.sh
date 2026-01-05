@@ -79,7 +79,10 @@ echo "Create python modulefile"
 mv $PWD/ufs-srweather-app/modulefiles/python_srw.lua $PWD/ufs-srweather-app/modulefiles/python_srw.lua-original
 echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_app/bin\")" > $PWD/ufs-srweather-app/modulefiles/python_srw.lua
 echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/exec\")" >> $PWD/ufs-srweather-app/modulefiles/python_srw.lua
-rm ufs-srweather-app/modulefiles/tasks/${platform}/*
+echo "Create plot modulefie"
+rm $PWD/ufs-srweather-app/modulefiles/tasks/${platform}/*
+echo "prepend_path(\"PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_graphics/bin\")" > $PWD/ufs-srweather-app/modulefiles/tasks/noaacloud/plot_allvars.local.lua
+echo "setenv(\"ECCODES_DEFINITION_PATH\", \"$PWD/ufs-srweather-app/conda/envs/srw_graphics/share/eccodes/definitions\")" >> $PWD/ufs-srweather-app/modulefiles/tasks/noaacloud/plot_allvars.local.lua
 
 # Update conda paths and create conda loc file
 echo "Configure conda"

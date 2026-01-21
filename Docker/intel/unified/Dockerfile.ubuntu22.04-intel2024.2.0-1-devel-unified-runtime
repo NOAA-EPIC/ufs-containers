@@ -186,10 +186,14 @@ COPY --from=builder /root /root
 COPY --from=builder /etc/bash.bashrc /etc
 COPY --from=builder /bin/mybash /bin
 
+ARG branch_name
+
+ENV branch=$branch_name
+
 # Reconfigure vim
 WORKDIR /etc/alternatives
 RUN ln -s /usr/bin/vim.basic vi && ln -s /usr/bin/vim.basic vim && ln -s /usr/bin/vim.basic view && ln -s /usr/bin/vim.basic vimdiff
-WORKDIR /opt/spack-stack-$branch
+WORKDIR /opt/spack-stack/spack-stack-$branch
 
 ENV SHELL=/bin/bash
 ENV PATH=/opt/intel/oneapi/redist/bin:$PATH

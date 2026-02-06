@@ -1,46 +1,121 @@
 #!/bin/bash
-set -x
+#set -x
 
-DATADIR="home"
-for i in "$@"
-do
-case $i in
-    -d=*|--datadir=*)
-    DATADIR="${i#*=}"
-    ;;
-    -i=*|--container=*)
-    IMAGE="${i#*=}"
-    ;;
-#   --default)
-#   DEFAULT=YES
-#   ;;
-    *)
-            # unknown option
-    ;;
-esac
+Help()
+{
+    # Display Help
+    echo "This script sets up the Land DA workflow to run on unsupported systems."
+    echo
+    echo "Syntax: ./setup_container.sh [-h|-c=<compiler>|-m=<mpi>|-i=<container>|-p=<platform>]"
+    echo "options:"
+    echo "-h     Prints out help function."
+    echo "-c     Compiler and version that is to be used outside of the container in <compiler>/<version> format. Example intel/2022.1.2"
+    echo "-i     Full path to the land DA container."
+    echo "-m     MPI and version that is to be used outside of the container in <MPI>/<version> format. Example impi/2022.1.2"
+    echo "-p     Name of platform you are running on. "
+}
+
+while getopts "h:c:i:m:p:" flag;
+do 
+    case "${flag}" in 
+    	h) Help
+           exit ;;
+        c) compiler="${OPTARG#=}" ;;
+        i) image="${OPTARG#=}" ;;
+        m) mpi="${OPTARG#=}";;
+  	p) platform="${OPTARG#=}" ;;
+       \?) echo "Invalid option. Exiting!"
+           exit 1 ;;
+    esac
 done
 
-singularity exec -H $PWD $IMAGE cp /opt/ufs-weather-model/container-scripts/run_container_executable.sh .
-singularity exec -H $PWD $IMAGE cp /opt/ufs-weather-model/container-scripts/build_container_executable.sh .
-mkdir -p bin
-cd bin
-ln -s ../build_container_executable.sh make
-ln -s ../build_container_executable.sh cmake
-cd ..
-export line=`/bin/grep -n "cp ${PATHRT}" tests/run_test.sh | /bin/grep fv3.exe | awk -F ":" '{print $1}'`
-sed -i "${line}s/^/#/g" tests/run_test.sh
-sed -i "${line}a ln -s \$\{PATHRT\}\/..\/run_container_executable.sh fv3_\$\{COMPILE_NR\}.exe" tests/run_test.sh
-sed -i 's/srun/#srun/g' tests/fv3_conf/fv3_slurm.IN*
-sed -i '/#srun/a mpiexec -n @[TASKS] ./fv3_${COMPILE_NR}.exe' tests/fv3_conf/fv3_slurm.IN*
+# Check for required arguments
+if [ -z "$compiler" ] || [ -z "$image" ] || [ -z "$mpi" ] ; then 
+    echo "Missing -c <compiler> or -i <image> or -m <mpi> argument(s)! Please add missing argument(s)."
+    exit 1
+fi
 
+##singularity exec -H $PWD $IMAGE cp /opt/ufs-weather-model/container-scripts/run_container_executable.sh .
+echo "Copying out ufs-weather-model repo from the container"
+singularity exec -H $PWD $image cp -r /opt/ufs-weather-model .
+##mkdir -p bin
+cd ufs-weather-model/bin
+ln -s ../container-scripts/build_container_executable.sh make
+ln -s ../container-scripts/build_container_executable.sh cmake
+ln -s ../container-scripts/run_container_executable.sh python
+cd ../..
+
+# Set the script to run exe in the container
+echo "Set run_test.sh to use exe in the container"
+export line=`/bin/grep -n "cp ${PATHRT}" ufs-weather-model/tests/run_test.sh | /bin/grep fv3.exe | awk -F ":" '{print $1}'`
+sed -i "${line}s/^/#/g"  $PWD/ufs-weather-model/tests/run_test.sh
+sed -i "${line}a ln -s \$\{PATHRT\}\/..\/container-scripts/run_container_executable.sh fv3_\$\{COMPILE_ID\}.exe"  $PWD/ufs-weather-model/tests/run_test.sh
+
+# Update files with compiler and mpi info
+#sed -i 's/srun/#srun/g' $PWD/ufs-weather-model/tests/fv3_conf/fv3_slurm.IN_singularity
+#sed -i '/#srun/a mpiexec -n @[TASKS] ./fv3.exe' $PWD/ufs-weather-model/tests/fv3_conf/fv3_slurm.IN_singularity
+echo "Updating compiler and mpi in fv3_slurm.IN_singularity"
+sed -i "s|USER_COMPILER|$compiler|g" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
+sed -i "s|USER_MPI|$mpi|g" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
+
+# Create ufs_singularity.intel lua file and copy it over to the tests-dev dir
+echo "Creating ufs_singularity.intel.lua"
+echo "load(\"$compiler\")" > $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua
+echo "load(\"$mpi\")" >> $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua
+cp $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua $PWD/ufs-weather-model/tests-dev/modules.fv3_atm_dyn32_intel.lua
+cp $PWD/ufs-weather-model/modulefiles/ufs_singularity.intel.lua $PWD/ufs-weather-model/tests-dev/modules.fv3_hafsw_intel.lua
+
+# Trick ufs_test.sh file
+echo "Tricking ufs_test.sh file"
+sed -i "174 i export MACHINE_ID=singularity" $PWD/ufs-weather-model/tests-dev/ufs_test.sh
+sed -i "s|s4 )|s4 singularity )|g" $PWD/ufs-weather-model/tests-dev/ufs_test.sh
+
+# Replace with host paths 
+echo "Updating various files with host paths"
 SINGULARITY=`which singularity`
 LOCDIR=`echo $PWD | awk -F "/" '{print $2}'`
 
-#replace the paths in the script
-sed -i "s|IMAGE|$IMAGE|g" *_executable.sh
-sed -i "s|LOCDIR|$LOCDIR|g" *_executable.sh
-sed -i "s|DATADIR|$DATADIR|g" *_executable.sh
-sed -i "s|UFSPATH|$PWD/tests|g" *_executable.sh
-sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" *_executable.sh
+sed -i "s|IMAGE|$image|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
+sed -i "s|LOCDIR|$LOCDIR|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
+sed -i "s|DATADIR|$DATADIR|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
+#sed -i "s|UFSPATH|$PWD/tests|g" *_executable.sh
+sed -i "s|PATH_TO_SINGULARITY|$SINGULARITY|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
+#sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/container-scripts/ufswm.env
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/container-scripts/*_executable.sh
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
+sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
 
-for FILE in modulefiles/*intel.lua; do echo "prepend_path(\"PATH\", \"$PWD/bin\")" >> $FILE ; done
+# Remove compile task
+echo "Removing compile task"
+sed -i '/dependency/d' $PWD/ufs-weather-model/tests/rt_utils.sh
+sed -i 's|rocoto_create_compile_task |#rocoto_create_compile_task |g' $PWD/ufs-weather-model/tests-dev/create_xml.py
+sed -i 's| (MACHINE_ID| #(MACHINE_ID|g' $PWD/ufs-weather-model/tests-dev/create_xml.py
+# Keep lua and execs in test-dev dir
+sed -i 's|modfiles|#modfiles|g' $PWD/ufs-weather-model/tests-dev/create_log.py
+sed -i 's|exefiles|#exefiles|g' $PWD/ufs-weather-model/tests-dev/create_log.py
+
+# Make platform specific changes
+if [ "$platform" == "jet" ] ; then
+    echo "Updating files to work on Jet"
+    sed -i "s|PARTITION:.*|PARTITION: xjet|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
+    sed -i "5 i #SBATCH --partition=@[PARTITION]" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
+elif [[ "$platform" =~ "gaea" ]] ; then
+    echo "Updating files to work on Gaea"
+    sed -i "s|gaeac6|singularity|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
+    sed -i "s|--clusters=es|--clusters=c6|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
+    sed -i "s|eslogin_c6|batch|g" $PWD/ufs-weather-model/tests-dev/create_xml.py
+    sed -i "/queue/d" $PWD/ufs-weather-model/tests-dev/create_xml.py
+    sed -i "s|mpiexec|#mpiexec|g" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
+    sed -i "55 i srun --mpi=pmi2 -n @[TASKS] ./fv3_\$\{COMPILE_ID\}.exe" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
+    sed -i "7 i module reset" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
+    sed -i "8 i module use /ncrc/proj/epic/c6/modulefiles/" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
+    sed -i "s|load rocoto|load rocoto/1.3.7-fix|g" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
+    sed -i "s|gaeac6|singularity|g" $PWD/ufs-weather-model/tests/rt_utils.sh
+    sed -i "s|<native>--partition=batch</native>|<partition>batch</partition>|g" $PWD/ufs-weather-model/tests/rt_utils.sh
+    sed -i "s|PARTITION:.*|PARTITION: c6|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
+elif [ "$platform" == "hercules" ] || [ "$platform" == "orion" ] ; then
+    echo "Updating files to work on Hercules"
+    sed -i "7 i module load singularity contrib" $PWD/ufs-weather-model/tests-dev/machine_config/machine_singularity.config
+fi
+echo "Done"
+		

@@ -10,20 +10,26 @@ COPY --from=compilers /opt/intel /opt/intel
 
 # Clone UFS WM Repo
 WORKDIR /opt
-RUN git clone -b aquaplanet --recursive https://github.com/RatkoVasic-NOAA/ufs-weather-model.git && \
+RUN git clone -b aquaplanet --recursive https://github.com/RatkoVasic-NOAA/ufs-weather-model.git && cd ufs-weather-model  && \
     # load packages
     source /opt/spack-stack/spack-stack-1.9.2/.bashenv && \
     module unload jedi-ufs-env sp crtm && \
     module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
     module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \
+    # set variables to build executables
+    export I_MPI_ROOT=/opt/intel/oneapi/mpi/2021.13 && \
+    export PATH=/opt/intel/oneapi/compiler/2024.2/bin:$PATH && \
+    export CC=mpiicc && \
+    export CXX=mpiicpc && \
+    export FC="mpiifort -diag-disable=10448" && \
     # build atm executable
     mkdir -p build/atm && cd build/atm && \
-    cmake .. -DAPP=ATM -DCCPP_SUITES=FV3_GFS_v16,FV3_GFS_v16_flake,FV3_GFS_v17_p8,FV3_GFS_v17_p8_rrtmgp,FV3_GFS_v15_thompson_mynn_lam3km,FV3_WoFS_v0,FV3_GFS_v17_p8_mynn,FV3_GFS_v17_p8_ugwpv1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
+    cmake -DAPP=ATM -DCCPP_SUITES=FV3_GFS_v16,FV3_GFS_v16_flake,FV3_GFS_v17_p8,FV3_GFS_v17_p8_rrtmgp,FV3_GFS_v15_thompson_mynn_lam3km,FV3_WoFS_v0,FV3_GFS_v17_p8_mynn,FV3_GFS_v17_p8_ugwpv1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
     make -j 8 VERBOSE=1 && \
     cp ufs_model ../../tests-dev/fv3_atm_dyn32_intel.exe && \
     # build hafs exectuable
     cd ../ && mkdir hafs && cd hafs && \
-    cmake .. -DAPP=HAFSW -DMOVING_NEST=ON -DCCPP_SUITES=FV3_HAFS_v1_thompson_nonsst,FV3_HAFS_v1_gfdlmp_tedmf,FV3_HAFS_v1_gfdlmp_tedmf_nonsst,FV3_HAFS_v1_thompson_tedmf_gfdlsf,FV3_global_nest_v1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
+    cmake -DAPP=HAFSW -DMOVING_NEST=ON -DCCPP_SUITES=FV3_HAFS_v1_thompson_nonsst,FV3_HAFS_v1_gfdlmp_tedmf,FV3_HAFS_v1_gfdlmp_tedmf_nonsst,FV3_HAFS_v1_thompson_tedmf_gfdlsf,FV3_global_nest_v1 -D32BIT=ON -DMPI=ON -DCMAKE_BUILD_TYPE=Release ../.. && \
     make -j 8 VERBOSE=1 && \
     cp ufs_model ../../tests-dev/fv3_hafsw_intel.exe
 RUN mkdir -p /work && \

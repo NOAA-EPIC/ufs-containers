@@ -85,7 +85,7 @@ RUN source /opt/spack-stack/spack-stack-1.9.2/.bashenv && \
     module load jasper zlib libpng hdf5 netcdf-c netcdf-fortran parallelio esmf fms bacio && \
     module load crtm g2 g2tmpl ip sp w3emc gftl-shared mapl scotch py-pyyaml ecbuild && \
     echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH > ufswm.env && \
-    echo PATH=/usr/local:/opt/intel/oneapi/redist/bin:SINGULARITY_WORKING_DIR/ufs-weather-model/tests-dev:$PATH >> ufswm.env && \
+    echo PATH=/usr/local:/opt/intel/oneapi/redist/bin:/opt/ufs-weather-model/tests-dev:$PATH >> ufswm.env && \
     echo LD_LIBRARY_PATH=/opt/intel/oneapi/redist/opt/mpi/libfabric/lib:/opt/intel/oneapi/redist/lib:$LD_LIBRARY_PATH >> ufswm.env && \
     echo LIBRARY_PATH=/opt/intel/oneapi/redist/opt/mpi/libfabric/lib:/opt/intel/oneapi/redist/lib:$LIBRARY_PATH >> ufswm.env && \
     echo PYTHONPATH=$PYTHONPATH >> ufswm.env

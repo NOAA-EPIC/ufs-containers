@@ -95,9 +95,9 @@ sed -i 's|modfiles|#modfiles|g' $PWD/ufs-weather-model/tests-dev/create_log.py
 sed -i 's|exefiles|#exefiles|g' $PWD/ufs-weather-model/tests-dev/create_log.py
 
 # Make platform specific changes
-if [ "$platform" == "jet" ] ; then
-    echo "Updating files to work on Jet"
-    sed -i "s|PARTITION:.*|PARTITION: xjet|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
+if [ "$platform" == "ursa" ] ; then
+    echo "Updating files to work on Ursa"
+    sed -i "s|PARTITION:.*|PARTITION: u1-compute|g" $PWD/ufs-weather-model/tests-dev/baseline_setup.yaml
     sed -i "5 i #SBATCH --partition=@[PARTITION]" $PWD/ufs-weather-model/tests-dev/test_cases/exp_conf/fv3_slurm.IN_singularity
 elif [[ "$platform" =~ "gaea" ]] ; then
     echo "Updating files to work on Gaea"

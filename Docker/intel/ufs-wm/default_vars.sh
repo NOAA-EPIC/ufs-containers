@@ -128,6 +128,8 @@ export fbh_omp_num_threads=1
 
 export histaux_enabled=.false.
 export BMIC=.false.
+
+export GFSv17opn=.false.
 export SFS=.false.
 
 export EXCLUSIVE_NODES=.false.
@@ -504,6 +506,7 @@ export FV3_RUN=control_run.IN
 export INPUT_NML=control.nml.IN
 export CCPP_SUITE=FV3_GFS_v16
 
+export DOGP_CLDOPTICS_LUT=.false.
 export DOGP_LWSCAT=.false.
 export IAER=111
 export ICLIQ_SW=1
@@ -616,11 +619,11 @@ export_mpas ()
     export DT_INNER_c768=75
 
     if [[ ${DT_ATMOS} = 1800 ]]; then
-        export default_dt_atmos=1
-        export DT_INNER=${DT_INNER_c96}
+	export default_dt_atmos=1
+	export DT_INNER=${DT_INNER_c96}
     else
-        export default_dt_atmos=0
-        export DT_INNER=${DT_ATMOS}
+	export default_dt_atmos=0
+	export DT_INNER=${DT_ATMOS}
     fi
     #DJS2025 END:
 
@@ -635,7 +638,6 @@ export_mpas ()
     export DO_SKEB=.false.
     export LNDP_TYPE=0
     export N_VAR_LNDP=0
-
 
     export INPES=${INPES_dflt}
     export JNPES=${JNPES_dflt}
@@ -681,6 +683,7 @@ export_gfs_physics ()
     export HYBEDMF=.false.
     # RRTMGP
     export DO_RRTMGP=.false.
+    export DOGP_CLDOPTICS_LUT=.true.
     export DOGP_LWSCAT=.true.
     export DOGP_SGS_CNV=.true.
     export USE_LW_JACOBIAN=.false.
@@ -1020,8 +1023,9 @@ export TTENDLIM=-999
 
 # Radiation
 export DO_RRTMGP=.false.
+export DOGP_CLDOPTICS_LUT=.true.
 export DOGP_LWSCAT=.true.
-export DOGP_SGS_CNV=.false.
+export DOGP_SGS_CNV=.true.
 export USE_LW_JACOBIAN=.false.
 export DAMP_LW_FLUXADJ=.false.
 export RRTMGP_LW_PHYS_BLKSZ=2
@@ -1919,8 +1923,9 @@ export LSEASPRAY=.true.
 
 # RRTMGP
 export DO_RRTMGP=.false.
+export DOGP_CLDOPTICS_LUT=.true.
 export DOGP_LWSCAT=.true.
-export DOGP_SGS_CNV=.false.
+export DOGP_SGS_CNV=.true.
 
 # CA
 export DO_CA=.true.

@@ -10,9 +10,7 @@ COPY --from=compilers /opt/intel /opt/intel
 
 # Clone UFS WM Repo
 WORKDIR /opt
-RUN git clone https://github.com/ufs-community/ufs-weather-model.git && cd ufs-weather-model  && \
-    git checkout 753c42f5484790e49eace04fe46f61c7659ffa80 && \
-    git submodule update --init --recursive && \
+RUN git clone --recursive -b ufs-hsd-aquaplanet https://github.com/ufs-community/ufs-weather-model.git && cd ufs-weather-model  && \
     # load packages
     source /opt/spack-stack/spack-stack-1.9.2/.bashenv && \
     module unload jedi-ufs-env sp crtm && \

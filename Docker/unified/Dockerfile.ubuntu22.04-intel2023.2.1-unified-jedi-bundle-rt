@@ -1,0 +1,39 @@
+FROM noaaepic/ubuntu22.04-intel2023.2.1-unified:v1.6.0-fms202401 as builder
+
+# Clone and build jedi-bundle
+WORKDIR /opt
+RUN git clone -b sync_gdas_landda_v2.1 https://github.com/NOAA-EPIC/jedi-bundle.git && mkdir jedi-bundle/build
+RUN cd /opt/spack-stack && rm -rf spack/var/spack/cache
+WORKDIR /opt/jedi-bundle
+RUN source /opt/spack-stack/spack-stack-1.6.0/.bashenv && \
+    cd build && ecbuild -DCMAKE_INSTALL_PREFIX=../install .. && \
+    make -j 4 && make install 
+RUN rm -rf /opt/jedi-bundle/build
+
+# Get container-scripts
+RUN cd /opt && rm -rf container-scripts &&  git clone https://github.com/noaa-epic/container-scripts
+#RUN cd /opt/container-scripts && git remote update && git pull
+
+# runtime container
+#FROM intel/oneapi-runtime:2023.2-devel-ubuntu22.04 as final
+FROM intel/oneapi-runtime:2023.1.0-devel-ubuntu22.04 as final
+
+COPY --from=builder /usr /usr
+COPY --from=builder /opt/spack-stack /opt/spack-stack
+COPY --from=builder /opt/container-scripts /opt/container-scripts
+COPY --from=builder /opt/jedi-bundle /opt/jedi-bundle
+COPY --from=builder /opt/intel/oneapi/compiler/2023.2.1/linux/bin/intel64/libcilkrts.so.5 /opt/intel/oneapi/lib 
+COPY --from=builder /root /root
+
+# Reconfigure vim
+WORKDIR /etc/alternatives
+RUN ln -s /usr/bin/vim.basic vi && ln -s /usr/bin/vim.basic vim && ln -s /usr/bin/vim.basic view && ln -s /usr/bin/vim.basic vimdiff
+
+# Set up environment variables for runtime
+ENV PATH="/usr/local:/opt/intel/oneapi/lib/intel64/bin:$PATH"
+ENV LD_LIBRARY_PATH="/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64:$LD_LIBRARY_PATH"
+ENV LIBRARY_PATH="/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64::$LIBRARY_PATH"
+ENV SHELL=/bin/bash
+WORKDIR /opt
+
+ENV SHELL=/bin/bash

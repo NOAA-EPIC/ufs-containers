@@ -5,7 +5,7 @@ export SINGULARITYENV_FI_PROVIDER=tcp
 export SINGULARITY_SHELL=/bin/bash
 SINGULARITYBIN=`which singularity`
 BINDDIR="/"`pwd | awk -F"/" '{print $2}'`
-img=/contrib/Edward.Snyder/landda-container/release-3.0.0/ubuntu22.04-intel-landda-release-public-v3.0.0.img
+img=IMAGE
 CONTAINERBASE="/"`echo $img | xargs realpath | awk -F"/" '{print $2}'`
 cmd=$(basename "$0")
 arg="$@"
@@ -22,11 +22,11 @@ if [[ $1 =~ "ghcn_snod2ioda.py" ]] || [[ $1 =~ "imsfv3_scf2ioda.py" ]] || [[ $1 
 elif [[ "${APP}" == "ATML" ]]; then
   env_file_name="landda-atml.env"
 else 
-  env_file_name="landda-lnd.env"
+  env_file_name="landda.env"
 fi
 
 # Create singularity exec cmd
-sing_exec_cmd="${SINGULARITYBIN} exec --env-file /contrib/Edward.Snyder/landda-container/release-3.0.0/land-DA_workflow/parm/${env_file_name} -B $BINDDIR:$BINDDIR -B $CONTAINERBASE:$CONTAINERBASE $INPUTBIND $img $cmd $arg"
+sing_exec_cmd="${SINGULARITYBIN} exec --env-file SINGULARITY_WORKING_DIR/land-DA_workflow/parm/${env_file_name} -B $BINDDIR:$BINDDIR -B $CONTAINERBASE:$CONTAINERBASE $INPUTBIND $img $cmd $arg"
 
 # Remove echo for ndate command as it messes with the PTIME variable
 if [ $cmd != "ndate" ]; then

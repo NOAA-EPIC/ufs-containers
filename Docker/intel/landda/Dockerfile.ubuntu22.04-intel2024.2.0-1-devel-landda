@@ -33,7 +33,7 @@ RUN source /opt/spack-stack/spack-stack-1.9.2/.bashenv  &&  module unload jedi-u
      #cd jcb && \ 
      #/opt/land-DA_workflow/sorc/conda/envs/land_da/bin/pip install . && \
      #cd ../.. && \
-     conda activate && mamba env create -n python-ufs-land-da-wflow --file /opt/land-DA_workflow/parm/environment-ufs-land-da-wflow.yaml
+     conda activate && mamba env create -n python-ufs-land-da-wflow --file /opt/land-DA_workflow/parm/environment-ufs-land-da-wflow.yaml && \
      module use /opt/land-DA_workflow/modulefiles && \
      module load ufsland_singularity_intel && \
      mkdir build-lnd && cd build-lnd && \

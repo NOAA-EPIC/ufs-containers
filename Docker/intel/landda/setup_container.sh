@@ -51,7 +51,7 @@ fi
 # Update scripts and module files to work with container
 echo "Updating scripts files"
 sed -i 's|. prep_step|${EXEClandda}/prep_step|g' $PWD/land-DA_workflow/scripts/*
-sed -i 's|JEDI_EXECDIR=${JEDI_PATH}/build/bin|JEDI_EXECDIR=${EXEClandda}|g' $PWD/land-DA_workflow/scripts/exlandda_analysis.sh
+sed -i 's|jedi_exe_dir=${JEDI_PATH}/build/bin|jedi_exe_dir=${EXEClandda}|g' $PWD/land-DA_workflow/scripts/exlandda_analysis.sh
 # Call python wrapper for prep and plot scripts
 sed -i 's|${USHlandda}|python ${USHlandda}|g' $PWD/land-DA_workflow/scripts/exlandda_prep_data.sh
 sed -i 's|${USHlandda}|python ${USHlandda}|g' $PWD/land-DA_workflow/scripts/exlandda_plot_stats.sh
@@ -75,7 +75,7 @@ sed -i "s|SINGULARITY_WORKING_DIR|$PWD|g" $PWD/land-DA_workflow/parm/run_contain
 echo "Setup conda"
 sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/etc/profile.d/conda.sh
 sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/bin/conda
-sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/envs/land_da/bin/uw
+sed -i "s|/opt|$PWD|g" $PWD/land-DA_workflow/sorc/conda/envs/python-ufs-land-da-wflow/bin/uw
 echo "$PWD/land-DA_workflow/sorc/conda" > $PWD/land-DA_workflow/parm/conda_loc
 
 # Get JEDI Data
@@ -106,6 +106,7 @@ ln -s ../parm/run_container_executable.sh apply_incr.exe
 ln -s ../parm/run_container_executable.sh calcfIMS.exe
 ln -s ../parm/run_container_executable.sh chgres_cube
 ln -s ../parm/run_container_executable.sh err_chk
+ln -s ../parm/run_container_executable.sh err_exit
 ln -s ../parm/run_container_executable.sh fv3jedi_letkf.x
 ln -s ../parm/run_container_executable.sh fv3jedi_var.x
 ln -s ../parm/run_container_executable.sh ndate

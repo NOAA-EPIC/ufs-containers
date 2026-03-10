@@ -12,14 +12,15 @@ COPY --from=compilers /opt/intel /opt/intel
 WORKDIR /opt
 RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_workflow.git
 COPY ufsland_singularity_intel.lua /opt/land-DA_workflow/modulefiles
-RUN chmod a+rx /opt/land-DA_workflow/modulefiles/ufsland_singularity_intel.lua
-RUN sed -i -e $'$a\\\n  - numpy=2.1.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - matplotlib=3.9.2' $PWD/land-DA_workflow/parm/conda_environment.yml
-RUN sed -i -e $'$a\\\n  - scipy=1.14.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - cartopy=0.23.0' $PWD/land-DA_workflow/parm/conda_environment.yml
-RUN sed -i -e $'$a\\\n  - xarray=2024.9.0' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - netcdf4=1.7.1' $PWD/land-DA_workflow/parm/conda_environment.yml
+COPY environment-ufs-land-da-wflow.yaml /opt/land-DA_workflow/parm
+RUN chmod a+rx /opt/land-DA_workflow/modulefiles/ufsland_singularity_intel.lua /opt/land-DA_workflow/parm/environment-ufs-land-da-wflow.yaml
+#RUN sed -i -e $'$a\\\n  - numpy=2.1.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - matplotlib=3.9.2' $PWD/land-DA_workflow/parm/conda_environment.yml
+#RUN sed -i -e $'$a\\\n  - scipy=1.14.1' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - cartopy=0.23.0' $PWD/land-DA_workflow/parm/conda_environment.yml
+#RUN sed -i -e $'$a\\\n  - xarray=2024.9.0' $PWD/land-DA_workflow/parm/conda_environment.yml && sed -i -e $'$a\\\n  - netcdf4=1.7.1' $PWD/land-DA_workflow/parm/conda_environment.yml
 RUN source /opt/spack-stack/spack-stack-1.9.2/.bashenv  &&  module unload jedi-ufs-env sp crtm && \
     # module load bacio cmake crtm ecbuild esmf fms gftl-shared g2 g2tmpl hdf5 ip jasper libpng mapl netcdf-c netcdf-fortran parallelio && \
      #module load prod_util py-netcdf4 py-numpy py-pyyaml py-xarray sp ufs-pyenv w3emc zlib scotch && \
-     cd land-DA_workflow/sorc && \
+     cd /opt/land-DA_workflow/sorc && \
      export os=$(uname) && \
      export hardware=$(uname -m) && \
      export installer=Miniforge3-${os}-${hardware}.sh && \
@@ -27,25 +28,26 @@ RUN source /opt/spack-stack/spack-stack-1.9.2/.bashenv  &&  module unload jedi-u
      bash ./${installer} -bfp conda && \ 
      rm ${installer} && \
      source conda/etc/profile.d/conda.sh && \ 
-     conda activate && mamba env create -n land_da --file /opt/land-DA_workflow/parm/conda_environment.yml && \
-     git clone https://github.com/NOAA-EMC/jcb && \ 
-     cd jcb && \ 
-     /opt/land-DA_workflow/sorc/conda/envs/land_da/bin/pip install . && \
-     cd ../.. && \
+     #conda activate && mamba env create -n land_da --file /opt/land-DA_workflow/parm/conda_environment.yml && \
+     #git clone https://github.com/NOAA-EMC/jcb && \ 
+     #cd jcb && \ 
+     #/opt/land-DA_workflow/sorc/conda/envs/land_da/bin/pip install . && \
+     #cd ../.. && \
+     conda activate && mamba env create -n python-ufs-land-da-wflow --file /opt/land-DA_workflow/parm/environment-ufs-land-da-wflow.yaml
      module use /opt/land-DA_workflow/modulefiles && \
      module load ufsland_singularity_intel && \
-     mkdir build && cd build && \
-     ecbuild -DCMAKE_INSTALL_PREFIX=../install ../sorc -DAPP=LND -DCCPP_SUITES="" && make VERBOSE=1 -j 8 && \
-     cp ufs_model.fd/src/ufs_model.fd-build/ufs_model ../install/bin/ && \
+     mkdir build-lnd && cd build-lnd && \
+     ecbuild -DCMAKE_INSTALL_PREFIX=. .. -DAPP=LND -DCCPP_SUITES="" && make VERBOSE=1 -j 8 && \
+     #cp ufs_model.fd/src/ufs_model.fd-build/ufs_model ../install/bin/ && \
      #cd .. && rm -rf build && mkdir -p sorc/build/bin && mkdir exec
-     cd ../sorc && mkdir build-atml && cd build-atml && \
-     ecbuild -DCMAKE_INSTALL_PREFIX=. ../ -DAPP=ATML && make VERBOSE=1 -j 8 && \
-     cd ../../ && mkdir exec
+     cd ../ && mkdir build-atml && cd build-atml && \
+     ecbuild -DCMAKE_INSTALL_PREFIX=. .. -DAPP=ATML && make VERBOSE=1 -j 8
 COPY run_container_executable.sh /opt/land-DA_workflow/parm
 COPY build_container_executable.sh /opt/land-DA_workflow/parm
 COPY setup_container.sh /opt/land-DA_workflow
 WORKDIR /opt/land-DA_workflow
-RUN mkdir -p singularity/bin && \
+RUN mkdir -p exec && \
+    mkdir -p singularity/bin && \
     mkdir -p /work && \
     mkdir -p /work2 && \
     mkdir -p /contrib && \
@@ -73,20 +75,28 @@ RUN mkdir -p singularity/bin && \
 RUN rm -rf /opt/intel && \
     mv /opt/intel-rt /opt/intel
 
-# Create landda.env and landda-py.env files
+# Create environment files
+WORKDIR /opt/land-DA_workflow/parm
 RUN source /opt/spack-stack/spack-stack-1.9.2/.bashenv && \
     module unload jedi-ufs-env sp crtm && \
     module use /opt/land-DA_workflow/modulefiles && \
-    module load ufsland_singularity_intel && \
-    echo PATH=/usr/local:/opt/intel/oneapi/redist/bin:/opt/land-DA_workflow/sorc/conda/envs/land_da/bin:/opt/land-DA_workflow/install/bin:$PATH > /opt/land-DA_workflow/parm/landda.env && \
-    echo LD_LIBRARY_PATH=/opt/intel/oneapi/redist/opt/mpi/libfabric/lib:/opt/intel/oneapi/redist/lib:$LD_LIBRARY_PATH >> /opt/land-DA_workflow/parm/landda.env && \
-    echo LIBRARY_PATH=/opt/intel/oneapi/redist/opt/mpi/libfabric/lib:/opt/intel/oneapi/redist/lib:$LIBRARY_PATH >> /opt/land-DA_workflow/parm/landda.env && \
-    echo MODULEPATH=$MODULEPATH >> /opt/land-DA_workflow/parm/landda.env && \
-    echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH >> /opt/land-DA_workflow/parm/landda.env && \
-    echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH >> /opt/land-DA_workflow/parm/landda.env && \
-    echo ESMFMKFILE=$ESMFMKFILE >> /opt/land-DA_workflow/parm/landda.env && \
-    echo HDF5_PLUGIN_PATH=$HDF5_PLUGIN_PATH >> /opt/land-DA_workflow/parm/landda.env && \
-    echo I_MPI_ROOT=$I_MPI_ROOT >> /opt/land-DA_workflow/parm/landda.env && \
-    echo PATH=/usr/bin:$PATH > /opt/land-DA_workflow/parm/landda-py.env && \
-    echo PYTHONPATH=$PYTHONPATH >> /opt/land-DA_workflow/parm/landda-py.env
+    module load ufsland_singularity_intel prod_util && \
+    # Initiate standard env file
+    echo PATH=/opt/land-DA_workflow/sorc/conda/envs/python-ufs-land-da-wflow/bin:/opt/land-DA_workflow/sorc/build-lnd/bin:/opt/jedi-bundle/install/bin:$PATH > landda.env && \
+    # Initiate atml env file
+    echo PATH=/opt/land-DA_workflow/sorc/conda/envs/python-ufs-land-da-wflow/bin:/opt/land-DA_workflow/sorc/build-atml/bin:/opt/jedi-bundle/install/bin:$PATH > landda-atml.env && \
+    # Add shared variables to both env files
+    echo LD_LIBRARY_PATH=/opt/intel/oneapi/redist/opt/mpi/libfabric/lib:$LD_LIBRARY_PATH | tee -a landda.env landda-atml.env && \
+    echo LIBRARY_PATH=/opt/intel/oneapi/redist/opt/mpi/libfabric/lib:$LIBRARY_PATH | tee -a landda.env landda-atml.env && \
+    #echo MODULEPATH=$MODULEPATH | tee -a landda.env landda-atml.env && \
+    echo FI_PROVIDER_PATH=$FI_PROVIDER_PATH | tee -a landda.env landda-atml.env && \
+    #echo CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH | tee -a landda.env landda-atml.env && \
+    #echo ESMFMKFILE=$ESMFMKFILE | tee -a landda.env landda-atml.env && \
+    #echo HDF5_PLUGIN_PATH=$HDF5_PLUGIN_PATH | tee -a landda.env landda-atml.env && \
+    # Create python specific env file
+    # load missing python module
+    #module load py-h5py/3.12.1 && \
+    echo PATH=/opt/spack-stack/spack-stack-1.9.2/envs/unified-env/install/oneapi/2024.2.0/python-venv-1.0-zpni6tr/bin > landda-py.env && \
+    echo PYTHONPATH=/opt/jedi-bundle/install/lib/python3.11:$PYTHONPATH >> landda-py.env
+WORKDIR /opt
 

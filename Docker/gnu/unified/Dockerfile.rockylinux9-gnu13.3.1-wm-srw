@@ -141,7 +141,7 @@ RUN mv 00-modulepath.sh 00-modulepath.sh.orig && \
     sed -i "3 i . /etc/profile.d/01-modulepath.sh" /usr/share/lmod/8.7.65/init/profile
 
 # Add container-scripts to externalize the spack-stack
-RUN cd /opt && git clone -b ss-192-updates https://github.com/EdwardSnyder-NOAA/container-scripts.git
+RUN cd /opt && git clone https://github.com/noaa-epic/container-scripts
 
 WORKDIR /opt/spack-stack/spack-stack-1.9.2
 ENV SHELL=/bin/bash

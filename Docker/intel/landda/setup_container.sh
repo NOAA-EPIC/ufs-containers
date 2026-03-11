@@ -83,6 +83,9 @@ echo "Getting the jedi test data from container"
 mkdir -p $PWD/jedi-bundle/fv3-jedi/test
 singularity exec -H $PWD $image cp -r /opt/jedi-bundle/fv3-jedi/test/Data $PWD/jedi-bundle/fv3-jedi/test/
 
+# Trick launch script so the automation script can run
+sed -i '10 i MACHINE=singularity' $PWD/land-DA_workflow/parm/templates/template.launch_rocoto_wflow.sh
+
 # Check if it is using mpich (i.e. gaea)
 #if [[ $mpi =~ cray-mpich/ ]]; then
 #    sed -i 's|which mpiexec|which srun|g' $PWD/land-DA_workflow/scripts/exlandda_*

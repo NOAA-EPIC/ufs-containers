@@ -1,5 +1,5 @@
-#FROM intel/oneapi-hpckit:2024.0.1-devel-ubuntu22.04
-FROM intel/hpckit:2024.2.0-1-devel-ubuntu22.04
+#FROM intel/hpckit:2024.2.0-1-devel-ubuntu22.04
+FROM 211527314271.dkr.ecr.us-east-1.amazonaws.com/noaaepic/intel-hpckit:2024.2.0-1-devel-ubuntu22.04
 ARG branch_name
 
 ENV branch=$branch_name

@@ -10,7 +10,7 @@ COPY --from=compilers /opt/intel /opt/intel
 
 # Clone and build land-da workflow
 WORKDIR /opt
-RUN git clone -b develop --recursive https://github.com/ufs-community/land-DA_workflow.git
+RUN git clone -b release/public-v3.0.0 --recursive https://github.com/ufs-community/land-DA_workflow.git
 COPY ufsland_singularity_intel.lua /opt/land-DA_workflow/modulefiles
 COPY environment-ufs-land-da-wflow.yaml /opt/land-DA_workflow/parm
 RUN chmod a+rx /opt/land-DA_workflow/modulefiles/ufsland_singularity_intel.lua /opt/land-DA_workflow/parm/environment-ufs-land-da-wflow.yaml

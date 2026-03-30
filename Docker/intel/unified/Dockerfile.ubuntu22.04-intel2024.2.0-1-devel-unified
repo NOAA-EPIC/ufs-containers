@@ -136,6 +136,8 @@ RUN cd /opt && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -
  #   git pull && git submodule update && \
     #spack mirror add unified file:/opt/spack-mirror && spack install --use-cache --no-check-signature --no-checksum |& tee install.log && \
     spack install --no-check-signature --no-checksum |& tee install.log && \
+    # Exit if errors are found
+    if grep -qr "==> Error" install.log; then echo "Found failure!" && exit 1; fi && \
     rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
     echo "DONE1"
 WORKDIR /opt/spack-stack/spack-stack-$branch

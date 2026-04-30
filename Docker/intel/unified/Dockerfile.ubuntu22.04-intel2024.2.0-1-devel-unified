@@ -179,3 +179,6 @@ RUN echo "source /usr/lmod/lmod/init/bash" > /etc/bash.bashrc && \
     chmod +x /bin/mybash && chmod -R a+rX /root && chmod a+x /opt/container-scripts/*
 #fix for broken build of w3emc--need to fix this corrctly later
 #ADD w3emc.zck.tar.gz /opt/spack-stack/spack-stack-1.9.1/envs/unified-env/install/oneapi/2024.2.0
+
+# Remove extra Intel dirs
+RUN cd /opt/intel/oneapi/ && mv compiler mpi ../ && rm -rf * && mv ../compiler ../mpi . && cd /opt 

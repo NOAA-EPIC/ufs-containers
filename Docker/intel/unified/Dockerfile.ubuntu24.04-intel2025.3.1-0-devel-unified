@@ -1,0 +1,128 @@
+FROM intel/oneapi-hpckit:2025.3.1-0-devel-ubuntu24.04
+#FROM 211527314271.dkr.ecr.us-east-1.amazonaws.com/noaaepic/intel-hpckit:2024.2.0-1-devel-ubuntu22.04
+ARG branch_name
+ENV branch=$branch_name
+
+SHELL ["/bin/bash", "-c"]
+
+# Fix time
+RUN DEBIAN_FRONTEND=noninteractive \
+    TZ=Etc/UTC \
+    apt-get -y install tzdata && \
+    ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime && \
+    dpkg-reconfigure --frontend noninteractive tzdata
+
+# Install system packages
+RUN set -euo pipefail; \
+    apt-get -yqq update && \
+    apt-get -yqq upgrade && \
+    apt-get -yqq install --no-install-recommends \
+        # Build tools
+        build-essential \
+        gcc \
+        gfortran \
+        cmake \
+        automake \
+        autoconf \
+        flex \
+        # External dependencies
+        tcl-dev \
+        ca-certificates \
+        libcurl4-openssl-dev \
+        libmysqlclient-dev \
+        # Shell utilities
+        vim \
+        wget \
+        bc \
+        time \
+        rsync \
+        curl \
+        git \
+        git-lfs \
+        bzip2 \
+        unzip \
+        file && \
+    rm -rf /var/lib/apt/lists/* 
+
+# Install lua and lmod from source
+RUN cd /opt && wget https://sourceforge.net/projects/lmod/files/lua-5.1.4.9.tar.bz2 && \
+    tar xvfj lua-5.1.4.9.tar.bz2 && \
+    cd lua-5.1.4.9 && ./configure --prefix=/usr && make -j 4 && make install && \
+    # Specify branch for Lmod repo due to doc bug - 7/16/26
+    git clone --recursive -b 9.2.7 https://github.com/TACC/Lmod.git && \
+    cd Lmod && ./configure --prefix=/usr && make -j 4 && make install && \  
+    rm -rf /opt/lua* Lmod && \
+    # Create working dir
+    mkdir -p /opt/spack-stack
+
+# Prepare spack-stack as if on RDHPC
+WORKDIR /opt/spack-stack
+
+# Copy the ubuntu-intel configuration files
+ADD ubuntu-intel-25.3.1-2.1.0.tar.gz /opt/spack-stack
+
+# Build the environment
+RUN git clone -b release/$branch --recursive https://github.com/jcsda/spack-stack.git spack-stack-$branch && \
+    cd /opt/spack-stack/spack-stack-$branch && \
+    # set the spack directories to be safe for use by git even though they are in /opt
+    git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch && \
+    git config --global --add safe.directory /opt/spack-stack/spack-stack-$branch/spack && \
+    # Get any recent updates; comment out if building locally
+    #git remote update && git checkout $branch && git pull origin $branch && \
+    #git submodule sync && git submodule update  && \
+    # Create the environment
+    mv /opt/spack-stack/ubuntu-intel configs/sites/tier1 && \
+    . ./setup.sh && \ 
+    spack stack create env --site ubuntu-intel --template unified-dev --name unified-env --compiler oneapi && \
+    cd /opt/spack-stack/spack-stack-$branch && \
+    . ./setup.sh && spack env activate envs/unified-env && \ 
+    spack external find --all && \ 
+    spack concretize |& tee log.concretize && \ 
+    util/show_duplicate_packages.py -d log.concretize |& tee log.duplicate_packages && \
+    # Install the environment
+    spack install --fail-fast --no-check-signature --no-checksum |& tee install.log && \
+    cd /opt/spack-stack/spack-stack-$branch && \
+    # Exit if errors are found
+    #if grep -qr "==> Error" install.log; then echo "Found failure!" && exit 1; fi && \
+    rm -rf /opt/dist /opt/build /opt/spack-stack/spack-stack-$branch/cache/* /opt/spack-mirror && \
+    echo "spack-stack was installed successfully!"
+
+# Set up modules
+WORKDIR /opt/spack-stack/spack-stack-$branch
+RUN . ./setup.sh && spack env activate envs/unified-env && \
+    source /usr/lmod/lmod/init/bash && \
+    spack module lmod refresh -y && \
+    spack stack setup-meta-modules && \
+    # Create Intel modulefiles
+    /opt/intel/oneapi/modulefiles-setup.sh --output-dir=/opt/intel/oneapi/modulefiles && \
+    # Ensure the stack can be loaded
+    module use /opt/intel/oneapi/modulefiles && \ 
+    module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/modules/Core && \
+    module load stack-intel-oneapi-compilers stack-intel-oneapi-mpi && module list && \
+    # Create hidden file to preload spack-stack when building from this docker image
+    echo "source /usr/lmod/lmod/init/bash" > .spack-stack-env && \
+    echo "module use /opt/intel/oneapi/modulefiles" >> .spack-stack-env && \
+    echo "module use /opt/spack-stack/spack-stack-$branch/envs/unified-env/modules/Core" >> .spack-stack-env && \
+    echo "module load stack-intel-oneapi-compilers" >> .spack-stack-env && \
+    echo "module load stack-intel-oneapi-mpi" >> .spack-stack-env && \
+    echo "Modules successfully installed!"
+
+# Set environment variables 
+ENV FI_PROVIDER_PATH=/opt/intel/oneapi/mpi/2021.17/opt/mpi/libfabric/lib/prov
+ENV CC=/opt/intel/oneapi/compiler/2025.3/bin/icx
+ENV CXX=/opt/intel/oneapi/compiler/2025.3/bin/icpx
+ENV FC=/opt/intel/oneapi/compiler/2025.3/bin/ifx
+ENV SHELL=/bin/bash
+
+# Modify bash env
+RUN echo "source /opt/spack-stack/spack-stack-$branch/.spack-stack-env" > /etc/bash.bashrc && \
+    echo "bind '\"\\e[A\": history-search-backward'" >> /etc/bash.bashrc && \
+    echo "bind '\"\\e[B\": history-search-forward'" >> /etc/bash.bashrc && \
+    echo "/bin/bash --init-file /etc/bash.bashrc" >> /bin/mybash && \
+    # Remove extra Intel dirs
+    cd /opt/intel/oneapi/ && \
+    mv compiler/ mpi/ umf/ tbb/ modulefiles/ ../ && \
+    rm -rf * && \
+    mv ../compiler ../mpi ../umf ../tbb ../modulefiles .
+
+CMD ["/bin/bash"]

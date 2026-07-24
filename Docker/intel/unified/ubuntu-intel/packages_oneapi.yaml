@@ -1,25 +1,87 @@
 packages:
-    all:
-    # To support hecflow01
-      compiler:: [oneapi@2024.2, gcc@11.4.0]
-      providers:
-        mpi:: [intel-oneapi-mpi@2021.13]
-      target: [haswell]
-    mpi:
-      buildable: False
-    intel-oneapi-mpi:
-      externals:
-      - spec: intel-oneapi-mpi@2021.13%oneapi@2024.2
-        prefix: /opt/intel/oneapi
-    intel-oneapi-mkl:
-      externals:
-      - spec: intel-oneapi-mkl@2024.2%oneapi@2024.2
-        prefix: /opt/intel/oneapi
-    intel-oneapi-runtime:
-      externals:
-      - spec: intel-oneapi-runtime@2024.24%oneapi@2024.2
-        prefix: /opt/intel/oneapi
-    gcc-runtime:
-      externals:
-      - spec: gcc-runtime@11.4.0%gcc@11.4.0
-        prefix: /usr
+
+  # Compilers.
+  all:
+    prefer:
+    - '%oneapi'
+    conflict:
+    - '%c=oneapi %fortran=gcc'
+    - '%c,cxx=oneapi %fortran=gcc'
+    - '%c=gcc %fortran=oneapi'
+    - '%c,cxx=gcc %fortran=oneapi'
+    - '%fortran=oneapi %c=gcc'
+    - '%fortran=oneapi %c,cxx=gcc'
+    - '%fortran=gcc %c,cxx=oneapi'
+    - '%fortran=gcc %c=oneapi'
+    providers:
+      mpi:: [intel-oneapi-mpi@2021.17]
+
+  intel-oneapi-compilers:
+    buildable: false
+    externals:
+    - spec: intel-oneapi-compilers@2025.3.3
+      prefix: /opt/intel/oneapi
+      modules:
+       - umf/1.0.2
+       - tbb/2022.3
+       - compiler-rt/2025.3.3
+       - compiler/2025.3.3
+      extra_attributes:
+        compilers:
+          fortran: /opt/intel/oneapi/compiler/2025.3/bin/ifx
+          c: /opt/intel/oneapi/compiler/2025.3/bin/icx
+          cxx: /opt/intel/oneapi/compiler/2025.3/bin/icpx
+  openmpi:
+    buildable: false
+  mpich:
+    buildable: false
+  mpi:
+    buildable: false
+    require:
+    - intel-oneapi-mpi@2021.17
+  gcc:
+    externals:
+    - spec: gcc@13.3.0 languages:='c,c++,fortran'
+      prefix: /usr
+      extra_attributes:
+        compilers:
+          c: /usr/bin/gcc
+          cxx: /usr/bin/g++
+          fortran: /usr/bin/gfortran
+    buildable: false
+  intel-oneapi-mkl:
+    buildable: false
+    externals:
+    - spec: intel-oneapi-mkl@2025.3
+      prefix: /opt/intel/oneapi
+      modules:
+      - mkl/2025.3
+  intel-oneapi-mpi:
+    buildable: false
+    externals:
+    - spec: intel-oneapi-mpi@2021.17
+      modules:
+      - mpi/2021.17
+      prefix: /opt/intel/oneapi
+  intel-oneapi-tbb:
+    buildable: false
+    externals:
+    - spec: intel-oneapi-tbb@2022.3
+      prefix: /opt/intel/oneapi
+      modules:
+      - tbb/2022.3
+
+  # Package constraints.
+  jedi-base-env:
+    require: [+fftw, +hdf4, +bufrquery]
+  eccodes:
+    require:
+    - "jp2k=jasper"
+  jasper:
+    require:
+    - +jpeg
+  curl:
+    require: ['+nghttp2']
+  py-pyyaml:
+    require:
+    - +libyaml

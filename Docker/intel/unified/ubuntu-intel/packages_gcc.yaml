@@ -1,13 +1,15 @@
 packages:
-  all:
-    compiler:: [gcc@11.4.0]
-    providers:
-      mpi:: [openmpi@4.1.6]
-  mpi:
-    buildable: False
-  openmpi:
+  gcc:
+    buildable: false
     externals:
-    - spec: openmpi@4.1.6~atomics~cuda~cxx~cxx_exceptions~gpfs~internal-hwloc~internal-libevent~internal-pmix~java+legacylaunchers~lustre~memchecker~openshmem~orterunprefix+pmi+romio+rsh~singularity+static+vt+wrapper-rpath fabrics=ucx schedulers=slurm
-      modules:
-      - gnu/11.4.0
-      - openmpi/4.1.6_gnu9.2.0
+    - spec: gcc@13.3.0 languages:='c,c++,fortran'
+      prefix: /usr
+      extra_attributes:
+        compilers:
+          c: /usr/bin/gcc
+          cxx: /usr/bin/g++
+          fortran: /usr/bin/gfortran
+  gcc-runtime:
+    externals:
+    - spec: gcc-runtime@13.3.0
+      prefix: /usr

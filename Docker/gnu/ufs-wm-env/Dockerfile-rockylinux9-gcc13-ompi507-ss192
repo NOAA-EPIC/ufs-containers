@@ -1,0 +1,132 @@
+# syntax=docker/dockerfile:1
+
+FROM rockylinux:9
+
+
+LABEL maintainer="HPC Developer <Natalie.Perlin@noaa.gov>, <Edward.Snyder@noaa.gov"
+LABEL description="Rocky Linux 9 HPC Development image with GNU 13.3.1 compilers, OpenMPI 5.0.7, Slurm"
+
+
+# -----------------------------------------------------------------------------
+# System setup and base tools
+# -----------------------------------------------------------------------------
+RUN dnf -y update && \
+    dnf -y install epel-release && \
+    dnf -y groupinstall "Development Tools"
+RUN dnf -y install https://repos.openhpc.community/OpenHPC/3/EL_9/x86_64/ohpc-release-3-1.el9.x86_64.rpm
+RUN dnf install -y  ohpc-base && \
+    dnf install -y Lmod && \
+    dnf install -y vim && \
+    dnf install -y gcc-toolset-13
+RUN scl enable gcc-toolset-13 bash && dnf install -y libevent libevent-devel
+
+
+RUN dnf install -y --allowerasing wget curl libcurl-devel git which cmake make m4 autoconf automake libtool pkgconfig bzip2 unzip xterm   openssl-devel ncurses-devel zlib-devel hwloc hwloc-devel numactl numactl-devel rdma-core rdma-core-devel rsync sudo
+
+
+RUN dnf install -y glibc-langpack-en
+RUN dnf install -y python3 python3-pip
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+RUN dnf clean all && rm -rf /var/cache/dnf
+
+
+#
+## Install slurm and pmi2 plugin for host machine's with slurm installed
+#
+WORKDIR /opt/src
+RUN wget https://github.com/SchedMD/slurm/archive/refs/tags/slurm-24-05-4-1.tar.gz && \
+    tar -xzf slurm-24-05-4-1.tar.gz && \
+    cd slurm-slurm-24-05-4-1 && \
+    ./configure --prefix=/opt/slurm --enable-shared --disable-static --without-munge CFLAGS="-fPIC" && \
+    make -j4 && \
+    make install && \
+    # Install pmi2 and pmi libraries
+    cd /opt/src/slurm-slurm-24-05-4-1/contribs/pmi2 && \
+    make && make install && \
+    cd /opt/src/slurm-slurm-24-05-4-1/contribs/pmi && \
+    make && make install
+
+
+#
+## Install openpbs and the prerequisites
+
+
+RUN dnf install -y libXt-devel libX11-devel libXext-devel  && \
+    dnf install -y postgresql-devel python3-devel expat-devel && \
+    dnf install -y libedit-devel libical-devel tcl-devel tk-devel && \
+    dnf install -y cjson-devel
+RUN sudo dnf config-manager --set-enabled crb && dnf install -y swig
+
+
+WORKDIR /opt/src
+RUN git clone https://github.com/openpbs/openpbs.git && cd openpbs && \
+    ./autogen.sh && ./configure --prefix=/opt/pbs && \
+    make -j && make install
+
+
+# Copy over gnu lua file
+ADD modulefiles.tgz /opt/
+ADD rocky9-gnu_ompi507.tgz /opt/
+ADD profile.d_ompi507.tgz /etc
+ADD hello-mpi-world.tgz /opt
+
+
+ENV OMPI_VERSION=5.0.7
+ENV OMPI_MAJOR="${OMPI_VERSION%.*}"
+WORKDIR /opt/src
+RUN scl enable gcc-toolset-13 bash && \
+    wget https://download.open-mpi.org/release/open-mpi/v${OMPI_MAJOR}/openmpi-${OMPI_VERSION}.tar.gz && \
+    tar -xzf openmpi-${OMPI_VERSION}.tar.gz && cd openmpi-${OMPI_VERSION} && \
+    mkdir build && cd build && \
+    mkdir -p /opt/openmpi/${OMPI_VERSION} && \
+     ../configure --prefix=/opt/openmpi/${OMPI_VERSION} --enable-mpi-fortran=all  --with-slurm=/opt/slurm --with-slurm=/opt/slurm --with-pmix --with-tm=/opt/pbs --with-libevent=internal --with-hwloc=internal --enable-shared --disable-static --with-gnu-ld --enable-mpirun-prefix-by-default CC=/opt/rh/gcc-toolset-13/root/usr/bin/gcc CFLAGS=" -fPIC" CXX=/opt/rh/gcc-toolset-13/root/usr/bin/g++  CXXFLAGS="  -fPIC" FC=/opt/rh/gcc-toolset-13/root/usr/bin/gfortran  FCFLAGS="-fallow-argument-mismatch -fallow-invalid-boz -fPIC" LDFLAGS="-Wl,--enable-new-dtags -L/opt/pbs/lib -lpbs -Wl,-rpath,/opt/pbs/lib -Wl,-rpath,/opt/openmpi/5.0.7/lib -Wl,-rpath,/opt/slurm/lib" && \
+    make -j4 all  && make install
+# 
+# Clean up space
+RUN dnf clean all && rm -rf /var/cache/dnf
+
+
+WORKDIR /opt/spack-stack
+RUN scl enable gcc-toolset-13 bash && \
+    source /usr/share/lmod/lmod/init/bash && \
+    module use /opt/modulefiles && \
+    git clone --recurse-submodules -b release/1.9.0 https://github.com/jcsda/spack-stack.git spack-stack-1.9.2 && \
+    cd spack-stack-1.9.2 && \
+    # Create the environment
+   . ./setup.sh && \
+    spack stack create env --site linux.default --template ufs-weather-model --compiler=gcc --name ufs-wm-env && \
+    spack env activate -p envs/ufs-wm-env/ && \
+    cd ./envs/ufs-wm-env && \
+    /usr/bin/cp -r /opt/rocky9-gnu_ompi507/* . && \
+    spack concretize 2>&1 | tee log.concretize && \
+    spack install --verbose --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install.ufs-wm-env && \
+    spack module lmod refresh -y && \
+    spack stack setup-meta-modules && \
+    spack clean --stage && \
+    spack clean --downloads && \
+    spack env deactivate
+#
+WORKDIR /opt/spack-stack/spack-stack-1.9.2
+RUN echo "source /usr/share/lmod/lmod/init/bash" > .bashenv && \
+    echo "module use /opt/modulefiles" >> .bashenv && \
+    echo "module use /opt/spack-stack/spack-stack-1.9.2/envs/ufs-wm-env/install/modulefiles/Core/" >> .bashenv
+
+
+# Update profile.d_ompiXXX files
+WORKDIR /etc/profile.d
+RUN mv /etc/profile.d_ompi507/* . && \
+    /usr/bin/cp -p 00-modulepath.sh zz-modulepath.sh
+
+
+# Add container-scripts to externalize the spack-stack
+RUN cd /opt && git clone -b develop https://github.com/NOAA-EPIC/container-scripts.git
+
+
+# Clean up installations in /opt/src
+RUN rm -rf /opt/src/*  && rm -rf /opt/rocky9-gnu_ompi507
+
+
+WORKDIR /opt/spack-stack/spack-stack-1.9.2
+ENV SHELL=/bin/bash
+

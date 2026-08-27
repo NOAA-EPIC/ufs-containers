@@ -1,0 +1,80 @@
+FROM intel/hpckit:2024.2.1-0-devel-rockylinux9 AS compilers
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN cd /opt/intel/oneapi && \
+    rm -rf ccl dnnl dal ddnl dpcpp-ct ipp ippcp vtune
+
+FROM rockylinux:9
+
+COPY --from=compilers /opt/intel/oneapi /opt/intel/oneapi
+ENV PATH=/opt/intel/oneapi/compiler/latest/bin:$PATH
+
+LABEL maintainer="HPC Developers: <Natalie.Perlin@noaa.gov>, Edward Snyder <Edward.Snyder@noaa.gov>" 
+LABEL description="Rocky Linux 9 HPC Development image with GNU and OneAPI compilers and MPI"
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# -----------------------------------------------------------------------------
+# System setup and base tools
+# -----------------------------------------------------------------------------
+RUN dnf -y update && \
+    dnf -y install epel-release && \
+    dnf -y groupinstall "Development Tools"  && \
+    dnf install -y Lmod vim gcc-toolset-13 && \
+    dnf install -y libevent libevent-devel && \
+    dnf clean all
+
+RUN scl enable gcc-toolset-13 bash && \
+    dnf -y install --allowerasing libevent libevent-devel wget curl libcurl-devel git which cmake make m4 autoconf automake libtool pkgconfig bzip2 unzip xterm openssl-devel ncurses-devel zlib-devel hwloc hwloc-devel numactl numactl-devel rdma-core rdma-core-devel rsync sudo python3 python3-pip && \
+ dnf clean all && rm -rf /var/cache/dnf
+#
+ADD rocky9-intel.tgz /opt/
+ADD profile.d_intel.tgz /etc
+ADD hello-mpi-world.tgz /opt
+ADD intel-sandbox.sh /opt/intel
+ADD compilers_cp.sh /opt/intel
+#
+###RUN source /opt/rh/gcc-toolset-13/enable && \ # <-- needs to be commented out to use the correct linker (ld)!
+RUN mkdir -p /opt/spack-stack  && \
+    cd  /opt/spack-stack  && \
+    source /usr/share/lmod/lmod/init/bash && \
+    module use /opt/intel/oneapi/2024.2/etc/modulefiles  && \
+    module load tbb/2021.13 compiler-rt/2024.2.1 compiler/2024.2.1 mkl/2024.2 ifort/2024.2.1 mpi/2021.13 && \
+    git clone --recurse-submodules -b release/1.9.0 https://github.com/jcsda/spack-stack.git spack-stack-1.9.2 && \
+    cd /opt/spack-stack/spack-stack-1.9.2 && \ 
+    source ./setup.sh && \
+    spack stack create env --site linux.default --template ufs-weather-model --compiler=oneapi --name ufs-wm-env && \
+    spack env activate -p envs/ufs-wm-env && \
+    cd ./envs/ufs-wm-env && \
+    /usr/bin/cp -r /opt/rocky9-intel/* . && \
+    spack concretize 2>&1 | tee log.concretize && \
+    spack install  --fail-fast --show-log-on-error --no-check-signature 2>&1 | tee log.install.ufs-wm-env && \
+    spack module lmod refresh -y && \
+    spack stack setup-meta-modules && \
+    spack clean --stage --downloads --misc-cache --python-cache --failures && \
+    spack env deactivate && \ 
+    module purge && \
+    chmod +x /opt/intel/intel-sandbox.sh && \
+    chmod +x /opt/intel/compilers_cp.sh && \
+    rm -rf /opt/intel/oneapi
+#   
+# Update profile.d files
+# Clean up installers in /opt
+WORKDIR /etc/profile.d
+RUN /usr/bin/cp -f /etc/profile.d_intel/* . && \
+    /usr/bin/cp -p 00-modulepath.sh zz-modulepath.sh && \
+    rm -rf /etc/profile.d_intel/ && \
+    rm -rf /opt/rocky9-intel && \
+    rm -rf /etc/shadow*  && \
+    dnf clean all && rm -rf /var/cache/dnf 
+#
+# Add container-scripts to externalize the spack-stack
+RUN cd /opt && git clone -b develop https://github.com/NOAA-EPIC/container-scripts.git
+#
+WORKDIR /opt/spack-stack/spack-stack-1.9.2
+RUN echo "source /usr/share/lmod/lmod/init/bash" > .bashenv  && \
+    echo "export MODULES_AUTO_HANDLING=1" >> .bashenv  && \
+    echo "module use /opt/intel/oneapi/2024.2/etc/modulefiles" >> .bashenv  && \
+    echo "module use /opt/spack-stack/spack-stack-1.9.2/envs/ufs-wm-env/install/modulefiles/Core/" >> .bashenv
+#
+ENV SHELL=/bin/bash

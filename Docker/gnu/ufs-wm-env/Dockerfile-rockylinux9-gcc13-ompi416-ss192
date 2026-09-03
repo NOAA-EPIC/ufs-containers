@@ -3,7 +3,7 @@
 FROM rockylinux:9
 
 LABEL maintainer="HPC Developers <Natalie.Perlin@noaa.gov>, <Edward.Snyder@noaa.gov>"
-LABEL description="Rocky Linux 9 HPC Development image with GNU 13.3.1 compilers, OpenMPI 5.0.7, Slurm"
+LABEL description="Rocky Linux 9 HPC Development image with GNU 13.3.1 compilers, OpenMPI 4.1.6, Slurm"
 
 # -----------------------------------------------------------------------------
 # System setup and base tools
@@ -58,13 +58,13 @@ RUN git clone https://github.com/openpbs/openpbs.git && cd openpbs && \
     make -j && make install
 
 # Copy over gnu lua file
-ADD modulefiles_ompi507.tgz /opt/
-ADD rocky9-gnu_ompi507.tgz /opt/
-ADD profile.d.updated_ompi507.tgz /etc
-ADD mpi-tests_ompi507.tgz /opt
-ADD Dockerfile-rockylinux9-gcc13-ompi507-ss192 /opt
+ADD modulefiles_ompi416.tgz /opt/
+ADD rocky9-gnu_ompi416.tgz /opt/
+ADD profile.d.updated_ompi416.tgz /etc
+ADD mpi-tests_ompi416.tgz /opt
+ADD Dockerfile-rockylinux9-gcc13-ompi416-ss192 /opt
 
-ENV OMPI_VERSION=5.0.7
+ENV OMPI_VERSION=4.1.6
 ENV OMPI_MAJOR="${OMPI_VERSION%.*}"
 WORKDIR /opt/src
 RUN source /opt/rh/gcc-toolset-13/enable && \
@@ -73,7 +73,7 @@ RUN source /opt/rh/gcc-toolset-13/enable && \
     tar -xzf openmpi-${OMPI_VERSION}.tar.gz && cd openmpi-${OMPI_VERSION} && \
     mkdir build && cd build && \
     mkdir -p /opt/openmpi/${OMPI_VERSION} && \
-     ../configure --prefix=/opt/openmpi/${OMPI_VERSION} --enable-mpi-fortran=all  --with-slurm=/opt/slurm --with-pmix --with-tm=/opt/pbs --with-libevent=internal --with-hwloc=internal --enable-shared --disable-static --with-gnu-ld --enable-mpirun-prefix-by-default CC=/opt/rh/gcc-toolset-13/root/usr/bin/gcc CFLAGS=" -fPIC" CXX=/opt/rh/gcc-toolset-13/root/usr/bin/g++  CXXFLAGS="  -fPIC" FC=/opt/rh/gcc-toolset-13/root/usr/bin/gfortran  FCFLAGS="-fallow-argument-mismatch -fallow-invalid-boz -fPIC" LDFLAGS="-Wl,--enable-new-dtags -L/opt/pbs/lib -lpbs -Wl,-rpath,/opt/pbs/lib -Wl,-rpath,/opt/openmpi/5.0.7/lib -Wl,-rpath,/opt/slurm/lib" && \
+     ../configure --prefix=/opt/openmpi/${OMPI_VERSION} --enable-mpi-fortran=all  --with-slurm=/opt/slurm --with-pmi=/opt/slurm --with-pmix --with-tm=/opt/pbs  --with-libevent=internal --with-hwloc=internal --enable-shared --disable-static --with-gnu-ld --enable-mpirun-prefix-by-default CC=/opt/rh/gcc-toolset-13/root/usr/bin/gcc CFLAGS=" -fPIC" CXX=/opt/rh/gcc-toolset-13/root/usr/bin/g++  CXXFLAGS="  -fPIC" FC=/opt/rh/gcc-toolset-13/root/usr/bin/gfortran  FCFLAGS="-fallow-argument-mismatch -fallow-invalid-boz -fPIC" LDFLAGS="-Wl,--enable-new-dtags -L/opt/pbs/lib -lpbs -Wl,-rpath,/opt/pbs/lib -Wl,-rpath,/opt/openmpi/4.1.6/lib -Wl,-rpath,/opt/slurm/lib" && \
     make -j4 all  && make install
 # 
 # Clean up space
